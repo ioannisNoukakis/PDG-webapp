@@ -1,4 +1,4 @@
-System.register(['angular2/core', './login/login.component'], function(exports_1, context_1) {
+System.register(['angular2/core', './login.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,32 +10,35 @@ System.register(['angular2/core', './login/login.component'], function(exports_1
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, login_component_1;
-    var AppComponent;
+    var core_1, login_service_1;
+    var LoginComponent;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
             },
-            function (login_component_1_1) {
-                login_component_1 = login_component_1_1;
+            function (login_service_1_1) {
+                login_service_1 = login_service_1_1;
             }],
         execute: function() {
-            AppComponent = (function () {
-                function AppComponent() {
+            LoginComponent = (function () {
+                function LoginComponent(loginSevice) {
+                    this.submitted = false;
+                    loginSevice.getToken();
                 }
-                AppComponent = __decorate([
+                LoginComponent.prototype.onSubmit = function () { this.submitted = true; };
+                LoginComponent = __decorate([
                     core_1.Component({
-                        selector: 'my-app',
-                        template: '<h1>My First Angular 2 App</h1><login></login>',
-                        directives: [login_component_1.LoginComponent]
+                        selector: 'login',
+                        templateUrl: 'app/login/login.component.html',
+                        providers: [login_service_1.LoginService]
                     }), 
-                    __metadata('design:paramtypes', [])
-                ], AppComponent);
-                return AppComponent;
+                    __metadata('design:paramtypes', [login_service_1.LoginService])
+                ], LoginComponent);
+                return LoginComponent;
             }());
-            exports_1("AppComponent", AppComponent);
+            exports_1("LoginComponent", LoginComponent);
         }
     }
 });
-//# sourceMappingURL=app.component.js.map
+//# sourceMappingURL=login.component.js.map
