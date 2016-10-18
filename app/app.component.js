@@ -27,7 +27,7 @@ System.register(['angular2/core', './login/login.component'], function(exports_1
                 AppComponent = __decorate([
                     core_1.Component({
                         selector: 'my-app',
-                        template: '<h1>My First Angular 2 App</h1><login></login>',
+                        template: '<h1>Eventail</h1><login></login>',
                         directives: [login_component_1.LoginComponent]
                     }), 
                     __metadata('design:paramtypes', [])

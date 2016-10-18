@@ -9,12 +9,15 @@ import {LoginModel} from './login.model'
 })
 
 export class LoginComponent{
+
+    loginModel = new LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis");   
     submitted = false;
 
-
-    constructor(loginSevice: LoginService){
-        loginSevice.getToken();
+    constructor(private loginSevice: LoginService){
     }
 
-    onSubmit() { this.submitted = true; }
+    onSubmit() { 
+        this.submitted = true; 
+        this.loginSevice.GetToken(this.loginModel);
+    }
 }
