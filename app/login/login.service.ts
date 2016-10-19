@@ -20,7 +20,7 @@ export class LoginService {
         this.headers.append('Accept', 'application/json');
     }
 
-    public GetToken(loginModel: LoginModel){
+    public requestToken(loginModel: LoginModel){
         console.log("[LOGIN_SERVICE] Sending authentification request...");
         let credentials = JSON.stringify({ mail : loginModel.username, pass : loginModel.password });
  

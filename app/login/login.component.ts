@@ -1,6 +1,7 @@
 import {Component} from 'angular2/core'
 import {LoginService} from './login.service'
 import {LoginModel} from './login.model'
+import {AUTH_SERVICE_PROVIDER, AuthService } from '../auth.service'
 
 @Component({
     selector: 'login',
@@ -13,11 +14,15 @@ export class LoginComponent{
     loginModel = new LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis");   
     submitted = false;
 
-    constructor(private loginSevice: LoginService){
+    constructor(private _loginSevice: LoginService){
+        if(AuthService.getInstance().isConnected())
+        {
+            
+        }
     }
 
     onSubmit() { 
         this.submitted = true; 
-        this.loginSevice.GetToken(this.loginModel);
+        this._loginSevice.requestToken(this.loginModel);
     }
 }

@@ -35,7 +35,7 @@ System.register(['angular2/core', 'angular2/http', './token', 'rxjs/add/operator
                     this.headers.append('Content-Type', 'application/json');
                     this.headers.append('Accept', 'application/json');
                 }
-                LoginService.prototype.GetToken = function (loginModel) {
+                LoginService.prototype.requestToken = function (loginModel) {
                     var _this = this;
                     console.log("[LOGIN_SERVICE] Sending authentification request...");
                     var credentials = JSON.stringify({ mail: loginModel.username, pass: loginModel.password });
