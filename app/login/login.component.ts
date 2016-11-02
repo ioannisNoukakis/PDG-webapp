@@ -1,7 +1,7 @@
-import {Component} from 'angular2/core'
+import {Component} from '@angular/core'
 import {LoginService} from './login.service'
 import {LoginModel} from './login.model'
-import {AUTH_SERVICE_PROVIDER, AuthService } from '../auth.service'
+import {AuthService} from '../auth/auth.service'
 
 @Component({
     selector: 'login',
@@ -15,10 +15,7 @@ export class LoginComponent{
     submitted = false;
 
     constructor(private _loginSevice: LoginService){
-        if(AuthService.getInstance().isConnected())
-        {
-            
-        }
+
     }
 
     onSubmit() { 

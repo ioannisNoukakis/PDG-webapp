@@ -1,9 +1,13 @@
-import {Component} from 'angular2/core';
-import {LoginComponent} from './login/login.component'
+import { Component } from '@angular/core';
 
 @Component({
-    selector: 'my-app',
-    template: '<h1>Eventail</h1><login></login>',
-    directives: [LoginComponent]
+  selector: 'my-app',
+  template: `
+    <h1>Angular Router</h1>
+    <nav>
+      <a routerLink="/login" routerLinkActive="active">Login</a>
+    </nav>
+    <router-outlet></router-outlet>
+  `
 })
 export class AppComponent { }

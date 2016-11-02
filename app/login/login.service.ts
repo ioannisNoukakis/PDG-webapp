@@ -1,7 +1,7 @@
-import { Injectable }     from 'angular2/core';
-import {HTTP_PROVIDERS, Http} from 'angular2/http';
-import { Response } from 'angular2/http';
-import { Headers, RequestOptions } from 'angular2/http';
+import { Injectable }     from '@angular/core';
+import {Http} from '@angular/http';
+import { Response } from '@angular/http';
+import { Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { Token } from './token';
 import {LoginModel} from './login.model'
