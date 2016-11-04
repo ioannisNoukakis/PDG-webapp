@@ -3,19 +3,7 @@ import { AuthService } from './auth/auth.service'
 
 @Component({
   selector: 'my-app',
-  template: `
-    <nav>
-      <a routerLink="/login" routerLinkActive="active">Login</a>
-      <a routerLink="/mapView" routerLinkActive="active">Map View</a>
-    </nav>
-    <router-outlet></router-outlet>
-  `,
+  templateUrl: 'app/app.component.html',
   providers: [ AuthService ]
 })
 export class AppComponent { }
-
-/*
-<nav>
-  <a routerLink="/login" routerLinkActive="active">Login</a>
-</nav>
-*/
