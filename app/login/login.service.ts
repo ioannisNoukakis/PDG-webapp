@@ -6,18 +6,19 @@ import { Observable } from 'rxjs/Observable';
 import { Token } from './token';
 import {LoginModel} from './login.model'
 import 'rxjs/add/operator/map'
+import {AuthService} from '../auth/auth.service'
 
 @Injectable()
 export class LoginService {
     // URL to web api
     private apiURL = 'https://api.eventail.me/auth/token';
     private headers: Headers;
-    private token: Token;
 
-    constructor(private _http: Http) { 
+    constructor(private _http: Http, private _auth: AuthService) { 
         this.headers = new Headers();
         this.headers.append('Content-Type', 'application/json');
         this.headers.append('Accept', 'application/json');
+        this._auth = _auth;
     }
 
     public requestToken(loginModel: LoginModel){
@@ -35,18 +36,13 @@ export class LoginService {
 
     saveJwt(jwt) {
         if(jwt) {
-            this.token = new Token(jwt.token, jwt.string, false);
-            console.log(this.token);
+            this._auth.setToken(new Token(jwt.token, jwt.string, false));
+            console.log(this._auth.getToken());
         }
     }
 
     public logError(error)
     {
         console.log(error);
-    }
-
-    public getToken()
-    {
-        return this.token;
     }
 }

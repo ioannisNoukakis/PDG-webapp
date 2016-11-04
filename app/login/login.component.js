@@ -16,6 +16,7 @@ var LoginComponent = (function () {
         this._loginSevice = _loginSevice;
         this.loginModel = new login_model_1.LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis");
         this.submitted = false;
+        this._loginSevice = _loginSevice;
     }
     LoginComponent.prototype.onSubmit = function () {
         this.submitted = true;

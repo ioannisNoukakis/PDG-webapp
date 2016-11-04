@@ -13,8 +13,11 @@ var platform_browser_1 = require('@angular/platform-browser');
 var forms_1 = require('@angular/forms');
 var app_component_1 = require('./app.component');
 var http_1 = require('@angular/http');
+var core_2 = require('angular2-google-maps/core');
+var ng_bootstrap_1 = require('@ng-bootstrap/ng-bootstrap');
 var app_routing_module_1 = require('./app-routing.module');
 var login_component_1 = require('./login/login.component');
+var mapView_component_1 = require('./mapView/mapView.component');
 var AppModule = (function () {
     function AppModule() {
     }
@@ -24,11 +27,16 @@ var AppModule = (function () {
                 platform_browser_1.BrowserModule,
                 forms_1.FormsModule,
                 http_1.HttpModule,
-                app_routing_module_1.AppRoutingModule
+                app_routing_module_1.AppRoutingModule,
+                core_2.AgmCoreModule.forRoot({
+                    apiKey: 'AIzaSyBQGER7XA94yf212XPCMjjVoe9Wl-ZTRzI'
+                }),
+                ng_bootstrap_1.NgbModule.forRoot()
             ],
             declarations: [
                 app_component_1.AppComponent,
-                login_component_1.LoginComponent
+                login_component_1.LoginComponent,
+                mapView_component_1.MapView
             ],
             bootstrap: [app_component_1.AppComponent]
         }), 

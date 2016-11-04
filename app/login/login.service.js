@@ -13,14 +13,17 @@ var http_1 = require('@angular/http');
 var http_2 = require('@angular/http');
 var token_1 = require('./token');
 require('rxjs/add/operator/map');
+var auth_service_1 = require('../auth/auth.service');
 var LoginService = (function () {
-    function LoginService(_http) {
+    function LoginService(_http, _auth) {
         this._http = _http;
+        this._auth = _auth;
         // URL to web api
         this.apiURL = 'https://api.eventail.me/auth/token';
         this.headers = new http_2.Headers();
         this.headers.append('Content-Type', 'application/json');
         this.headers.append('Accept', 'application/json');
+        this._auth = _auth;
     }
     LoginService.prototype.requestToken = function (loginModel) {
         var _this = this;
@@ -32,19 +35,16 @@ var LoginService = (function () {
     };
     LoginService.prototype.saveJwt = function (jwt) {
         if (jwt) {
-            this.token = new token_1.Token(jwt.token, jwt.string, false);
-            console.log(this.token);
+            this._auth.setToken(new token_1.Token(jwt.token, jwt.string, false));
+            console.log(this._auth.getToken());
         }
     };
     LoginService.prototype.logError = function (error) {
         console.log(error);
     };
-    LoginService.prototype.getToken = function () {
-        return this.token;
-    };
     LoginService = __decorate([
         core_1.Injectable(), 
-        __metadata('design:paramtypes', [http_1.Http])
+        __metadata('design:paramtypes', [http_1.Http, auth_service_1.AuthService])
     ], LoginService);
     return LoginService;
 }());

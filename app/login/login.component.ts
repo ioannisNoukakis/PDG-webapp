@@ -1,7 +1,6 @@
 import {Component} from '@angular/core'
 import {LoginService} from './login.service'
 import {LoginModel} from './login.model'
-import {AuthService} from '../auth/auth.service'
 
 @Component({
     selector: 'login',
@@ -11,12 +10,12 @@ import {AuthService} from '../auth/auth.service'
 
 export class LoginComponent{
 
+    constructor(private _loginSevice: LoginService){
+        this._loginSevice = _loginSevice;
+    }
+
     loginModel = new LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis");   
     submitted = false;
-
-    constructor(private _loginSevice: LoginService){
-
-    }
 
     onSubmit() { 
         this.submitted = true; 

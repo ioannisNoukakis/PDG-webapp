@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var router_1 = require('@angular/router');
 var login_component_1 = require('./login/login.component');
+var mapView_component_1 = require('./mapView/mapView.component');
 var AppRoutingModule = (function () {
     function AppRoutingModule() {
     }
@@ -18,6 +19,7 @@ var AppRoutingModule = (function () {
         core_1.NgModule({
             imports: [
                 router_1.RouterModule.forRoot([
+                    { path: 'mapView', component: mapView_component_1.MapView },
                     { path: 'login', component: login_component_1.LoginComponent },
                     { path: '', component: login_component_1.LoginComponent }
                 ])

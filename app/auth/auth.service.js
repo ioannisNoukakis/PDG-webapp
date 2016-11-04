@@ -18,8 +18,11 @@ var AuthService = (function () {
     AuthService.prototype.isConnected = function () {
         if (this._token == null)
             return false;
-        var time = new Date().getTime() - new Date(this._token.expires).getTime();
-        return time >= 0;
+        //var time = new Date().getTime() - new Date(this._token.expires).getTime();
+        return true; //time >= 0;
+    };
+    AuthService.prototype.setToken = function (token) {
+        this._token = token;
     };
     AuthService = __decorate([
         core_1.Injectable(), 

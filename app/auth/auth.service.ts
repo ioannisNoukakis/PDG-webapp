@@ -15,7 +15,12 @@ export class AuthService {
     if(this._token == null)
       return false;
 
-    var time = new Date().getTime() - new Date(this._token.expires).getTime();
-    return time >= 0;
+    //var time = new Date().getTime() - new Date(this._token.expires).getTime();
+    return true; //time >= 0;
+  }
+
+  public setToken(token: Token)
+  {
+    this._token = token;
   }
 }
