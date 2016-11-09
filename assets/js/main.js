@@ -107,7 +107,7 @@
 					$('<a href="#sidebar" class="toggle">Toggle</a>')
 						.appendTo($sidebar)
 						.on('click', function(event) {
-
+								console.log("[TOOGLE]")
 							// Prevent default.
 								event.preventDefault();
 								event.stopPropagation();

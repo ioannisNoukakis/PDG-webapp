@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { LoginComponent }  from './login/login.component';
 import { MapView }         from './mapView/mapView.component';
 
+import { AuthService }       from './auth/auth.service';
+
 @NgModule({
   imports: [
     RouterModule.forRoot([

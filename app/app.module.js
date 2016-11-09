@@ -15,6 +15,7 @@ var app_component_1 = require('./app.component');
 var http_1 = require('@angular/http');
 var core_2 = require('angular2-google-maps/core');
 var ng_bootstrap_1 = require('@ng-bootstrap/ng-bootstrap');
+var auth_service_1 = require('./auth/auth.service');
 var app_routing_module_1 = require('./app-routing.module');
 var login_component_1 = require('./login/login.component');
 var mapView_component_1 = require('./mapView/mapView.component');
@@ -38,6 +39,7 @@ var AppModule = (function () {
                 login_component_1.LoginComponent,
                 mapView_component_1.MapView
             ],
+            providers: [auth_service_1.AuthService],
             bootstrap: [app_component_1.AppComponent]
         }), 
         __metadata('design:paramtypes', [])

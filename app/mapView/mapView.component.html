@@ -1,8 +1,24 @@
-<h1>{{ title }}</h1>
+<!-- Header -->
+        <header id="header">
+          <a href="" class="logo">
+            <strong>Wellcome {{ username }}</strong></a>
+          <ul class="icons">
+            <li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
+            <li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+            <li><a href="#" class="icon fa-snapchat-ghost"><span class="label">Snapchat</span></a></li>
+            <li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
+            <li><a href="#" class="icon fa-medium"><span class="label">Medium</span></a></li>
+          </ul>
+        </header>
 
-<!-- this creates a google map on the page with the given lat/lng from -->
-<!-- the component as the initial center of the map: -->
+      <!-- Banner -->
+        <section id="banner">
+          <div class="content">
+            <!-- this creates a google map on the page with the given lat/lng from -->
+            <!-- the component as the initial center of the map: -->
 
-<sebm-google-map [latitude]="lat" [longitude]="lng">
-  <sebm-google-map-marker [latitude]="lat" [longitude]="lng"></sebm-google-map-marker>
-</sebm-google-map>
+            <sebm-google-map [latitude]="lat" [longitude]="lng">
+              <sebm-google-map-marker [latitude]="lat" [longitude]="lng"></sebm-google-map-marker>
+            </sebm-google-map>
+          </div>
+        </section>

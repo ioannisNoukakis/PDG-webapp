@@ -29,6 +29,7 @@ import { MapView }           from './mapView/mapView.component';
     LoginComponent,
     MapView
   ],
+  providers:[ AuthService ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule {

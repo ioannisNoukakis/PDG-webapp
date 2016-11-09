@@ -13,14 +13,27 @@ var auth_service_1 = require('../auth/auth.service');
 var router_1 = require('@angular/router');
 var MapView = (function () {
     function MapView(_auth, _router) {
+        var _this = this;
         this._auth = _auth;
         this._router = _router;
-        this.lat = 51.678418;
-        this.lng = 7.809007;
-        if (!this._auth.isConnected()) {
+        this.username = "User";
+        console.log(this._auth.getToken());
+        if (this._auth.isConnected()) {
             console.log("[ERROR][MapView] User must be connected to access the mapView. Redirecting to login...");
             this._router.navigateByUrl('/login');
         }
+        //localisation
+        navigator.geolocation.getCurrentPosition(function (position) {
+            _this.lat = position.coords.latitude;
+            _this.lng = position.coords.longitude;
+        }, function () {
+            alert('Please use HTML5 enabled browser');
+            // TODO: use yahoo API and postcode from DB to get location long & lat fall back for browsers not supporting this call
+        }, {
+            timeout: 10000,
+            maximumAge: 1,
+            enableHighAccuracy: true
+        });
     }
     MapView = __decorate([
         core_1.Component({

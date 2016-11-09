@@ -9,15 +9,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var core_1 = require('@angular/core');
-var auth_service_1 = require('./auth/auth.service');
+var pages_model_1 = require('./pages.model');
 var AppComponent = (function () {
     function AppComponent() {
+        this.pages = [new pages_model_1.PagesModel("login", "Login"), new pages_model_1.PagesModel("mapView", "GoogleMap")];
     }
     AppComponent = __decorate([
         core_1.Component({
             selector: 'my-app',
-            templateUrl: 'app/app.component.html',
-            providers: [auth_service_1.AuthService]
+            templateUrl: 'app/app.component.html'
         }), 
         __metadata('design:paramtypes', [])
     ], AppComponent);

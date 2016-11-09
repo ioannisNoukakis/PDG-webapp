@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { AuthService } from './auth/auth.service'
+import { PagesModel } from './pages.model'
 
 @Component({
   selector: 'my-app',
-  templateUrl: 'app/app.component.html',
-  providers: [ AuthService ]
+  templateUrl: 'app/app.component.html'
 })
-export class AppComponent { }
+export class AppComponent { 
+  pages: PagesModel[] = [new PagesModel("login", "Login"), new PagesModel("mapView", "GoogleMap")];
+}
