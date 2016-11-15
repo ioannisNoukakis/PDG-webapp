@@ -16,12 +16,26 @@ var MapView = (function () {
         var _this = this;
         this._auth = _auth;
         this._router = _router;
-        this.username = "User";
-        console.log(this._auth.getToken());
-        if (this._auth.isConnected()) {
-            console.log("[ERROR][MapView] User must be connected to access the mapView. Redirecting to login...");
-            this._router.navigateByUrl('/login');
-        }
+        // google maps zoom level
+        this.zoom = 13;
+        this.markerPerson = [
+            {
+                lat: 46.7799171,
+                lng: 6.6596547,
+                label: 'Ioannis Noukakis',
+                draggable: false
+            }
+        ];
+        this.markerEvent = [
+            {
+                lat: 46.7799171,
+                lng: 6.6594547,
+                label: 'Event A',
+                radius: 500,
+                draggable: true
+            }
+        ];
+        this.commandMaker = this.markerEvent[this.markerEvent.length - 1];
         //localisation
         navigator.geolocation.getCurrentPosition(function (position) {
             _this.lat = position.coords.latitude;
@@ -35,6 +49,31 @@ var MapView = (function () {
             enableHighAccuracy: true
         });
     }
+    MapView.prototype.clickedMarker = function (label, index) {
+        console.log("clicked the marker: " + (label || index));
+        this.commandMaker = this.markerEvent[index];
+    };
+    MapView.prototype.mapClicked = function ($event) {
+        this.markerEvent.push({
+            lat: $event.coords.lat,
+            lng: $event.coords.lng,
+            label: "New event",
+            radius: 500,
+            draggable: true
+        });
+        this.commandMaker = this.markerEvent[this.markerEvent.length - 1];
+    };
+    MapView.prototype.markerDragEnd = function (m, $event) {
+        m.lat = $event.coords.lat;
+        m.lng = $event.coords.lng;
+        console.log('dragEnd', m, $event);
+    };
+    MapView.prototype.deleteMarker = function (m) {
+        var index = this.markerEvent.indexOf(m);
+        if (index != -1) {
+            this.markerEvent.splice(index, 1);
+        }
+    };
     MapView = __decorate([
         core_1.Component({
             selector: 'map-view',

@@ -5,25 +5,4 @@
             <router-outlet></router-outlet>
         </div>
     </div>
-
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <div class="inner">
-
-            <!-- Menu -->
-                <nav id="menu">
-                    <header class="major">
-                        <h2>Menu</h2>
-                    </header>
-                    <ul *ngFor='let value of pages'>
-                        <li><a href="{{ value.ref }}">{{ value.name }}</a></li>
-                    </ul>
-                </nav>
-            <!-- Footer -->
-                <footer id="footer">
-                    <p class="copyright">&copy;Eventail 2016-2017</p>
-                </footer>
-        </div>
-        <a href="#sidebar" class="toggle">Toggle</a>
-    </div>
 </div>

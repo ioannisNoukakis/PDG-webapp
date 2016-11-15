@@ -1,6 +1,8 @@
 import {Component} from '@angular/core'
 import {LoginService} from './login.service'
 import {LoginModel} from './login.model'
+import {AuthService} from '../auth/auth.service'
+import {Router} from '@angular/router'
 
 @Component({
     selector: 'login',
@@ -10,15 +12,16 @@ import {LoginModel} from './login.model'
 
 export class LoginComponent{
 
-    constructor(private _loginSevice: LoginService){
-        this._loginSevice = _loginSevice;
+    constructor(private _loginSevice: LoginService, private _auth: AuthService, private _router: Router){
+        if(this._auth.isConnected())
+        {
+            this._router.navigateByUrl('/mapView');
+        }
     }
 
-    loginModel = new LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis");   
-    submitted = false;
-
+    loginModel = new LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis"); 
+      
     onSubmit() { 
-        this.submitted = true; 
         this._loginSevice.requestToken(this.loginModel);
     }
 }

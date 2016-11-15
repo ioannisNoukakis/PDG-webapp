@@ -9,23 +9,28 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var core_1 = require('@angular/core');
-var pages_model_1 = require('./pages.model');
-var AppComponent = (function () {
-    function AppComponent() {
-        this.pages = [
-            new pages_model_1.PagesModel("login", "Login"),
-            new pages_model_1.PagesModel("mapView", "GoogleMap"),
-            new pages_model_1.PagesModel("friends", "Friends"),
-        ];
+var auth_service_1 = require('../auth/auth.service');
+var router_1 = require('@angular/router');
+var FriendComponent = (function () {
+    function FriendComponent(_auth, _router) {
+        this._auth = _auth;
+        this._router = _router;
+        this.username = "";
+        if (!this._auth.isConnected()) {
+            this._router.navigateByUrl('/login');
+        }
     }
-    AppComponent = __decorate([
+    FriendComponent.prototype.onSubmit = function () {
+        console.log("miaw");
+    };
+    FriendComponent = __decorate([
         core_1.Component({
-            selector: 'my-app',
-            templateUrl: 'app/app.component.html'
+            selector: 'friend',
+            templateUrl: 'app/friend/friend.component.html'
         }), 
-        __metadata('design:paramtypes', [])
-    ], AppComponent);
-    return AppComponent;
+        __metadata('design:paramtypes', [auth_service_1.AuthService, router_1.Router])
+    ], FriendComponent);
+    return FriendComponent;
 }());
-exports.AppComponent = AppComponent;
-//# sourceMappingURL=app.component.js.map
+exports.FriendComponent = FriendComponent;
+//# sourceMappingURL=friend.component.js.map

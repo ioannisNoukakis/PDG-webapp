@@ -2107,13 +2107,13 @@
 		-ms-transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
 		transition: color 0.2s ease-in-out, border-bottom-color 0.2s ease-in-out;
 		border-bottom: dotted 1px;
-		color: #f56a6a;
+		color: #0094C6;
 		text-decoration: none;
 	}
 
 		a:hover {
-			border-bottom-color: #f56a6a;
-			color: #f56a6a !important;
+			border-bottom-color: #0094C6;
+			color: #0094C6 !important;
 		}
 
 			a:hover strong {
@@ -2282,7 +2282,7 @@
 	}
 
 	header.major > :last-child {
-		border-bottom: solid 3px #f56a6a;
+		border-bottom: solid 3px #0094C6;
 		display: inline-block;
 		margin: 0 0 2em 0;
 		padding: 0 0.75em 0.5em 0;
@@ -2343,8 +2343,8 @@
 		input[type="tel"]:focus,
 		select:focus,
 		textarea:focus {
-			border-color: #f56a6a;
-			box-shadow: 0 0 0 1px #f56a6a;
+			border-color: #0094C6;
+			box-shadow: 0 0 0 1px #0094C6;
 		}
 
 	.select-wrapper {
@@ -2454,8 +2454,8 @@
 
 		input[type="checkbox"]:focus + label:before,
 		input[type="radio"]:focus + label:before {
-			border-color: #f56a6a;
-			box-shadow: 0 0 0 1px #f56a6a;
+			border-color: #0094C6;
+			box-shadow: 0 0 0 1px #0094C6;
 		}
 
 	input[type="checkbox"] + label:before {
@@ -2688,7 +2688,7 @@
 				}
 
 				ul.contact li:before {
-					color: #f56a6a;
+					color: #0094C6;
 					display: inline-block;
 					font-size: 1.5em;
 					height: 1.125em;
@@ -2881,8 +2881,8 @@
 		background-color: transparent;
 		border-radius: 0.375em;
 		border: 0;
-		box-shadow: inset 0 0 0 2px #f56a6a;
-		color: #f56a6a !important;
+		box-shadow: inset 0 0 0 2px #0094C6;
+		color: #0094C6 !important;
 		cursor: pointer;
 		display: inline-block;
 		font-family: "Roboto Slab", serif;
@@ -2898,12 +2898,35 @@
 		white-space: nowrap;
 	}
 
+		input[type="submit"].ref,
+		input[type="reset"].ref,
+		input[type="button"].ref,
+		button.ref,
+		.button.ref {
+			color: #000000 !important;
+			text-align: left;
+			box-shadow: inset 0 0 0px transparent;
+			text-transform: none;
+			font-size: 1.0em;
+		}
+
+		input[type="submit"].danger,
+		input[type="reset"].danger,
+		input[type="button"].danger,
+		button.danger,
+		.button.danger {
+			color: #FF0000 !important;
+			box-shadow: inset 0 0 0 2px #FF0000;
+			font-size: 1.0em;
+		}
+
 		input[type="submit"]:hover,
 		input[type="reset"]:hover,
 		input[type="button"]:hover,
 		button:hover,
+		button:focus,
 		.button:hover {
-			background-color: rgba(245, 106, 106, 0.05);
+			outline:none;
 		}
 
 		input[type="submit"]:active,
@@ -2911,7 +2934,7 @@
 		input[type="button"]:active,
 		button:active,
 		.button:active {
-			background-color: rgba(245, 106, 106, 0.15);
+			outline:none;
 		}
 
 		input[type="submit"].icon:before,
@@ -2955,7 +2978,7 @@
 		input[type="button"].special,
 		button.special,
 		.button.special {
-			background-color: #f56a6a;
+			background-color: #0094C6;
 			box-shadow: none;
 			color: #ffffff !important;
 		}
@@ -3075,7 +3098,7 @@
 			}
 
 				.features article .icon:before {
-					color: #f56a6a;
+					color: #0094C6;
 					font-size: 2.75rem;
 					position: relative;
 					top: 0.05em;
@@ -3720,8 +3743,8 @@
 		display: -webkit-flex;
 		display: -ms-flex;
 		display: flex;
-		border-bottom: solid 5px #f56a6a;
-		padding: 6em 0 1em 0;
+		border-bottom: solid 5px #0094C6;
+		padding: 0 0 0 0;
 		position: relative;
 	}
 
@@ -3747,7 +3770,7 @@
 		@media screen and (max-width: 1680px) {
 
 			#header {
-				padding-top: 5em;
+				padding-top: 1em;
 			}
 
 		}
@@ -3755,7 +3778,7 @@
 		@media screen and (max-width: 736px) {
 
 			#header {
-				padding-top: 6.5em;
+				padding-top: 1em;
 			}
 
 				#header .logo {
@@ -3776,7 +3799,7 @@
 /* Banner */
 
 	#banner {
-		padding: 6em 0 4em 0 ;
+		padding: 2em 0 4em 0 ;
 		display: -moz-flex;
 		display: -webkit-flex;
 		display: -ms-flex;
@@ -3915,7 +3938,7 @@
 		}
 
 			#menu ul a:hover, #menu ul span:hover {
-				color: #f56a6a;
+				color: #0094C6;
 			}
 
 			#menu ul a.opener, #menu ul span.opener {
@@ -3949,7 +3972,7 @@
 				}
 
 				#menu ul a.opener:hover:before, #menu ul span.opener:hover:before {
-					color: #f56a6a;
+					color: #0094C6;
 				}
 
 				#menu ul a.opener.active + ul, #menu ul span.opener.active + ul {

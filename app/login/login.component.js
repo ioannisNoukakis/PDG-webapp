@@ -11,15 +11,19 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var login_service_1 = require('./login.service');
 var login_model_1 = require('./login.model');
+var auth_service_1 = require('../auth/auth.service');
+var router_1 = require('@angular/router');
 var LoginComponent = (function () {
-    function LoginComponent(_loginSevice) {
+    function LoginComponent(_loginSevice, _auth, _router) {
         this._loginSevice = _loginSevice;
+        this._auth = _auth;
+        this._router = _router;
         this.loginModel = new login_model_1.LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis");
-        this.submitted = false;
-        this._loginSevice = _loginSevice;
+        if (this._auth.isConnected()) {
+            this._router.navigateByUrl('/mapView');
+        }
     }
     LoginComponent.prototype.onSubmit = function () {
-        this.submitted = true;
         this._loginSevice.requestToken(this.loginModel);
     };
     LoginComponent = __decorate([
@@ -28,7 +32,7 @@ var LoginComponent = (function () {
             templateUrl: 'app/login/login.component.html',
             providers: [login_service_1.LoginService]
         }), 
-        __metadata('design:paramtypes', [login_service_1.LoginService])
+        __metadata('design:paramtypes', [login_service_1.LoginService, auth_service_1.AuthService, router_1.Router])
     ], LoginComponent);
     return LoginComponent;
 }());

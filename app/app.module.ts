@@ -12,6 +12,7 @@ import { AppRoutingModule }  from './app-routing.module';
 
 import { LoginComponent }    from './login/login.component';
 import { MapView }           from './mapView/mapView.component';
+import { FriendComponent }   from './friend/friend.component';
 
 @NgModule({
   imports: [
@@ -27,7 +28,8 @@ import { MapView }           from './mapView/mapView.component';
   declarations: [
     AppComponent,
     LoginComponent,
-    MapView
+    MapView,
+    FriendComponent
   ],
   providers:[ AuthService ],
   bootstrap: [ AppComponent ]

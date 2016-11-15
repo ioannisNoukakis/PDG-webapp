@@ -1,24 +1,66 @@
 <!-- Header -->
-        <header id="header">
-          <a href="" class="logo">
-            <strong>Wellcome {{ username }}</strong></a>
-          <ul class="icons">
-            <li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
-            <li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
-            <li><a href="#" class="icon fa-snapchat-ghost"><span class="label">Snapchat</span></a></li>
-            <li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
-            <li><a href="#" class="icon fa-medium"><span class="label">Medium</span></a></li>
-          </ul>
-        </header>
+<header id="header">
+    <button (click)="this._router.navigateByUrl('/mapView')" class="button ref" type="submit">Eventail/Map View</button>
+    <button (click)="this._router.navigateByUrl('/friends')" class="button ref" type="submit">Friends</button>
+</header>
 
-      <!-- Banner -->
-        <section id="banner">
-          <div class="content">
-            <!-- this creates a google map on the page with the given lat/lng from -->
-            <!-- the component as the initial center of the map: -->
+<!-- Banner -->
+<section id="banner">
+  <div class="posts">
+    <article>
+      <!-- this creates a google map on the page with the given lat/lng from -->
+      <!-- the component as the initial center of the map: -->
+      <sebm-google-map 
+        [latitude]="lat"
+        [longitude]="lng"
+        [zoom]="zoom"
+        [disableDefaultUI]="false"
+        (mapClick)="mapClicked($event)">
+        <!-- Persons -->
+        <sebm-google-map-marker 
+            *ngFor="let m of markerPerson; let i = index"
+            (markerClick)="clickedMarker(m.label, i)"
+            [latitude]="m.lat"
+            [longitude]="m.lng"
+            [label]="m.label"
+            [markerDraggable]="m.draggable"
+            (dragEnd)="markerDragEnd(m, $event)">
+            
+          <sebm-google-map-info-window>
+            <strong>{{ m.label }}</strong>
+          </sebm-google-map-info-window>
+        </sebm-google-map-marker>
+        
+        <!-- Events -->
+        <sebm-google-map-marker 
+            *ngFor="let m of markerEvent; let i = index"
+            (markerClick)="clickedMarker(m.label, i)"
+            [latitude]="m.lat"
+            [longitude]="m.lng"
+            [label]="m.label"
+            [markerDraggable]="m.draggable"
+            (dragEnd)="markerDragEnd(m, $event)">
+            
+          <sebm-google-map-info-window>
+            <strong>{{ m.label }}</strong>
+          </sebm-google-map-info-window>
 
-            <sebm-google-map [latitude]="lat" [longitude]="lng">
-              <sebm-google-map-marker [latitude]="lat" [longitude]="lng"></sebm-google-map-marker>
-            </sebm-google-map>
-          </div>
-        </section>
+          <sebm-google-map-circle [latitude]="m.lat" [longitude]="m.lng" 
+            [radius]="m.radius"
+            [fillColor]="'red'"
+            [circleDraggable]="false"
+            [editable]="true">
+          </sebm-google-map-circle>
+        </sebm-google-map-marker>
+      </sebm-google-map>
+    </article>
+    <article>
+     <strong> {{ this.commandMaker.label }}</strong> <br>
+               lat: {{ this.commandMaker.lat }} <br>
+               lng: {{ this.commandMaker.lng }} <br><br>
+              Event Name <input #textbox type='text' [(ngModel)]='this.commandMaker.label' required> 
+      <button (click)="console.log('save')" type="submit" class="button big">SAVE</button>
+      <button (click)="deleteMarker(this.commandMaker)" type="submit" class="button danger">DELETE</button>
+    </article>
+  </div>
+</section>

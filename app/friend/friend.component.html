@@ -1,0 +1,29 @@
+<!-- Header -->
+<header id="header">
+    <button (click)="this._router.navigateByUrl('/friends')" class="button ref" type="submit">Eventail/Friends</button>
+    <button (click)="this._router.navigateByUrl('/mapView')" class="button ref" type="submit">Map View</button>
+</header>
+
+<!-- Banner -->
+<section id="banner">
+  <div class="content">
+    <table>
+        <tr>
+          <th>Name</th><th>distance</th>
+        </tr>
+        <tr>
+          <td>Julien</td><td>10 metres</td>
+        </tr>
+    </table>
+    <form>
+        <p> Find a specific firend </p>
+      <div class="form-group">
+        <input type="text" class="form-control" id="name" 
+              required
+              [(ngModel)]="username" name="username">
+      </div>
+      <button (click)="onSubmit()" type="submit" class="button big">Submit</button>
+    </form>
+  </div>
+</section>
+        

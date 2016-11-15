@@ -6,5 +6,9 @@ import { PagesModel } from './pages.model'
   templateUrl: 'app/app.component.html'
 })
 export class AppComponent { 
-  pages: PagesModel[] = [new PagesModel("login", "Login"), new PagesModel("mapView", "GoogleMap")];
+  pages: PagesModel[] = [
+    new PagesModel("login", "Login"), 
+    new PagesModel("mapView", "GoogleMap"),
+    new PagesModel("friends", "Friends"),
+    ];
 }

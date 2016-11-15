@@ -19,6 +19,7 @@ var auth_service_1 = require('./auth/auth.service');
 var app_routing_module_1 = require('./app-routing.module');
 var login_component_1 = require('./login/login.component');
 var mapView_component_1 = require('./mapView/mapView.component');
+var friend_component_1 = require('./friend/friend.component');
 var AppModule = (function () {
     function AppModule() {
     }
@@ -37,7 +38,8 @@ var AppModule = (function () {
             declarations: [
                 app_component_1.AppComponent,
                 login_component_1.LoginComponent,
-                mapView_component_1.MapView
+                mapView_component_1.MapView,
+                friend_component_1.FriendComponent
             ],
             providers: [auth_service_1.AuthService],
             bootstrap: [app_component_1.AppComponent]

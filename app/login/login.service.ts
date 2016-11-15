@@ -7,6 +7,7 @@ import { Token } from './token';
 import {LoginModel} from './login.model'
 import 'rxjs/add/operator/map'
 import {AuthService} from '../auth/auth.service'
+import {Router} from '@angular/router'
 
 @Injectable()
 export class LoginService {
@@ -14,11 +15,10 @@ export class LoginService {
     private apiURL = 'https://api.eventail.me/auth/token';
     private headers: Headers;
 
-    constructor(private _http: Http, private _auth: AuthService) { 
+    constructor(private _http: Http, private _auth: AuthService, private _router: Router) { 
         this.headers = new Headers();
         this.headers.append('Content-Type', 'application/json');
         this.headers.append('Accept', 'application/json');
-        this._auth = _auth;
     }
 
     public requestToken(loginModel: LoginModel){
@@ -30,7 +30,10 @@ export class LoginService {
             .subscribe(
                 data => this.saveJwt(data),
                 err => this.logError(err),
-                () => console.log("[LOGIN_SERVICE] Authentication Complete.")
+                () => {
+                    console.log("[LOGIN_SERVICE] Authentication Complete.");
+                    this._router.navigateByUrl('/mapView');
+                 }
             );
     }
 

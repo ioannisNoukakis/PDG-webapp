@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var AuthService = (function () {
     function AuthService() {
+        console.log("AUTH INSTANCE");
     }
     AuthService.prototype.getToken = function () {
         return this._token;

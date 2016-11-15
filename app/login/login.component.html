@@ -1,34 +1,25 @@
-  <!-- Main -->
-      <!-- Header -->
-        <header id="header">
-          <a href="index.html" class="logo">
-            <strong>Eventail/Login</strong></a>
-          <ul class="icons">
-            <li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
-            <li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
-            <li><a href="#" class="icon fa-snapchat-ghost"><span class="label">Snapchat</span></a></li>
-            <li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
-            <li><a href="#" class="icon fa-medium"><span class="label">Medium</span></a></li>
-          </ul>
-        </header>
+<!-- Header -->
+<header id="header">
+    <button (click)="this._router.navigateByUrl('/')" class="button ref" type="submit">Eventail/Login</button>
+</header>
 
-      <!-- Banner -->
-        <section id="banner">
-          <div class="content">
-            <form>
-              <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" class="form-control" id="name" 
-                      required
-                      [(ngModel)]="loginModel.username" name="username">
-              </div>
-              <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="name" 
-                      required
-                      [(ngModel)]="loginModel.password" name="password">
-              </div>
-              <button (click)="onSubmit()" type="submit" class="button big">Submit</button>
-            </form>
-          </div>
-        </section>
+<!-- Banner -->
+<section id="banner">
+  <div class="content">
+    <form>
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" 
+              required
+              [(ngModel)]="loginModel.username" name="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="name" 
+              required
+              [(ngModel)]="loginModel.password" name="password">
+      </div>
+      <button (click)="onSubmit()" type="submit" class="button big">Submit</button>
+    </form>
+  </div>
+</section>

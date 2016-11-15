@@ -14,16 +14,17 @@ var http_2 = require('@angular/http');
 var token_1 = require('./token');
 require('rxjs/add/operator/map');
 var auth_service_1 = require('../auth/auth.service');
+var router_1 = require('@angular/router');
 var LoginService = (function () {
-    function LoginService(_http, _auth) {
+    function LoginService(_http, _auth, _router) {
         this._http = _http;
         this._auth = _auth;
+        this._router = _router;
         // URL to web api
         this.apiURL = 'https://api.eventail.me/auth/token';
         this.headers = new http_2.Headers();
         this.headers.append('Content-Type', 'application/json');
         this.headers.append('Accept', 'application/json');
-        this._auth = _auth;
     }
     LoginService.prototype.requestToken = function (loginModel) {
         var _this = this;
@@ -31,7 +32,10 @@ var LoginService = (function () {
         var credentials = JSON.stringify({ mail: loginModel.username, pass: loginModel.password });
         this._http.post(this.apiURL, credentials, { headers: this.headers })
             .map(function (res) { return res.json(); })
-            .subscribe(function (data) { return _this.saveJwt(data); }, function (err) { return _this.logError(err); }, function () { return console.log("[LOGIN_SERVICE] Authentication Complete."); });
+            .subscribe(function (data) { return _this.saveJwt(data); }, function (err) { return _this.logError(err); }, function () {
+            console.log("[LOGIN_SERVICE] Authentication Complete.");
+            _this._router.navigateByUrl('/mapView');
+        });
     };
     LoginService.prototype.saveJwt = function (jwt) {
         if (jwt) {
@@ -44,7 +48,7 @@ var LoginService = (function () {
     };
     LoginService = __decorate([
         core_1.Injectable(), 
-        __metadata('design:paramtypes', [http_1.Http, auth_service_1.AuthService])
+        __metadata('design:paramtypes', [http_1.Http, auth_service_1.AuthService, router_1.Router])
     ], LoginService);
     return LoginService;
 }());

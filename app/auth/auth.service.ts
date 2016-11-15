@@ -5,6 +5,11 @@ import { Injectable }     from '@angular/core';
 export class AuthService {
   private _token: Token;
 
+  constructor()
+  {
+    console.log("AUTH INSTANCE");
+  }
+
   public getToken(): Token
   {
     return this._token;
