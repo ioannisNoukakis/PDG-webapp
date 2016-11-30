@@ -1,6 +1,17 @@
 <!-- Wrapper -->
 <div id="wrapper">
     <div id="main">
+        <div *ngIf="this._auth.isConnected()" id="mySidenav" class="sidenav">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <a [routerLink]="['mapView']">MapView</a>
+            <a [routerLink]="['friends']">Friends</a>
+            <button (click)="onLogout()" type="button" class="button big">Logout</button>
+        </div>
+        <div *ngIf="!this._auth.isConnected()" id="mySidenav" class="sidenav">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <a [routerLink]="['login']">Login</a>
+        </div>
+        <span onclick="openNav()">open</span>
         <div class="inner">
             <router-outlet></router-outlet>
         </div>

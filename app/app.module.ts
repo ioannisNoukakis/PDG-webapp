@@ -9,6 +9,7 @@ import { NgbModule }           from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService }       from './auth/auth.service';
 import { AppRoutingModule }  from './app-routing.module';
+import {UserService}         from './users/users.service';
 
 import { LoginComponent }    from './login/login.component';
 import { MapView }           from './mapView/mapView.component';
@@ -31,7 +32,7 @@ import { FriendComponent }   from './friend/friend.component';
     MapView,
     FriendComponent
   ],
-  providers:[ AuthService ],
+  providers:[ AuthService, UserService],
   bootstrap: [ AppComponent ]
 })
 export class AppModule {

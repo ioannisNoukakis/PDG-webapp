@@ -25,6 +25,9 @@ var AuthService = (function () {
     AuthService.prototype.setToken = function (token) {
         this._token = token;
     };
+    AuthService.prototype.logout = function () {
+        this._token = null;
+    };
     AuthService = __decorate([
         core_1.Injectable(), 
         __metadata('design:paramtypes', [])

@@ -1,14 +1,17 @@
 import { Component } from '@angular/core';
-import { PagesModel } from './pages.model'
+import { PagesModel } from './pages.model';
+import {AuthService} from './auth/auth.service';
 
 @Component({
   selector: 'my-app',
   templateUrl: 'app/app.component.html'
 })
 export class AppComponent { 
-  pages: PagesModel[] = [
-    new PagesModel("login", "Login"), 
-    new PagesModel("mapView", "GoogleMap"),
-    new PagesModel("friends", "Friends"),
-    ];
+
+    constructor(private _auth: AuthService){
+    }
+
+    onLogout() { 
+        this._auth.logout();
+    }
 }

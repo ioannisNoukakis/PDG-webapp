@@ -17,6 +17,7 @@ var core_2 = require('angular2-google-maps/core');
 var ng_bootstrap_1 = require('@ng-bootstrap/ng-bootstrap');
 var auth_service_1 = require('./auth/auth.service');
 var app_routing_module_1 = require('./app-routing.module');
+var users_service_1 = require('./users/users.service');
 var login_component_1 = require('./login/login.component');
 var mapView_component_1 = require('./mapView/mapView.component');
 var friend_component_1 = require('./friend/friend.component');
@@ -41,7 +42,7 @@ var AppModule = (function () {
                 mapView_component_1.MapView,
                 friend_component_1.FriendComponent
             ],
-            providers: [auth_service_1.AuthService],
+            providers: [auth_service_1.AuthService, users_service_1.UserService],
             bootstrap: [app_component_1.AppComponent]
         }), 
         __metadata('design:paramtypes', [])

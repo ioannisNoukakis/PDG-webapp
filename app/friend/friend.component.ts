@@ -1,6 +1,9 @@
 import {Component} from '@angular/core'
 import {AuthService} from '../auth/auth.service'
 import {Router} from '@angular/router'
+import {UserService} from '../users/users.service'
+import {FriendModel} from './friend.model'
+import { Observable }from 'rxjs/Observable';
 
 @Component({
     selector: 'friend',
@@ -9,11 +12,10 @@ import {Router} from '@angular/router'
 
 export class FriendComponent{
 
-    constructor(private _auth: AuthService, private _router: Router){
-        if(!this._auth.isConnected())
-        {
-            this._router.navigateByUrl('/login');
-        }
+    users : FriendModel[] = [];
+
+    constructor(private _auth: AuthService, private _router: Router, private userService :UserService){
+        userService.getUsers(this.users);
     }
 
     username :String = "";

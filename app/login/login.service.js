@@ -28,12 +28,16 @@ var LoginService = (function () {
     }
     LoginService.prototype.requestToken = function (loginModel) {
         var _this = this;
-        console.log("[LOGIN_SERVICE] Sending authentification request...");
+        if (!loginModel.username || !loginModel.password) {
+            console.log("[LOGIN_SERVICE][E] Empty fields. Not sending.");
+            return;
+        }
+        console.log("[LOGIN_SERVICE][I] Sending authentification request...");
         var credentials = JSON.stringify({ mail: loginModel.username, pass: loginModel.password });
         this._http.post(this.apiURL, credentials, { headers: this.headers })
             .map(function (res) { return res.json(); })
             .subscribe(function (data) { return _this.saveJwt(data); }, function (err) { return _this.logError(err); }, function () {
-            console.log("[LOGIN_SERVICE] Authentication Complete.");
+            console.log("[LOGIN_SERVICE][I] Authentication Complete.");
             _this._router.navigateByUrl('/mapView');
         });
     };

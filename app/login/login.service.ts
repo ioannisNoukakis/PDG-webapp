@@ -22,7 +22,12 @@ export class LoginService {
     }
 
     public requestToken(loginModel: LoginModel){
-        console.log("[LOGIN_SERVICE] Sending authentification request...");
+        if(!loginModel.username || !loginModel.password)
+        {
+            console.log("[LOGIN_SERVICE][E] Empty fields. Not sending.");
+            return;
+        }
+        console.log("[LOGIN_SERVICE][I] Sending authentification request...");
         let credentials = JSON.stringify({ mail : loginModel.username, pass : loginModel.password });
  
         this._http.post(this.apiURL, credentials, { headers: this.headers })
@@ -31,7 +36,7 @@ export class LoginService {
                 data => this.saveJwt(data),
                 err => this.logError(err),
                 () => {
-                    console.log("[LOGIN_SERVICE] Authentication Complete.");
+                    console.log("[LOGIN_SERVICE][I] Authentication Complete.");
                     this._router.navigateByUrl('/mapView');
                  }
             );

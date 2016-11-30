@@ -28,4 +28,9 @@ export class AuthService {
   {
     this._token = token;
   }
+
+  public logout()
+  {
+    this._token = null;
+  }
 }

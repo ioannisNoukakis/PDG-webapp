@@ -8,11 +8,8 @@
 <section id="banner">
   <div class="content">
     <table>
-        <tr>
-          <th>Name</th><th>distance</th>
-        </tr>
-        <tr>
-          <td>Julien</td><td>10 metres</td>
+        <tr *ngFor="let friend of users">>
+          <th>{{friend.id}}</th><th>{{friend.username}}</th>
         </tr>
     </table>
     <form>

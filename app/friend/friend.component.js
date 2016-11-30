@@ -11,14 +11,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var auth_service_1 = require('../auth/auth.service');
 var router_1 = require('@angular/router');
+var users_service_1 = require('../users/users.service');
 var FriendComponent = (function () {
-    function FriendComponent(_auth, _router) {
+    function FriendComponent(_auth, _router, userService) {
         this._auth = _auth;
         this._router = _router;
+        this.userService = userService;
+        this.users = [];
         this.username = "";
-        if (!this._auth.isConnected()) {
-            this._router.navigateByUrl('/login');
-        }
+        userService.getUsers(this.users);
     }
     FriendComponent.prototype.onSubmit = function () {
         console.log("miaw");
@@ -28,7 +29,7 @@ var FriendComponent = (function () {
             selector: 'friend',
             templateUrl: 'app/friend/friend.component.html'
         }), 
-        __metadata('design:paramtypes', [auth_service_1.AuthService, router_1.Router])
+        __metadata('design:paramtypes', [auth_service_1.AuthService, router_1.Router, users_service_1.UserService])
     ], FriendComponent);
     return FriendComponent;
 }());
