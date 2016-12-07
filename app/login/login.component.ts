@@ -6,7 +6,7 @@ import {Router} from '@angular/router'
 
 @Component({
     selector: 'login',
-    templateUrl: 'app/login/login.component.html',
+    templateUrl: './login.component.html',
     providers: [LoginService]
 })
 

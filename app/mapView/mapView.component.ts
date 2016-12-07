@@ -5,8 +5,8 @@ import { MarkerManager } from 'angular2-google-maps/core'
 
 @Component({
   selector: 'map-view',
-  templateUrl: 'app/mapView/mapView.component.html',
-  styleUrls: ['app/mapView/mapView.component.css'],
+  templateUrl: './mapView.component.html',
+  styleUrls: ['./mapView.component.css'],
 })
 export class MapView {
 
