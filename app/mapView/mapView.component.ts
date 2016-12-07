@@ -61,8 +61,8 @@ export class MapView {
   
   mapClicked($event: MouseEvent) {
     this.markerEvent.push({
-      lat: $event.coords.lat,
-      lng: $event.coords.lng,
+      lat: 1,//$event.coords.lat,
+      lng: 1,//$event.coords.lng,
       label: "New event",
       radius: 500,
       draggable: true
@@ -71,8 +71,8 @@ export class MapView {
   }
   
   markerDragEnd(m: marker, $event: MouseEvent) {
-    m.lat = $event.coords.lat;
-    m.lng = $event.coords.lng;
+    m.lat = 1,//$event.coords.lat;
+    m.lng = 1,//$event.coords.lng;
     console.log('dragEnd', m, $event);
   }
 
