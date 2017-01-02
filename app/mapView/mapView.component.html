@@ -16,7 +16,7 @@
         [zoom]="zoom"
         [disableDefaultUI]="false"
         (mapClick)="mapClicked($event)">
-        <!-- Persons -->
+        <!-- Persons 
         <sebm-google-map-marker 
             *ngFor="let m of markerPerson; let i = index"
             (markerClick)="clickedMarker(m.label, i)"
@@ -30,22 +30,24 @@
             <strong>{{ m.label }}</strong>
           </sebm-google-map-info-window>
         </sebm-google-map-marker>
+
+        -->
         
         <!-- Events -->
         <sebm-google-map-marker 
             *ngFor="let m of markerEvent; let i = index"
-            (markerClick)="clickedMarker(m.label, i)"
-            [latitude]="m.lat"
-            [longitude]="m.lng"
-            [label]="m.label"
+            (markerClick)="clickedMarker(m.title, i)"
+            [latitude]="m.location[0]"
+            [longitude]="m.location[1]"
+            [label]="m.title"
             [markerDraggable]="m.draggable"
             (dragEnd)="markerDragEnd(m, $event)">
             
           <sebm-google-map-info-window>
-            <strong>{{ m.label }}</strong>
+            <strong>{{ m.title }}</strong>
           </sebm-google-map-info-window>
 
-          <sebm-google-map-circle [latitude]="m.lat" [longitude]="m.lng" 
+          <sebm-google-map-circle [latitude]="m.location[0]" [longitude]="m.location[1]" 
             [radius]="m.radius"
             [fillColor]="'red'"
             [circleDraggable]="false"
@@ -56,10 +58,16 @@
     </article>
     <article>
      <strong> {{ this.commandMaker.label }}</strong> <br>
-               lat: {{ this.commandMaker.lat }} <br>
-               lng: {{ this.commandMaker.lng }} <br><br>
-              Event Name <input #textbox type='text' [(ngModel)]='this.commandMaker.label' required> 
-      <button (click)="console.log('save')" type="submit" class="button big">SAVE</button>
+               lat: {{ this.commandMaker.location[0] }} <br>
+               lng: {{ this.commandMaker.location[1] }} <br><br>
+               Event Name <input #textbox type='text' [(ngModel)]='this.commandMaker.title' required>
+               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMaker.desc' required>
+               This event begins: <input #textbox type='date' [(ngModel)]='this.commandMaker.begin' required> 
+               <input #time type='time' [(ngModel)]='this.hbegin' required><br>
+               This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMaker.end' required> 
+               <input #time type='time' [(ngModel)]='this.hend' required><br>
+               Spontaneous <input #textbox type='checkbox' [(ngModel)]='this.commandMaker.spontaneous' required> <br> 
+      <button (click)="saveEvent(this.commandMaker)" type="submit" class="button big">SAVE</button>
       <button (click)="deleteMarker(this.commandMaker)" type="submit" class="button danger">DELETE</button>
     </article>
   </div>
