@@ -7,7 +7,7 @@ import { Observable }from 'rxjs/Observable';
 
 @Component({
     selector: 'friend',
-    templateUrl: 'app/friend/friend.component.html'
+    templateUrl: './friend.component.html'
 })
 
 export class FriendComponent{
