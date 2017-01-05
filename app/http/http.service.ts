@@ -35,6 +35,26 @@ export class HTTPService {
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 
+    public doPatch(body: Object, url: string, pHeaders: HeaderModel[]): Observable<Response>
+    {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('Accept', 'application/json');
+
+        pHeaders.forEach(
+            function(header)
+            {
+                headers.append(header.key, header.value);
+            }
+        );
+
+        let bodyString = JSON.stringify(body);
+        let options = new RequestOptions({ headers: headers });
+
+        return this._http.patch(url, bodyString, options)
+            .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
+    }
+
     public doGet(url: string, pHeaders: HeaderModel[]): Observable<Object[]>{
  
         let headers = new Headers();
@@ -50,6 +70,23 @@ export class HTTPService {
 
         return this._http.get(url, options)
             .map((res:Response) => res.json())
+            .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
+    }
+
+    public doDelete(url: string, pHeaders: HeaderModel[]): Observable<Response>
+    {
+        let headers = new Headers();
+
+        pHeaders.forEach(
+            function(header)
+            {
+                headers.append(header.key, header.value);
+            }
+        );
+
+        let options = new RequestOptions({ headers: headers });
+
+        return this._http.delete(url, options)
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 }

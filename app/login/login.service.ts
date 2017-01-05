@@ -45,6 +45,7 @@ export class LoginService {
     saveJwt(jwt) {
         if(jwt) {
             this._auth.setToken(new Token(jwt.token, jwt.string, false));
+            this._auth.setUserID(jwt.user.id);
             console.log(this._auth.getToken());
         }
     }
