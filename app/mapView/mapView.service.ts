@@ -35,6 +35,24 @@ export class MapViewService {
         .map((obj: Object) => <EventModel>(obj));
     }
 
+    public updateEvent(body: Object, idEvent: number): Observable<Response>
+    {
+        var additionnalsHeaders : HeaderModel[] = [
+            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
+        ];
+
+        return this.httpService.doPatch(body,'https://api.eventail.me/events/'+ idEvent, additionnalsHeaders);
+    }
+
+    public deleteEvent(idEvent: number): Observable<Response>
+    {
+        var additionnalsHeaders : HeaderModel[] = [
+            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
+        ];
+
+        return this.httpService.doDelete('https://api.eventail.me/events/'+ idEvent, additionnalsHeaders);
+    }
+
     public savePOI(body: Object, idEvent: number): Observable<POIModel>
     {
         var additionnalsHeaders : HeaderModel[] = [

@@ -75,19 +75,19 @@
      <strong> {{ this.commandMakerEvent.title }}</strong> <br>
                lat: {{ this.commandMakerEvent.location[0] }} <br>
                lng: {{ this.commandMakerEvent.location[1] }} <br>
-               radius: <input #number type='number' [(ngModel)]='this.commandMakerEvent.radius' required>  <br><br>
+               radius: <input #number type='number' min="0" max="500" [(ngModel)]='this.commandMakerEvent.radius' required> <br><br>
                Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.title' required>
                Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.desc' required>
                This event begins: <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.begin' required> 
-               <input #time type='time' [(ngModel)]='this.hbegin' required><br>
+               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hbegin' required><br>
                This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.end' required> 
-               <input #time type='time' [(ngModel)]='this.hend' required><br>
+               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hend' required><br>
                Spontaneous <input #textbox type='checkbox' [(ngModel)]='this.commandMakerEvent.spontaneous' required> <br> 
       <button *ngIf="this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
        (click)="saveEvent(this.commandMakerEvent)" type="submit" class="button big">SAVE</button>
       <button *ngIf="this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
        (click)="deleteMarkerEvent(this.commandMakerEvent)" type="submit" class="button danger">DELETE</button>
-      <button 
+      <button *ngIf="this._auth.getUserId() == this.commandMakerEvent.owner"
        (click)="this.editingPointsOfInterest = true" type="submit" class="button big">SWITCH TO POINTS OF INTEREST</button>
     </article>
 
@@ -96,7 +96,7 @@
                Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.title' required>
                Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.desc' required> 
       <button 
-       (click)="savePOI(this.commandMakerPOI)" type="submit" class="button big">SAVE</button>
+       (click)="savePOI(this.commandMakerPOI, true)" type="submit" class="button big">SAVE</button>
       <button
        (click)="deleteMarkerPOI(this.commandMakerPOI)" type="submit" class="button danger">DELETE</button>
       <button 

@@ -15,9 +15,6 @@ export class MapView {
   private lat;
   private lng;
 
-  private hbegin : string;
-  private hend: string;
-
   private editingPointsOfInterest: boolean = false;
 
   private markerEvent: MarkerEvent[] = [];
@@ -45,8 +42,10 @@ export class MapView {
                     owner: element.owner,
                     title: element.title,
                     desc: element.desc,
-                    begin: "",
-                    end: "",
+                    begin: new Date(element.begin).toISOString().substring(0, 10),
+                    end: new Date(element.end).toISOString().substring(0, 10),
+                    hbegin: new Date(element.begin).toISOString().substring(11, 16),
+                    hend: new Date(element.end).toISOString().substring(11, 16),
                     spontaneous: element.spontaneous,
                     location:element.location,
                     radius: element.radius,
@@ -69,17 +68,8 @@ export class MapView {
   }
 
     // google maps zoom level
-  zoom: number = 13;
+  zoom: number = 14;
 
-  /*markerPerson: marker[] = [
-      {
-        lat: 46.7799171,
-        lng: 6.6596547,
-        label: 'Ioannis Noukakis',
-        draggable: false
-      }
-    ]*/
-  
   clickedMarkerEvent(label: string, index: number) {
     this.commandMakerEvent = this.markerEvent[index];
     if(this.commandMakerEvent.id == undefined)
@@ -136,14 +126,16 @@ export class MapView {
       this.markerEvent.push({
         title: "New event",
         desc: "",
-        begin: "",
-        end: "",
+        begin: new Date().toISOString().substring(0, 10),
+        end: new Date().toISOString().substring(0, 10),
+        hbegin: new Date().toISOString().substring(11, 16),
+        hend: new Date().toISOString().substring(11, 16),
         spontaneous: false,
         location:[
             $event.coords.lat,
             $event.coords.lng,
         ],
-        radius: 500,
+        radius: 10,
         draggable: true
       });
       this.commandMakerEvent = this.markerEvent[this.markerEvent.length-1];
@@ -178,6 +170,14 @@ export class MapView {
     var index = this.markerEvent.indexOf(m);
     if(index != -1)
     {
+      if(m.id != undefined)
+      {
+        this.mapService.deleteEvent(m.id)
+        .subscribe(
+          success => alert("Event successfully deleted!"),
+          error => alert("Error: " + error)
+        );
+      }
       this.markerEvent.splice(index, 1);
     }
   }
@@ -192,17 +192,14 @@ export class MapView {
       {
         this.mapService.deletePOI(m.event, m.id)
         .subscribe(
-          success =>
-          {
-            alert("Point of interest successfully deleted!");
-          },
-            error => alert("Error: " + error)
+          success => alert("Point of interest successfully deleted!"),
+          error => alert("Error: " + error)
         );
       }
     }
   }
 
-  savePOI(m: MarkerPOI)
+  savePOI(m: MarkerPOI, doAlert: boolean)
   {
     if(this.commandMakerEvent.id == undefined)
     {
@@ -220,7 +217,8 @@ export class MapView {
         {
           m.id = success.id;
           m.event = success.event;
-          alert("Point of interest successfully saved!");
+          if(doAlert)
+            alert("Point of interest successfully saved!");
         },
           error => alert("Error: " + error)
       );
@@ -230,7 +228,11 @@ export class MapView {
       delete tmp.event;
       this.mapService.updatePOI(tmp, m.event, m.id)
       .subscribe(
-        success => alert("Point of interest successfully updated!"),
+        success => 
+        {
+          if(doAlert)
+            alert("Point of interest successfully updated!")
+        },
         error => alert("Error: " + error)
       );
     }
@@ -240,18 +242,31 @@ export class MapView {
   {
     let tmp = Object.assign({}, m);
     delete tmp.draggable;
-    tmp.begin = new Date(tmp.begin + " " + this.hbegin).toISOString();
-    tmp.end = new Date(tmp.end + " " + this.hend).toISOString();
-    this.mapService.saveEvent(tmp)
-    .subscribe(
-      success => 
-      {
-        m.id = success.id;
-        m.owner = success.owner;
-        alert("Event successfully saved (id:" + m.id + ").");
-      },
-      error => alert("Error: " + error)
-    );
+    tmp.begin = new Date(tmp.begin + " " + this.commandMakerEvent.hbegin).toISOString();
+    tmp.end = new Date(tmp.end + " " + this.commandMakerEvent.hend).toISOString();
+
+    if(m.id == undefined){ //if the event dosen't exists
+      this.mapService.saveEvent(tmp)
+      .subscribe(
+        success => 
+        {
+          m.id = success.id;
+          m.owner = success.owner;
+          alert("Event successfully saved (id:" + m.id + ").");
+        },
+        error => alert("Error: " + error)
+      );
+    }
+    else{
+      this.mapService.updateEvent(tmp, tmp.id)
+      .subscribe(
+        success => alert("Event successfully updated."),
+        error => alert("Error: " + error)
+      );
+      this.markerPOI.forEach((element) =>{
+        this.savePOI(element, false);
+      });
+    }
   }
 }
 
@@ -262,6 +277,8 @@ interface MarkerEvent {
     desc: string;
     begin: string;
     end: string;
+    hbegin: string;
+    hend: string;
     spontaneous: boolean;
     location:number[];
     radius: number;
