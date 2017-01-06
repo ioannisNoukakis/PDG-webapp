@@ -16,7 +16,7 @@
         [zoom]="zoom"
         [disableDefaultUI]="false"
         (mapClick)="mapClicked($event)">
-        <!-- Persons 
+        <!-- Persons -->
         <sebm-google-map-marker 
             *ngFor="let m of markerPerson; let i = index"
             (markerClick)="clickedMarker(m.label, i)"
@@ -31,15 +31,14 @@
           </sebm-google-map-info-window>
         </sebm-google-map-marker>
 
-        -->
-
         <!-- Points of interest -->
         <sebm-google-map-marker
             *ngFor="let m of markerPOI; let i = index"
             (markerClick)="clickedMarkerPOI(m.title, i)"
             [latitude]="m.location[0]"
             [longitude]="m.location[1]"
-            [label]="m.title"
+            [label]="'I'"
+            [title]="m.title"
             [markerDraggable]="m.draggable"
             (dragEnd)="POIMarkerDragEnd(m, $event)">
             
@@ -54,7 +53,8 @@
             (markerClick)="clickedMarkerEvent(m.title, i)"
             [latitude]="m.location[0]"
             [longitude]="m.location[1]"
-            [label]="m.title"
+            [label]="'E'"
+            [title]="m.title"
             [markerDraggable]="m.draggable"
             (dragEnd)="eventMarkerDragEnd(m, $event)">
             
@@ -66,7 +66,7 @@
             [radius]="m.radius"
             [fillColor]="'red'"
             [circleDraggable]="false"
-            [editable]="true">
+            [editable]="false">
           </sebm-google-map-circle>
         </sebm-google-map-marker>
       </sebm-google-map>
@@ -74,7 +74,8 @@
     <article *ngIf="this.markerEvent.length > 0 && !this.editingPointsOfInterest">
      <strong> {{ this.commandMakerEvent.title }}</strong> <br>
                lat: {{ this.commandMakerEvent.location[0] }} <br>
-               lng: {{ this.commandMakerEvent.location[1] }} <br><br>
+               lng: {{ this.commandMakerEvent.location[1] }} <br>
+               radius: <input #number type='number' [(ngModel)]='this.commandMakerEvent.radius' required>  <br><br>
                Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.title' required>
                Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.desc' required>
                This event begins: <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.begin' required> 

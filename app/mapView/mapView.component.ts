@@ -26,6 +26,8 @@ export class MapView {
   private markerPOI: MarkerPOI[] = [];
   private commandMakerPOI: MarkerPOI = this.markerPOI[this.markerPOI.length-1];
 
+  private markerPerson: MarkerPerson[] = [];
+
   constructor(private _auth: AuthService, private _router: Router, private mapService :MapViewService){
 
     //localisation
@@ -80,6 +82,9 @@ export class MapView {
   
   clickedMarkerEvent(label: string, index: number) {
     this.commandMakerEvent = this.markerEvent[index];
+    if(this.commandMakerEvent.id == undefined)
+      return;
+
     this.markerPOI = [];
     this.mapService.getPOIs(this.commandMakerEvent.id)
     .subscribe(
@@ -98,6 +103,24 @@ export class MapView {
             );
           });
           this.commandMakerPOI = this.markerPOI[this.markerPOI.length-1];
+        },
+        error => alert("Error: " + error)
+      );
+
+      this.mapService.getFriendsNearby(this.commandMakerEvent.location[0],
+                                       this.commandMakerEvent.location[1],
+                                       this.commandMakerEvent.radius)
+      .subscribe(
+        success => {
+          success.forEach((element)=>{
+            this.markerPerson.push(
+              {
+                id: element.id,
+                username: element.username,
+                location: element.location
+              }
+            );
+          });
         },
         error => alert("Error: " + error)
       );
@@ -219,7 +242,6 @@ export class MapView {
     delete tmp.draggable;
     tmp.begin = new Date(tmp.begin + " " + this.hbegin).toISOString();
     tmp.end = new Date(tmp.end + " " + this.hend).toISOString();
-
     this.mapService.saveEvent(tmp)
     .subscribe(
       success => 
@@ -253,5 +275,11 @@ interface MarkerPOI{
     desc: string;
     location:number[];
     draggable: boolean;
+}
+
+interface MarkerPerson{
+    id: number,
+    username: string,
+    location: number[]
 }
 
