@@ -170,6 +170,12 @@ export class MapView {
     var index = this.markerEvent.indexOf(m);
     if(index != -1)
     {
+      this.markerPOI.forEach((element) =>
+      {
+        this.mapService.deletePOI(m.id, element.id);
+      });
+      this.markerPOI = [];
+      this.markerEvent.splice(index, 1);
       if(m.id != undefined)
       {
         this.mapService.deleteEvent(m.id)
@@ -178,7 +184,6 @@ export class MapView {
           error => alert("Error: " + error)
         );
       }
-      this.markerEvent.splice(index, 1);
     }
   }
 

@@ -89,4 +89,21 @@ export class HTTPService {
         return this._http.delete(url, options)
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
+
+    public doPut(url: string, pHeaders: HeaderModel[]): Observable<Response>
+    {
+        let headers = new Headers();
+
+        pHeaders.forEach(
+            function(header)
+            {
+                headers.append(header.key, header.value);
+            }
+        );
+
+        let options = new RequestOptions({ headers: headers });
+
+        return this._http.put(url, options)
+            .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
+    }
 }
