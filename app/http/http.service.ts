@@ -103,7 +103,7 @@ export class HTTPService {
 
         let options = new RequestOptions({ headers: headers });
 
-        return this._http.put(url, options)
+        return this._http.put(url,{}, options)
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 }

@@ -7,20 +7,44 @@
 <!-- Banner -->
 <section id="banner">
   <div class="content">
-    <table>
-        <tr *ngFor="let friend of users">>
-          <th>{{friend.id}}</th><th>{{friend.username}}</th>
-        </tr>
-    </table>
-    <form>
-        <p> Find a specific firend </p>
-      <div class="form-group">
-        <input type="text" class="form-control" id="name" 
-              required
-              [(ngModel)]="username" name="username">
-      </div>
-      <button (click)="onSubmit()" type="submit" class="button big">Submit</button>
-    </form>
+    <div>
+      <form>
+          <p> Find a user </p>
+        <div class="form-group">
+          <input type="text" class="form-control" id="name" required
+                [(ngModel)]="username" name="username"
+                (ngModelChange)="onChange($event)">
+        </div>        
+      </form>
+      <table>
+          <tr *ngFor="let u of foundUsers">
+            <th>{{u.username}}</th>
+            <th> <button (click)="addFriend(u)" type="submit" class="button big">add friend</button></th>
+          </tr>
+      </table>
+    </div>
+    <div *ngIf="this.friends.length > 0">
+      List of your firends:<br>
+      <table>
+          <tr *ngFor="let friend of friends; let i = index">>
+            <th>{{friend.username}}</th>
+            <th> <button (click)="deleteFriend(friend, i)" type="submit" class="button danger">delete friend</button></th>
+          </tr>
+      </table>
+    </div>
+    <div *ngIf="this.pendingFriends.length > 0">
+      List of pending friendship requests:<br>
+      <table>
+          <tr *ngFor="let pfriend of pendingFriends">>
+            <th>{{pfriend.user.username}}</th>
+            <th> <button (click)="confirmFriend(pfriend.user, i)" type="submit" class="button big">confirm friend</button></th>
+            <th> <button (click)="unconfirmFriend(pfriend.user, i)" type="submit" class="button danger">reject request</button></th>
+          </tr>
+      </table>
+    </div>
+    <div>
+      <button (click)="loadFriends()" type="submit" class="button big">refresh</button>
+    </div>
   </div>
 </section>
         
