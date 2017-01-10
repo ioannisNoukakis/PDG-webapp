@@ -6,6 +6,7 @@
             <header *ngIf="this._auth.isConnected()" id="header">
                 <div>
                     <strong> Eventail{{this._router.url}} </strong>
+                    <strong *ngIf="this._auth.getRank() == 2"><br> You are a restricted user.</strong>
                 </div>
                 <button *ngIf="this._router.url === '/mapView'"
                     (click)="this._router.navigateByUrl('/mapView')" class="button active" type="submit">MapView</button>

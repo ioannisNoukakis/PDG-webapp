@@ -17,7 +17,7 @@
             <th>Location</th>
             <th></th>
         </tr>
-        <tr *ngFor="let u of users; let i = index">
+        <tr *ngFor="let u of users">
             <th>{{u.id}}</th>
             <th>{{u.username}}</th>
             <th>{{u.firstname}}</th>
@@ -25,13 +25,13 @@
             <th>{{u.mail}}</th>
             <th>
                 <strong>Change a user role</strong>
-                <select [(ngModel)]="selectedRole[i]" class="form-control m-b">
+                <select [(ngModel)]="u.rank" class="form-control m-b">
                     <option *ngFor="let role of roles; let j = index" [ngValue]="j">{{role}}</option>
                 </select>
             </th>
             <th *ngIf="u.location!=null"> lat:{{u.location[0]}} <br> lng:{{u.location[1]}} </th>
             <th *ngIf="u.location==null"> - </th>
-            <th> <button (click)="saveUser(u, i)" type="submit" class="button big">save changes</button></th>
+            <th> <button (click)="saveUser(u)" type="submit" class="button big">save changes</button></th>
         </tr>
     </table>
   </div>

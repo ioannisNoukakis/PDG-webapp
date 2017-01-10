@@ -42,7 +42,7 @@ export class LoginService {
                 err => 
                 {
                     this.logError(err);
-                    alert("Invalid username or password.");
+                    alert(JSON.parse(err._body).message);
                     loginModel.password = "";
                     loginModel.username = "";
                 }

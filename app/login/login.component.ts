@@ -19,7 +19,7 @@ export class LoginComponent{
         }
     }
 
-    loginModel = new LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis"); 
+    loginModel = new LoginModel("", ""); 
       
     onSubmit() { 
         this._loginSevice.requestToken(this.loginModel);

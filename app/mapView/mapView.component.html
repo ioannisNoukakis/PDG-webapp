@@ -67,7 +67,7 @@
         </sebm-google-map-marker>
       </sebm-google-map>
     </article>
-    <article *ngIf="this.markerEvent.length > 0 && !this.editingPointsOfInterest">
+    <article *ngIf="this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent != null && this.commandMakerEvent != undefined">
      <strong> {{ this.commandMakerEvent.title }}</strong> <br>
                lat: {{ this.commandMakerEvent.location[0] }} <br>
                lng: {{ this.commandMakerEvent.location[1] }} <br>
@@ -79,11 +79,11 @@
                This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.end' required> 
                <input #time type='time' [(ngModel)]='this.commandMakerEvent.hend' required><br>
                Spontaneous <input #textbox type='checkbox' [(ngModel)]='this.commandMakerEvent.spontaneous' required> <br> 
-      <button *ngIf="this._auth.getRank() < 2 || this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
+      <button *ngIf="this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
        (click)="saveEvent(this.commandMakerEvent)" type="submit" class="button big">SAVE</button>
-      <button *ngIf="this._auth.getRank() < 2 || this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
+      <button *ngIf="this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
        (click)="deleteMarkerEvent(this.commandMakerEvent)" type="submit" class="button danger">DELETE</button>
-      <button *ngIf="this._auth.getRank() < 2 || this._auth.getUserId() == this.commandMakerEvent.owner"
+      <button *ngIf="this._auth.getRank() < 2 && this._auth.getUserId() == this.commandMakerEvent.owner"
        (click)="this.editingPointsOfInterest = true" type="submit" class="button big">SWITCH TO POINTS OF INTEREST</button>
     </article>
 
@@ -98,9 +98,13 @@
       <button 
        (click)="this.editingPointsOfInterest = false" type="submit" class="button big">SWITCH TO EVENTS</button>
     </article>
-
+<!-- this.commandMakerEvent = this.markerEvent[this.markerEvent.length-1]; -->
     <article *ngIf="this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length == 0">
       <strong> Click anywere on the map to add a new POI.</strong> <br>
+    </article>
+
+    <article *ngIf="this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent == null || this.commandMakerEvent == undefined">
+      <strong> Click on an event or click on the map to create one.</strong> <br>
     </article>
 
     <article *ngIf="this.markerEvent.length == 0">

@@ -19,8 +19,6 @@ export class AdminComponent{
     private lastPage: number= 0;
 
     public roles:string[] = ['Admin', 'Normal User', 'Restricted User', 'Banned User'];
-    private selectedRole: number[] = [];
-
     
     constructor(private auth: AuthService, private router: Router, private userService: UserService)
     {
@@ -38,17 +36,12 @@ export class AdminComponent{
                 var headers = res.headers;
                 this.numberOfPages = parseInt(headers.get('x-paginate-pages'));
                 this.numberOfUsers = parseInt(headers.get('x-paginate-items'));
-             
-                this.users.forEach((user) => {
-                    this.selectedRole.push(user.rank);
-                });
             }
         );
     }
 
-    public saveUser(userModel : UserModel, index: number)
+    public saveUser(userModel : UserModel)
     {
-        userModel.rank = this.selectedRole[index];
         this.userService.changeUserRank(userModel.id, userModel.rank)
         .subscribe(
             success =>{},

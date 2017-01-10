@@ -20,7 +20,7 @@ export class MapView {
   private editingPointsOfInterest: boolean = false;
 
   private markerEvent: MarkerEvent[] = [];
-  private commandMakerEvent: MarkerEvent = this.markerEvent[this.markerEvent.length-1];
+  private commandMakerEvent: MarkerEvent = null;
 
   private markerPOI: MarkerPOI[] = [];
   private commandMakerPOI: MarkerPOI = this.markerPOI[this.markerPOI.length-1];
@@ -91,7 +91,6 @@ export class MapView {
                   }
                 );
               });
-              this.commandMakerEvent = this.markerEvent[this.markerEvent.length-1];
             },
             error => alert("Error: " + error)
           );
