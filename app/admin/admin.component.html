@@ -1,0 +1,38 @@
+<!-- Banner -->
+<section id="banner">
+  <div class="content">
+      <p> {{numberOfUsers}} users in record. </p>
+      <p *ngIf="numberOfPages > 1"> Showing page 
+            <input #number type='number' min="1" max="numberOfPages" [(ngModel)]='currentPage' (ngModelChange)="changePage($event)" required>
+         of {{numberOfPages}}.
+      </p>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Username</th>
+            <th>Firstname</th>
+            <th>Lastname</th>
+            <th>Mail</th>
+            <th>Rank</th>
+            <th>Location</th>
+            <th></th>
+        </tr>
+        <tr *ngFor="let u of users; let i = index">
+            <th>{{u.id}}</th>
+            <th>{{u.username}}</th>
+            <th>{{u.firstname}}</th>
+            <th>{{u.lastname}}</th>
+            <th>{{u.mail}}</th>
+            <th>
+                <strong>Change a user role</strong>
+                <select [(ngModel)]="selectedRole[i]" class="form-control m-b">
+                    <option *ngFor="let role of roles; let j = index" [ngValue]="j">{{role}}</option>
+                </select>
+            </th>
+            <th *ngIf="u.location!=null"> lat:{{u.location[0]}} <br> lng:{{u.location[1]}} </th>
+            <th *ngIf="u.location==null"> - </th>
+            <th> <button (click)="saveUser(u, i)" type="submit" class="button big">save changes</button></th>
+        </tr>
+    </table>
+  </div>
+</section>

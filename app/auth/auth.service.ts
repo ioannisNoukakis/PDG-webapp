@@ -39,6 +39,7 @@ export class AuthService {
 
   public setToken(token: Token)
   {
+    console.log(token);
     localStorage.setItem('EventailToken', JSON.stringify(token));
     this._token = token;
   }

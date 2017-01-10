@@ -90,7 +90,7 @@ export class HTTPService {
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 
-    public doPut(url: string, pHeaders: HeaderModel[]): Observable<Response>
+    public doPut(body:Object,url: string, pHeaders: HeaderModel[]): Observable<Response>
     {
         let headers = new Headers();
 
@@ -103,7 +103,7 @@ export class HTTPService {
 
         let options = new RequestOptions({ headers: headers });
 
-        return this._http.put(url,{}, options)
+        return this._http.put(url,body, options)
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 }

@@ -43,7 +43,7 @@ export class FriendService {
             new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
         ];
 
-        return this.httpService.doPut('https://api.eventail.me/users/self/friends/requests/'+userID, additionnalsHeaders);
+        return this.httpService.doPut({},'https://api.eventail.me/users/self/friends/requests/'+userID, additionnalsHeaders);
     }
 
     public confirmFriend(userID: number): Observable<Response>
@@ -52,7 +52,7 @@ export class FriendService {
             new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
         ];
 
-        return this.httpService.doPut('https://api.eventail.me/users/self/friends/'+userID, additionnalsHeaders);
+        return this.httpService.doPut({},'https://api.eventail.me/users/self/friends/'+userID, additionnalsHeaders);
     }
 
     public deleteFriendshipRequest(userID: number): Observable<Response>

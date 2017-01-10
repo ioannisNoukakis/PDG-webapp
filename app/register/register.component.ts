@@ -5,18 +5,22 @@ import { Observable }  from 'rxjs/Observable';
 import { UserModel }   from '../mapView/user.model'
 import { RegisterModel } from './register.model'
 import { RegisterService } from './register.service'
+import {LoginService} from '../login/login.service'
+import {LoginModel} from '../login/login.model'
+
 
 @Component({
     selector: 'register',
     templateUrl: './register.component.html',
-    providers: [RegisterService]
+    providers: [RegisterService, LoginService]
 })
 
 export class RegisterComponent{
     private registerModel: RegisterModel = new RegisterModel("", "", "", "", "");
     private cpassword: string;
 
-    constructor(private _auth: AuthService, private _router: Router, private registerService:RegisterService){
+    constructor(private _auth: AuthService, private _router: Router, private registerService:RegisterService,
+                private loginService : LoginService){
     }
 
     public doRegister()
@@ -29,8 +33,9 @@ export class RegisterComponent{
             return;
         }
         this.registerService.register(this.registerModel)
-        .subscribe(success => {
-            this._router.navigateByUrl('/login');
+        .subscribe (
+        success => {
+            this.loginService.requestToken(new LoginModel(this.registerModel.mail, this.registerModel.password));
         },
         error => alert("This username is already taken.")
         );

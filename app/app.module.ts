@@ -1,6 +1,6 @@
 import { NgModule }          from '@angular/core';
 import { BrowserModule }     from '@angular/platform-browser';
-import { FormsModule }       from '@angular/forms';
+import { FormsModule, ReactiveFormsModule}       from '@angular/forms';
 import { RouterModule }      from '@angular/router';
 import { AppComponent }      from './app.component';
 import { HttpModule }        from '@angular/http';
@@ -16,11 +16,13 @@ import { LoginComponent }    from './login/login.component';
 import { MapView }           from './mapView/mapView.component';
 import { FriendComponent }   from './friend/friend.component';
 import { RegisterComponent } from './register/register.component';
+import { AdminComponent }    from './admin/admin.component'
 
 @NgModule({
   imports: [
     BrowserModule,
     FormsModule,
+    ReactiveFormsModule,
     HttpModule,
     AppRoutingModule,
     AgmCoreModule.forRoot({
@@ -33,7 +35,8 @@ import { RegisterComponent } from './register/register.component';
     LoginComponent,
     MapView,
     FriendComponent,
-    RegisterComponent
+    RegisterComponent,
+    AdminComponent
   ],
   providers:[ AuthService, HTTPService, UserService],
   bootstrap: [ AppComponent ]
