@@ -32,6 +32,7 @@ export class MapView {
 //TODO FAIRE UN POLLING
   constructor(private _auth: AuthService, private _router: Router, private mapService :MapViewService, private userService:UserService){
     this.loadElements();
+    this.radius = 2000;
   }
 
   private loadElements()
@@ -43,7 +44,6 @@ export class MapView {
     navigator.geolocation.getCurrentPosition((position) => {
         this.lat = position.coords.latitude;
         this.lng = position.coords.longitude;
-        this.radius = 2000;
 
         this.markerPerson.push({
           id: 0,
@@ -54,6 +54,21 @@ export class MapView {
               this.lng
             ]
         });
+        this.loadMapElements();
+    }, () => {
+        alert('Please use HTML5 enabled browser');
+    }, {
+            timeout: 10000,
+            maximumAge: 1,
+            enableHighAccuracy: true
+        }
+    );
+  }
+
+  private loadMapElements()
+  {
+        this.radius = 3333*(21-this.zoom);
+        this.markerEvent = [];
         this.mapService.getEventNearby(this.lat, this.lng, this.radius)
         .subscribe(
           success => 
@@ -97,14 +112,6 @@ export class MapView {
             },
             error => alert("Error: " + error)
           );
-    }, () => {
-        alert('Please use HTML5 enabled browser');
-    }, {
-            timeout: 10000,
-            maximumAge: 1,
-            enableHighAccuracy: true
-        }
-    );
   }
 
   clickedMarkerEvent(label: string, index: number) {
@@ -190,6 +197,21 @@ export class MapView {
         }); 
         this.commandMakerPOI = this.markerPOI[this.markerPOI.length-1];
     }
+  }
+
+  centerMapChanged($event){
+    this.lat = $event.lat;
+    this.lng = $event.lng;
+  }
+
+  mapIdle()
+  {
+    this.loadMapElements();
+  }
+
+  zoomChanged($event)
+  {
+    this.zoom = $event;
   }
   
   eventMarkerDragEnd(m: MarkerEvent, $event: MouseEvent) {

@@ -9,7 +9,10 @@
         [longitude]="lng"
         [zoom]="zoom"
         [disableDefaultUI]="false"
-        (mapClick)="mapClicked($event)">
+        (mapClick)="mapClicked($event)"
+        (centerChange)="centerMapChanged($event)"
+        (zoomChange)="zoomChanged($event)"
+        (idle)="mapIdle()">
         <!-- Persons -->
         <sebm-google-map-marker 
             *ngFor="let m of markerPerson"
