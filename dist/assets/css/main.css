@@ -2910,6 +2910,18 @@
 			font-size: 1.0em;
 		}
 
+		input[type="submit"].active,
+		input[type="reset"].active,
+		input[type="button"].active,
+		button.active,
+		.button.active {
+			color: #0094C6 !important;
+			text-align: left;
+			box-shadow: inset 0 0 0px transparent;
+			text-transform: none;
+			font-size: 1.0em;
+		}
+
 		input[type="submit"].danger,
 		input[type="reset"].danger,
 		input[type="button"].danger,

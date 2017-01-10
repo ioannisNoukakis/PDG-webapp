@@ -1,5 +1,6 @@
 import { Token }          from '../login/token';
 import { Injectable }     from '@angular/core';
+import { Router }    from '@angular/router';
 
 @Injectable()
 export class AuthService {
@@ -7,7 +8,7 @@ export class AuthService {
   private userID;
   private rank: number;
 
-  constructor()
+  constructor(private _router: Router)
   {
     this._token = JSON.parse(localStorage.getItem('EventailToken'));
     this.userID = parseInt(localStorage.getItem('EventailUserID'));
@@ -16,6 +17,8 @@ export class AuthService {
 
   public getToken(): Token
   {
+    if(this._token == null)
+        this._router.navigateByUrl('/login');
     return this._token;
   }
 

@@ -44811,16 +44811,18 @@
 	var platform_browser_1 = __webpack_require__(331);
 	var forms_1 = __webpack_require__(334);
 	var app_component_1 = __webpack_require__(338);
-	var http_1 = __webpack_require__(341);
-	var core_2 = __webpack_require__(342);
-	var ng_bootstrap_1 = __webpack_require__(361);
+	var http_1 = __webpack_require__(371);
+	var core_2 = __webpack_require__(372);
+	var ng_bootstrap_1 = __webpack_require__(391);
 	var auth_service_1 = __webpack_require__(339);
-	var app_routing_module_1 = __webpack_require__(369);
+	var app_routing_module_1 = __webpack_require__(399);
 	var http_service_1 = __webpack_require__(408);
 	var user_service_1 = __webpack_require__(698);
 	var login_component_1 = __webpack_require__(400);
 	var mapView_component_1 = __webpack_require__(406);
 	var friend_component_1 = __webpack_require__(701);
+	var register_component_1 = __webpack_require__(704);
+	var admin_component_1 = __webpack_require__(708);
 	var AppModule = (function () {
 	    function AppModule() {
 	    }
@@ -44831,6 +44833,7 @@
 	        imports: [
 	            platform_browser_1.BrowserModule,
 	            forms_1.FormsModule,
+	            forms_1.ReactiveFormsModule,
 	            http_1.HttpModule,
 	            app_routing_module_1.AppRoutingModule,
 	            core_2.AgmCoreModule.forRoot({
@@ -44842,7 +44845,9 @@
 	            app_component_1.AppComponent,
 	            login_component_1.LoginComponent,
 	            mapView_component_1.MapView,
-	            friend_component_1.FriendComponent
+	            friend_component_1.FriendComponent,
+	            register_component_1.RegisterComponent,
+	            admin_component_1.AdminComponent
 	        ],
 	        providers: [auth_service_1.AuthService, http_service_1.HTTPService, user_service_1.UserService],
 	        bootstrap: [app_component_1.AppComponent]
@@ -49479,21 +49484,24 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var auth_service_1 = __webpack_require__(339);
+	var router_1 = __webpack_require__(340);
 	var AppComponent = (function () {
-	    function AppComponent(_auth) {
+	    function AppComponent(_auth, _router) {
 	        this._auth = _auth;
+	        this._router = _router;
 	    }
 	    AppComponent.prototype.onLogout = function () {
 	        this._auth.logout();
+	        this._router.navigateByUrl('/login');
 	    };
 	    return AppComponent;
 	}());
 	AppComponent = __decorate([
 	    core_1.Component({
 	        selector: 'my-app',
-	        template: __webpack_require__(340)
+	        template: __webpack_require__(370)
 	    }),
-	    __metadata("design:paramtypes", [auth_service_1.AuthService])
+	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router])
 	], AppComponent);
 	exports.AppComponent = AppComponent;
 
@@ -49515,6 +49523,9 @@
 	var core_1 = __webpack_require__(313);
 	var AuthService = (function () {
 	    function AuthService() {
+	        this._token = JSON.parse(localStorage.getItem('EventailToken'));
+	        this.userID = parseInt(localStorage.getItem('EventailUserID'));
+	        this.rank = parseInt(localStorage.getItem('EventailRank'));
 	    }
 	    AuthService.prototype.getToken = function () {
 	        return this._token;
@@ -49522,26 +49533,30 @@
 	    AuthService.prototype.isConnected = function () {
 	        if (this._token == null)
 	            return false;
-	        //var time = new Date().getTime() - new Date(this._token.expires).getTime();
-	        return true; //time >= 0;
+	        return true;
 	    };
 	    AuthService.prototype.setUserID = function (userID) {
+	        localStorage.setItem('EventailUserID', "" + userID);
 	        this.userID = userID;
 	    };
 	    AuthService.prototype.getUserId = function () {
 	        return this.userID;
 	    };
 	    AuthService.prototype.setToken = function (token) {
+	        console.log(token);
+	        localStorage.setItem('EventailToken', JSON.stringify(token));
 	        this._token = token;
 	    };
 	    AuthService.prototype.logout = function () {
+	        localStorage.clear();
 	        this._token = null;
 	    };
-	    AuthService.prototype.setAdmin = function (admin) {
-	        this.admin = admin;
+	    AuthService.prototype.setRank = function (rank) {
+	        localStorage.setItem('EventailRank', "" + rank);
+	        this.rank = rank;
 	    };
-	    AuthService.prototype.isAdmin = function () {
-	        return this.admin;
+	    AuthService.prototype.getRank = function () {
+	        return this.rank;
 	    };
 	    return AuthService;
 	}());
@@ -49554,12 +49569,6135 @@
 
 /***/ },
 /* 340 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "<!-- Wrapper -->\n<div id=\"wrapper\">\n    <div id=\"main\">\n        <div *ngIf=\"this._auth.isConnected()\" id=\"mySidenav\" class=\"sidenav\">\n            <a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>\n            <a [routerLink]=\"['mapView']\">MapView</a>\n            <a [routerLink]=\"['friends']\">Friends</a>\n            <button (click)=\"onLogout()\" type=\"button\" class=\"button big\">Logout</button>\n        </div>\n        <div *ngIf=\"!this._auth.isConnected()\" id=\"mySidenav\" class=\"sidenav\">\n            <a href=\"javascript:void(0)\" class=\"closebtn\" onclick=\"closeNav()\">&times;</a>\n            <a [routerLink]=\"['login']\">Login</a>\n        </div>\n        <span onclick=\"openNav()\">open</span>\n        <div class=\"inner\">\n            <router-outlet></router-outlet>\n        </div>\n    </div>\n</div>"
+	/**
+	 * @license Angular v3.1.2
+	 * (c) 2010-2016 Google, Inc. https://angular.io/
+	 * License: MIT
+	 */
+	(function (global, factory) {
+	     true ? factory(exports, __webpack_require__(332), __webpack_require__(313), __webpack_require__(314), __webpack_require__(341), __webpack_require__(353), __webpack_require__(354), __webpack_require__(359), __webpack_require__(360), __webpack_require__(361), __webpack_require__(355), __webpack_require__(362), __webpack_require__(315), __webpack_require__(363), __webpack_require__(364), __webpack_require__(365), __webpack_require__(366), __webpack_require__(336), __webpack_require__(367), __webpack_require__(368), __webpack_require__(369)) :
+	    typeof define === 'function' && define.amd ? define(['exports', '@angular/common', '@angular/core', 'rxjs/Subject', 'rxjs/observable/from', 'rxjs/observable/of', 'rxjs/operator/concatMap', 'rxjs/operator/every', 'rxjs/operator/map', 'rxjs/operator/mergeAll', 'rxjs/operator/mergeMap', 'rxjs/operator/reduce', 'rxjs/Observable', 'rxjs/operator/catch', 'rxjs/operator/concatAll', 'rxjs/operator/first', 'rxjs/util/EmptyError', 'rxjs/observable/fromPromise', 'rxjs/operator/last', 'rxjs/BehaviorSubject', 'rxjs/operator/filter'], factory) :
+	    (factory((global.ng = global.ng || {}, global.ng.router = global.ng.router || {}),global.ng.common,global.ng.core,global.Rx,global.Rx.Observable,global.Rx.Observable,global.rxjs_operator_concatMap,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx,global.Rx.Observable,global.Rx.Observable.prototype,global.Rx,global.Rx.Observable.prototype));
+	}(this, function (exports,_angular_common,_angular_core,rxjs_Subject,rxjs_observable_from,rxjs_observable_of,rxjs_operator_concatMap,rxjs_operator_every,rxjs_operator_map,rxjs_operator_mergeAll,rxjs_operator_mergeMap,rxjs_operator_reduce,rxjs_Observable,rxjs_operator_catch,rxjs_operator_concatAll,rxjs_operator_first,rxjs_util_EmptyError,rxjs_observable_fromPromise,l,rxjs_BehaviorSubject,rxjs_operator_filter) { 'use strict';
+
+	    /**
+	     * @license
+	     * Copyright Google Inc. All Rights Reserved.
+	     *
+	     * Use of this source code is governed by an MIT-style license that can be
+	     * found in the LICENSE file at https://angular.io/license
+	     */
+	    var __extends = (this && this.__extends) || function (d, b) {
+	        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	    /**
+	     * @whatItDoes Name of the primary outlet.
+	     *
+	     * @stable
+	     */
+	    var PRIMARY_OUTLET = 'primary';
+	    var NavigationCancelingError = (function (_super) {
+	        __extends(NavigationCancelingError, _super);
+	        function NavigationCancelingError(message) {
+	            _super.call(this, message);
+	            this.message = message;
+	            this.stack = (new Error(message)).stack;
+	        }
+	        NavigationCancelingError.prototype.toString = function () { return this.message; };
+	        return NavigationCancelingError;
+	    }(Error));
+
+	    function shallowEqualArrays(a, b) {
+	        if (a.length !== b.length)
+	            return false;
+	        for (var i = 0; i < a.length; ++i) {
+	            if (!shallowEqual(a[i], b[i]))
+	                return false;
+	        }
+	        return true;
+	    }
+	    function shallowEqual(a, b) {
+	        var k1 = Object.keys(a);
+	        var k2 = Object.keys(b);
+	        if (k1.length != k2.length) {
+	            return false;
+	        }
+	        var key;
+	        for (var i = 0; i < k1.length; i++) {
+	            key = k1[i];
+	            if (a[key] !== b[key]) {
+	                return false;
+	            }
+	        }
+	        return true;
+	    }
+	    function flatten(a) {
+	        var target = [];
+	        for (var i = 0; i < a.length; ++i) {
+	            for (var j = 0; j < a[i].length; ++j) {
+	                target.push(a[i][j]);
+	            }
+	        }
+	        return target;
+	    }
+	    function last(a) {
+	        return a.length > 0 ? a[a.length - 1] : null;
+	    }
+	    function merge(m1, m2) {
+	        var m = {};
+	        for (var attr in m1) {
+	            if (m1.hasOwnProperty(attr)) {
+	                m[attr] = m1[attr];
+	            }
+	        }
+	        for (var attr in m2) {
+	            if (m2.hasOwnProperty(attr)) {
+	                m[attr] = m2[attr];
+	            }
+	        }
+	        return m;
+	    }
+	    function forEach(map, callback) {
+	        for (var prop in map) {
+	            if (map.hasOwnProperty(prop)) {
+	                callback(map[prop], prop);
+	            }
+	        }
+	    }
+	    function waitForMap(obj, fn) {
+	        var waitFor = [];
+	        var res = {};
+	        forEach(obj, function (a, k) {
+	            if (k === PRIMARY_OUTLET) {
+	                waitFor.push(rxjs_operator_map.map.call(fn(k, a), function (_) {
+	                    res[k] = _;
+	                    return _;
+	                }));
+	            }
+	        });
+	        forEach(obj, function (a, k) {
+	            if (k !== PRIMARY_OUTLET) {
+	                waitFor.push(rxjs_operator_map.map.call(fn(k, a), function (_) {
+	                    res[k] = _;
+	                    return _;
+	                }));
+	            }
+	        });
+	        if (waitFor.length > 0) {
+	            var concatted$ = rxjs_operator_concatAll.concatAll.call(rxjs_observable_of.of.apply(void 0, waitFor));
+	            var last$ = l.last.call(concatted$);
+	            return rxjs_operator_map.map.call(last$, function () { return res; });
+	        }
+	        else {
+	            return rxjs_observable_of.of(res);
+	        }
+	    }
+	    function andObservables(observables) {
+	        var merged$ = rxjs_operator_mergeAll.mergeAll.call(observables);
+	        return rxjs_operator_every.every.call(merged$, function (result) { return result === true; });
+	    }
+	    function wrapIntoObservable(value) {
+	        if (value instanceof rxjs_Observable.Observable) {
+	            return value;
+	        }
+	        else if (value instanceof Promise) {
+	            return rxjs_observable_fromPromise.fromPromise(value);
+	        }
+	        else {
+	            return rxjs_observable_of.of(value);
+	        }
+	    }
+
+	    /**
+	     * @experimental
+	     */
+	    var ROUTES = new _angular_core.OpaqueToken('ROUTES');
+	    var LoadedRouterConfig = (function () {
+	        function LoadedRouterConfig(routes, injector, factoryResolver) {
+	            this.routes = routes;
+	            this.injector = injector;
+	            this.factoryResolver = factoryResolver;
+	        }
+	        return LoadedRouterConfig;
+	    }());
+	    var RouterConfigLoader = (function () {
+	        function RouterConfigLoader(loader, compiler) {
+	            this.loader = loader;
+	            this.compiler = compiler;
+	        }
+	        RouterConfigLoader.prototype.load = function (parentInjector, loadChildren) {
+	            return rxjs_operator_map.map.call(this.loadModuleFactory(loadChildren), function (r) {
+	                var ref = r.create(parentInjector);
+	                return new LoadedRouterConfig(flatten(ref.injector.get(ROUTES)), ref.injector, ref.componentFactoryResolver);
+	            });
+	        };
+	        RouterConfigLoader.prototype.loadModuleFactory = function (loadChildren) {
+	            var _this = this;
+	            if (typeof loadChildren === 'string') {
+	                return rxjs_observable_fromPromise.fromPromise(this.loader.load(loadChildren));
+	            }
+	            else {
+	                var offlineMode_1 = this.compiler instanceof _angular_core.Compiler;
+	                return rxjs_operator_mergeMap.mergeMap.call(wrapIntoObservable(loadChildren()), function (t) { return offlineMode_1 ? rxjs_observable_of.of(t) : rxjs_observable_fromPromise.fromPromise(_this.compiler.compileModuleAsync(t)); });
+	            }
+	        };
+	        return RouterConfigLoader;
+	    }());
+
+	    function createEmptyUrlTree() {
+	        return new UrlTree(new UrlSegmentGroup([], {}), {}, null);
+	    }
+	    function containsTree(container, containee, exact) {
+	        if (exact) {
+	            return equalSegmentGroups(container.root, containee.root);
+	        }
+	        else {
+	            return containsSegmentGroup(container.root, containee.root);
+	        }
+	    }
+	    function equalSegmentGroups(container, containee) {
+	        if (!equalPath(container.segments, containee.segments))
+	            return false;
+	        if (container.numberOfChildren !== containee.numberOfChildren)
+	            return false;
+	        for (var c in containee.children) {
+	            if (!container.children[c])
+	                return false;
+	            if (!equalSegmentGroups(container.children[c], containee.children[c]))
+	                return false;
+	        }
+	        return true;
+	    }
+	    function containsSegmentGroup(container, containee) {
+	        return containsSegmentGroupHelper(container, containee, containee.segments);
+	    }
+	    function containsSegmentGroupHelper(container, containee, containeePaths) {
+	        if (container.segments.length > containeePaths.length) {
+	            var current = container.segments.slice(0, containeePaths.length);
+	            if (!equalPath(current, containeePaths))
+	                return false;
+	            if (containee.hasChildren())
+	                return false;
+	            return true;
+	        }
+	        else if (container.segments.length === containeePaths.length) {
+	            if (!equalPath(container.segments, containeePaths))
+	                return false;
+	            for (var c in containee.children) {
+	                if (!container.children[c])
+	                    return false;
+	                if (!containsSegmentGroup(container.children[c], containee.children[c]))
+	                    return false;
+	            }
+	            return true;
+	        }
+	        else {
+	            var current = containeePaths.slice(0, container.segments.length);
+	            var next = containeePaths.slice(container.segments.length);
+	            if (!equalPath(container.segments, current))
+	                return false;
+	            if (!container.children[PRIMARY_OUTLET])
+	                return false;
+	            return containsSegmentGroupHelper(container.children[PRIMARY_OUTLET], containee, next);
+	        }
+	    }
+	    /**
+	     * @whatItDoes Represents the parsed URL.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * @Component({templateUrl:'template.html'})
+	     * class MyComponent {
+	     *   constructor(router: Router) {
+	     *     const tree: UrlTree =
+	     * router.parseUrl('/team/33/(user/victor//support:help)?debug=true#fragment');
+	     *     const f = tree.fragment; // return 'fragment'
+	     *     const q = tree.queryParams; // returns {debug: 'true'}
+	     *     const g: UrlSegmentGroup = tree.root.children[PRIMARY_OUTLET];
+	     *     const s: UrlSegment[] = g.segments; // returns 2 segments 'team' and '33'
+	     *     g.children[PRIMARY_OUTLET].segments; // returns 2 segments 'user' and 'victor'
+	     *     g.children['support'].segments; // return 1 segment 'help'
+	     *   }
+	     * }
+	     * ```
+	     *
+	     * @description
+	     *
+	     * Since a router state is a tree, and the URL is nothing but a serialized state, the URL is a
+	     * serialized tree.
+	     * UrlTree is a data structure that provides a lot of affordances in dealing with URLs
+	     *
+	     * @stable
+	     */
+	    var UrlTree = (function () {
+	        /**
+	         * @internal
+	         */
+	        function UrlTree(
+	            /**
+	            * The root segment group of the URL tree.
+	             */
+	            root,
+	            /**
+	             * The query params of the URL.
+	             */
+	            queryParams,
+	            /**
+	             * The fragment of the URL.
+	             */
+	            fragment) {
+	            this.root = root;
+	            this.queryParams = queryParams;
+	            this.fragment = fragment;
+	        }
+	        /**
+	         * @docsNotRequired
+	         */
+	        UrlTree.prototype.toString = function () { return new DefaultUrlSerializer().serialize(this); };
+	        return UrlTree;
+	    }());
+	    /**
+	     * @whatItDoes Represents the parsed URL segment.
+	     *
+	     * See {@link UrlTree} for more information.
+	     *
+	     * @stable
+	     */
+	    var UrlSegmentGroup = (function () {
+	        function UrlSegmentGroup(
+	            /**
+	             * The URL segments of this group. See {@link UrlSegment} for more information.
+	             */
+	            segments,
+	            /**
+	             * The list of children of this group.
+	             */
+	            children) {
+	            var _this = this;
+	            this.segments = segments;
+	            this.children = children;
+	            /**
+	             * The parent node in the url tree.
+	             */
+	            this.parent = null;
+	            forEach(children, function (v, k) { return v.parent = _this; });
+	        }
+	        /**
+	         * Return true if the segment has child segments
+	         */
+	        UrlSegmentGroup.prototype.hasChildren = function () { return this.numberOfChildren > 0; };
+	        Object.defineProperty(UrlSegmentGroup.prototype, "numberOfChildren", {
+	            /**
+	             * Returns the number of child sements.
+	             */
+	            get: function () { return Object.keys(this.children).length; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        /**
+	         * @docsNotRequired
+	         */
+	        UrlSegmentGroup.prototype.toString = function () { return serializePaths(this); };
+	        return UrlSegmentGroup;
+	    }());
+	    /**
+	     * @whatItDoes Represents a single URL segment.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * @Component({templateUrl:'template.html'})
+	     * class MyComponent {
+	     *   constructor(router: Router) {
+	     *     const tree: UrlTree = router.parseUrl('/team;id=33');
+	     *     const g: UrlSegmentGroup = tree.root.children[PRIMARY_OUTLET];
+	     *     const s: UrlSegment[] = g.segments;
+	     *     s[0].path; // returns 'team'
+	     *     s[0].parameters; // returns {id: 33}
+	     *   }
+	     * }
+	     * ```
+	     *
+	     * @description
+	     *
+	     * A UrlSegment is a part of a URL between the two slashes. It contains a path and
+	     * the matrix parameters associated with the segment.
+	     *
+	     * @stable
+	     */
+	    var UrlSegment = (function () {
+	        function UrlSegment(
+	            /**
+	             * The part part of a URL segment.
+	             */
+	            path,
+	            /**
+	             * The matrix parameters associated with a segment.
+	             */
+	            parameters) {
+	            this.path = path;
+	            this.parameters = parameters;
+	        }
+	        /**
+	         * @docsNotRequired
+	         */
+	        UrlSegment.prototype.toString = function () { return serializePath(this); };
+	        return UrlSegment;
+	    }());
+	    function equalPath(a, b) {
+	        if (a.length !== b.length)
+	            return false;
+	        for (var i = 0; i < a.length; ++i) {
+	            if (a[i].path !== b[i].path)
+	                return false;
+	        }
+	        return true;
+	    }
+	    function mapChildrenIntoArray(segment, fn) {
+	        var res = [];
+	        forEach(segment.children, function (child, childOutlet) {
+	            if (childOutlet === PRIMARY_OUTLET) {
+	                res = res.concat(fn(child, childOutlet));
+	            }
+	        });
+	        forEach(segment.children, function (child, childOutlet) {
+	            if (childOutlet !== PRIMARY_OUTLET) {
+	                res = res.concat(fn(child, childOutlet));
+	            }
+	        });
+	        return res;
+	    }
+	    /**
+	     * @whatItDoes Serializes and deserializes a URL string into a URL tree.
+	     *
+	     * @description The url serialization strategy is customizable. You can
+	     * make all URLs case insensitive by providing a custom UrlSerializer.
+	     *
+	     * See {@link DefaultUrlSerializer} for an example of a URL serializer.
+	     *
+	     * @stable
+	     */
+	    var UrlSerializer = (function () {
+	        function UrlSerializer() {
+	        }
+	        return UrlSerializer;
+	    }());
+	    /**
+	     * @whatItDoes A default implementation of the {@link UrlSerializer}.
+	     *
+	     * @description
+	     *
+	     * Example URLs:
+	     *
+	     * ```
+	     * /inbox/33(popup:compose)
+	     * /inbox/33;open=true/messages/44
+	     * ```
+	     *
+	     * DefaultUrlSerializer uses parentheses to serialize secondary segments (e.g., popup:compose), the
+	     * colon syntax to specify the outlet, and the ';parameter=value' syntax (e.g., open=true) to
+	     * specify route specific parameters.
+	     *
+	     * @stable
+	     */
+	    var DefaultUrlSerializer = (function () {
+	        function DefaultUrlSerializer() {
+	        }
+	        /**
+	         * Parse a url into a {@link UrlTree}.
+	         */
+	        DefaultUrlSerializer.prototype.parse = function (url) {
+	            var p = new UrlParser(url);
+	            return new UrlTree(p.parseRootSegment(), p.parseQueryParams(), p.parseFragment());
+	        };
+	        /**
+	         * Converts a {@link UrlTree} into a url.
+	         */
+	        DefaultUrlSerializer.prototype.serialize = function (tree) {
+	            var segment = "/" + serializeSegment(tree.root, true);
+	            var query = serializeQueryParams(tree.queryParams);
+	            var fragment = tree.fragment !== null && tree.fragment !== undefined ? "#" + encodeURI(tree.fragment) : '';
+	            return "" + segment + query + fragment;
+	        };
+	        return DefaultUrlSerializer;
+	    }());
+	    function serializePaths(segment) {
+	        return segment.segments.map(function (p) { return serializePath(p); }).join('/');
+	    }
+	    function serializeSegment(segment, root) {
+	        if (segment.hasChildren() && root) {
+	            var primary = segment.children[PRIMARY_OUTLET] ?
+	                serializeSegment(segment.children[PRIMARY_OUTLET], false) :
+	                '';
+	            var children_1 = [];
+	            forEach(segment.children, function (v, k) {
+	                if (k !== PRIMARY_OUTLET) {
+	                    children_1.push(k + ":" + serializeSegment(v, false));
+	                }
+	            });
+	            if (children_1.length > 0) {
+	                return primary + "(" + children_1.join('//') + ")";
+	            }
+	            else {
+	                return "" + primary;
+	            }
+	        }
+	        else if (segment.hasChildren() && !root) {
+	            var children = mapChildrenIntoArray(segment, function (v, k) {
+	                if (k === PRIMARY_OUTLET) {
+	                    return [serializeSegment(segment.children[PRIMARY_OUTLET], false)];
+	                }
+	                else {
+	                    return [(k + ":" + serializeSegment(v, false))];
+	                }
+	            });
+	            return serializePaths(segment) + "/(" + children.join('//') + ")";
+	        }
+	        else {
+	            return serializePaths(segment);
+	        }
+	    }
+	    function encode(s) {
+	        return encodeURIComponent(s);
+	    }
+	    function decode(s) {
+	        return decodeURIComponent(s);
+	    }
+	    function serializePath(path) {
+	        return "" + encode(path.path) + serializeParams(path.parameters);
+	    }
+	    function serializeParams(params) {
+	        return pairs(params).map(function (p) { return (";" + encode(p.first) + "=" + encode(p.second)); }).join('');
+	    }
+	    function serializeQueryParams(params) {
+	        var strs = pairs(params).map(function (p) { return (encode(p.first) + "=" + encode(p.second)); });
+	        return strs.length > 0 ? "?" + strs.join("&") : '';
+	    }
+	    var Pair = (function () {
+	        function Pair(first, second) {
+	            this.first = first;
+	            this.second = second;
+	        }
+	        return Pair;
+	    }());
+	    function pairs(obj) {
+	        var res = [];
+	        for (var prop in obj) {
+	            if (obj.hasOwnProperty(prop)) {
+	                res.push(new Pair(prop, obj[prop]));
+	            }
+	        }
+	        return res;
+	    }
+	    var SEGMENT_RE = /^[^\/\(\)\?;=&#]+/;
+	    function matchSegments(str) {
+	        SEGMENT_RE.lastIndex = 0;
+	        var match = str.match(SEGMENT_RE);
+	        return match ? match[0] : '';
+	    }
+	    var QUERY_PARAM_RE = /^[^=\?&#]+/;
+	    function matchQueryParams(str) {
+	        QUERY_PARAM_RE.lastIndex = 0;
+	        var match = str.match(SEGMENT_RE);
+	        return match ? match[0] : '';
+	    }
+	    var QUERY_PARAM_VALUE_RE = /^[^\?&#]+/;
+	    function matchUrlQueryParamValue(str) {
+	        QUERY_PARAM_VALUE_RE.lastIndex = 0;
+	        var match = str.match(QUERY_PARAM_VALUE_RE);
+	        return match ? match[0] : '';
+	    }
+	    var UrlParser = (function () {
+	        function UrlParser(url) {
+	            this.url = url;
+	            this.remaining = url;
+	        }
+	        UrlParser.prototype.peekStartsWith = function (str) { return this.remaining.startsWith(str); };
+	        UrlParser.prototype.capture = function (str) {
+	            if (!this.remaining.startsWith(str)) {
+	                throw new Error("Expected \"" + str + "\".");
+	            }
+	            this.remaining = this.remaining.substring(str.length);
+	        };
+	        UrlParser.prototype.parseRootSegment = function () {
+	            if (this.remaining.startsWith('/')) {
+	                this.capture('/');
+	            }
+	            if (this.remaining === '' || this.remaining.startsWith('?') || this.remaining.startsWith('#')) {
+	                return new UrlSegmentGroup([], {});
+	            }
+	            else {
+	                return new UrlSegmentGroup([], this.parseChildren());
+	            }
+	        };
+	        UrlParser.prototype.parseChildren = function () {
+	            if (this.remaining.length == 0) {
+	                return {};
+	            }
+	            if (this.peekStartsWith('/')) {
+	                this.capture('/');
+	            }
+	            var paths = [];
+	            if (!this.peekStartsWith('(')) {
+	                paths.push(this.parseSegments());
+	            }
+	            while (this.peekStartsWith('/') && !this.peekStartsWith('//') && !this.peekStartsWith('/(')) {
+	                this.capture('/');
+	                paths.push(this.parseSegments());
+	            }
+	            var children = {};
+	            if (this.peekStartsWith('/(')) {
+	                this.capture('/');
+	                children = this.parseParens(true);
+	            }
+	            var res = {};
+	            if (this.peekStartsWith('(')) {
+	                res = this.parseParens(false);
+	            }
+	            if (paths.length > 0 || Object.keys(children).length > 0) {
+	                res[PRIMARY_OUTLET] = new UrlSegmentGroup(paths, children);
+	            }
+	            return res;
+	        };
+	        UrlParser.prototype.parseSegments = function () {
+	            var path = matchSegments(this.remaining);
+	            if (path === '' && this.peekStartsWith(';')) {
+	                throw new Error("Empty path url segment cannot have parameters: '" + this.remaining + "'.");
+	            }
+	            this.capture(path);
+	            var matrixParams = {};
+	            if (this.peekStartsWith(';')) {
+	                matrixParams = this.parseMatrixParams();
+	            }
+	            return new UrlSegment(decode(path), matrixParams);
+	        };
+	        UrlParser.prototype.parseQueryParams = function () {
+	            var params = {};
+	            if (this.peekStartsWith('?')) {
+	                this.capture('?');
+	                this.parseQueryParam(params);
+	                while (this.remaining.length > 0 && this.peekStartsWith('&')) {
+	                    this.capture('&');
+	                    this.parseQueryParam(params);
+	                }
+	            }
+	            return params;
+	        };
+	        UrlParser.prototype.parseFragment = function () {
+	            if (this.peekStartsWith('#')) {
+	                return decodeURI(this.remaining.substring(1));
+	            }
+	            else {
+	                return null;
+	            }
+	        };
+	        UrlParser.prototype.parseMatrixParams = function () {
+	            var params = {};
+	            while (this.remaining.length > 0 && this.peekStartsWith(';')) {
+	                this.capture(';');
+	                this.parseParam(params);
+	            }
+	            return params;
+	        };
+	        UrlParser.prototype.parseParam = function (params) {
+	            var key = matchSegments(this.remaining);
+	            if (!key) {
+	                return;
+	            }
+	            this.capture(key);
+	            var value = '';
+	            if (this.peekStartsWith('=')) {
+	                this.capture('=');
+	                var valueMatch = matchSegments(this.remaining);
+	                if (valueMatch) {
+	                    value = valueMatch;
+	                    this.capture(value);
+	                }
+	            }
+	            params[decode(key)] = decode(value);
+	        };
+	        UrlParser.prototype.parseQueryParam = function (params) {
+	            var key = matchQueryParams(this.remaining);
+	            if (!key) {
+	                return;
+	            }
+	            this.capture(key);
+	            var value = '';
+	            if (this.peekStartsWith('=')) {
+	                this.capture('=');
+	                var valueMatch = matchUrlQueryParamValue(this.remaining);
+	                if (valueMatch) {
+	                    value = valueMatch;
+	                    this.capture(value);
+	                }
+	            }
+	            params[decode(key)] = decode(value);
+	        };
+	        UrlParser.prototype.parseParens = function (allowPrimary) {
+	            var segments = {};
+	            this.capture('(');
+	            while (!this.peekStartsWith(')') && this.remaining.length > 0) {
+	                var path = matchSegments(this.remaining);
+	                var next = this.remaining[path.length];
+	                // if is is not one of these characters, then the segment was unescaped
+	                // or the group was not closed
+	                if (next !== '/' && next !== ')' && next !== ';') {
+	                    throw new Error("Cannot parse url '" + this.url + "'");
+	                }
+	                var outletName = void 0;
+	                if (path.indexOf(':') > -1) {
+	                    outletName = path.substr(0, path.indexOf(':'));
+	                    this.capture(outletName);
+	                    this.capture(':');
+	                }
+	                else if (allowPrimary) {
+	                    outletName = PRIMARY_OUTLET;
+	                }
+	                var children = this.parseChildren();
+	                segments[outletName] = Object.keys(children).length === 1 ? children[PRIMARY_OUTLET] :
+	                    new UrlSegmentGroup([], children);
+	                if (this.peekStartsWith('//')) {
+	                    this.capture('//');
+	                }
+	            }
+	            this.capture(')');
+	            return segments;
+	        };
+	        return UrlParser;
+	    }());
+
+	    var NoMatch = (function () {
+	        function NoMatch(segmentGroup) {
+	            if (segmentGroup === void 0) { segmentGroup = null; }
+	            this.segmentGroup = segmentGroup;
+	        }
+	        return NoMatch;
+	    }());
+	    var AbsoluteRedirect = (function () {
+	        function AbsoluteRedirect(segments) {
+	            this.segments = segments;
+	        }
+	        return AbsoluteRedirect;
+	    }());
+	    function noMatch(segmentGroup) {
+	        return new rxjs_Observable.Observable(function (obs) { return obs.error(new NoMatch(segmentGroup)); });
+	    }
+	    function absoluteRedirect(segments) {
+	        return new rxjs_Observable.Observable(function (obs) { return obs.error(new AbsoluteRedirect(segments)); });
+	    }
+	    function canLoadFails(route) {
+	        return new rxjs_Observable.Observable(function (obs) { return obs.error(new NavigationCancelingError("Cannot load children because the guard of the route \"path: '" + route.path + "'\" returned false")); });
+	    }
+	    function applyRedirects(injector, configLoader, urlTree, config) {
+	        return new ApplyRedirects(injector, configLoader, urlTree, config).apply();
+	    }
+	    var ApplyRedirects = (function () {
+	        function ApplyRedirects(injector, configLoader, urlTree, config) {
+	            this.injector = injector;
+	            this.configLoader = configLoader;
+	            this.urlTree = urlTree;
+	            this.config = config;
+	            this.allowRedirects = true;
+	        }
+	        ApplyRedirects.prototype.apply = function () {
+	            var _this = this;
+	            var expanded$ = this.expandSegmentGroup(this.injector, this.config, this.urlTree.root, PRIMARY_OUTLET);
+	            var urlTrees$ = rxjs_operator_map.map.call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup); });
+	            return rxjs_operator_catch._catch.call(urlTrees$, function (e) {
+	                if (e instanceof AbsoluteRedirect) {
+	                    // after an absolute redirect we do not apply any more redirects!
+	                    _this.allowRedirects = false;
+	                    var group = new UrlSegmentGroup([], (_a = {}, _a[PRIMARY_OUTLET] = new UrlSegmentGroup(e.segments, {}), _a));
+	                    // we need to run matching, so we can fetch all lazy-loaded modules
+	                    return _this.match(group);
+	                }
+	                else if (e instanceof NoMatch) {
+	                    throw _this.noMatchError(e);
+	                }
+	                else {
+	                    throw e;
+	                }
+	                var _a;
+	            });
+	        };
+	        ApplyRedirects.prototype.match = function (segmentGroup) {
+	            var _this = this;
+	            var expanded$ = this.expandSegmentGroup(this.injector, this.config, segmentGroup, PRIMARY_OUTLET);
+	            var mapped$ = rxjs_operator_map.map.call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup); });
+	            return rxjs_operator_catch._catch.call(mapped$, function (e) {
+	                if (e instanceof NoMatch) {
+	                    throw _this.noMatchError(e);
+	                }
+	                else {
+	                    throw e;
+	                }
+	            });
+	        };
+	        ApplyRedirects.prototype.noMatchError = function (e) {
+	            return new Error("Cannot match any routes. URL Segment: '" + e.segmentGroup + "'");
+	        };
+	        ApplyRedirects.prototype.createUrlTree = function (rootCandidate) {
+	            var root = rootCandidate.segments.length > 0 ?
+	                new UrlSegmentGroup([], (_a = {}, _a[PRIMARY_OUTLET] = rootCandidate, _a)) :
+	                rootCandidate;
+	            return new UrlTree(root, this.urlTree.queryParams, this.urlTree.fragment);
+	            var _a;
+	        };
+	        ApplyRedirects.prototype.expandSegmentGroup = function (injector, routes, segmentGroup, outlet) {
+	            if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
+	                return rxjs_operator_map.map.call(this.expandChildren(injector, routes, segmentGroup), function (children) { return new UrlSegmentGroup([], children); });
+	            }
+	            else {
+	                return this.expandSegment(injector, segmentGroup, routes, segmentGroup.segments, outlet, true);
+	            }
+	        };
+	        ApplyRedirects.prototype.expandChildren = function (injector, routes, segmentGroup) {
+	            var _this = this;
+	            return waitForMap(segmentGroup.children, function (childOutlet, child) { return _this.expandSegmentGroup(injector, routes, child, childOutlet); });
+	        };
+	        ApplyRedirects.prototype.expandSegment = function (injector, segmentGroup, routes, segments, outlet, allowRedirects) {
+	            var _this = this;
+	            var routes$ = rxjs_observable_of.of.apply(void 0, routes);
+	            var processedRoutes$ = rxjs_operator_map.map.call(routes$, function (r) {
+	                var expanded$ = _this.expandSegmentAgainstRoute(injector, segmentGroup, routes, r, segments, outlet, allowRedirects);
+	                return rxjs_operator_catch._catch.call(expanded$, function (e) {
+	                    if (e instanceof NoMatch)
+	                        return rxjs_observable_of.of(null);
+	                    else
+	                        throw e;
+	                });
+	            });
+	            var concattedProcessedRoutes$ = rxjs_operator_concatAll.concatAll.call(processedRoutes$);
+	            var first$ = rxjs_operator_first.first.call(concattedProcessedRoutes$, function (s) { return !!s; });
+	            return rxjs_operator_catch._catch.call(first$, function (e, _) {
+	                if (e instanceof rxjs_util_EmptyError.EmptyError) {
+	                    throw new NoMatch(segmentGroup);
+	                }
+	                else {
+	                    throw e;
+	                }
+	            });
+	        };
+	        ApplyRedirects.prototype.expandSegmentAgainstRoute = function (injector, segmentGroup, routes, route, paths, outlet, allowRedirects) {
+	            if (getOutlet$1(route) !== outlet)
+	                return noMatch(segmentGroup);
+	            if (route.redirectTo !== undefined && !(allowRedirects && this.allowRedirects))
+	                return noMatch(segmentGroup);
+	            if (route.redirectTo === undefined) {
+	                return this.matchSegmentAgainstRoute(injector, segmentGroup, route, paths);
+	            }
+	            else {
+	                return this.expandSegmentAgainstRouteUsingRedirect(injector, segmentGroup, routes, route, paths, outlet);
+	            }
+	        };
+	        ApplyRedirects.prototype.expandSegmentAgainstRouteUsingRedirect = function (injector, segmentGroup, routes, route, segments, outlet) {
+	            if (route.path === '**') {
+	                return this.expandWildCardWithParamsAgainstRouteUsingRedirect(injector, routes, route, outlet);
+	            }
+	            else {
+	                return this.expandRegularSegmentAgainstRouteUsingRedirect(injector, segmentGroup, routes, route, segments, outlet);
+	            }
+	        };
+	        ApplyRedirects.prototype.expandWildCardWithParamsAgainstRouteUsingRedirect = function (injector, routes, route, outlet) {
+	            var newSegments = applyRedirectCommands([], route.redirectTo, {});
+	            if (route.redirectTo.startsWith('/')) {
+	                return absoluteRedirect(newSegments);
+	            }
+	            else {
+	                var group = new UrlSegmentGroup(newSegments, {});
+	                return this.expandSegment(injector, group, routes, newSegments, outlet, false);
+	            }
+	        };
+	        ApplyRedirects.prototype.expandRegularSegmentAgainstRouteUsingRedirect = function (injector, segmentGroup, routes, route, segments, outlet) {
+	            var _a = match(segmentGroup, route, segments), matched = _a.matched, consumedSegments = _a.consumedSegments, lastChild = _a.lastChild, positionalParamSegments = _a.positionalParamSegments;
+	            if (!matched)
+	                return noMatch(segmentGroup);
+	            var newSegments = applyRedirectCommands(consumedSegments, route.redirectTo, positionalParamSegments);
+	            if (route.redirectTo.startsWith('/')) {
+	                return absoluteRedirect(newSegments);
+	            }
+	            else {
+	                return this.expandSegment(injector, segmentGroup, routes, newSegments.concat(segments.slice(lastChild)), outlet, false);
+	            }
+	        };
+	        ApplyRedirects.prototype.matchSegmentAgainstRoute = function (injector, rawSegmentGroup, route, segments) {
+	            var _this = this;
+	            if (route.path === '**') {
+	                if (route.loadChildren) {
+	                    return rxjs_operator_map.map.call(this.configLoader.load(injector, route.loadChildren), function (r) {
+	                        route._loadedConfig = r;
+	                        return rxjs_observable_of.of(new UrlSegmentGroup(segments, {}));
+	                    });
+	                }
+	                else {
+	                    return rxjs_observable_of.of(new UrlSegmentGroup(segments, {}));
+	                }
+	            }
+	            else {
+	                var _a = match(rawSegmentGroup, route, segments), matched = _a.matched, consumedSegments_1 = _a.consumedSegments, lastChild = _a.lastChild;
+	                if (!matched)
+	                    return noMatch(rawSegmentGroup);
+	                var rawSlicedSegments_1 = segments.slice(lastChild);
+	                var childConfig$ = this.getChildConfig(injector, route);
+	                return rxjs_operator_mergeMap.mergeMap.call(childConfig$, function (routerConfig) {
+	                    var childInjector = routerConfig.injector;
+	                    var childConfig = routerConfig.routes;
+	                    var _a = split(rawSegmentGroup, consumedSegments_1, rawSlicedSegments_1, childConfig), segmentGroup = _a.segmentGroup, slicedSegments = _a.slicedSegments;
+	                    if (slicedSegments.length === 0 && segmentGroup.hasChildren()) {
+	                        var expanded$ = _this.expandChildren(childInjector, childConfig, segmentGroup);
+	                        return rxjs_operator_map.map.call(expanded$, function (children) { return new UrlSegmentGroup(consumedSegments_1, children); });
+	                    }
+	                    else if (childConfig.length === 0 && slicedSegments.length === 0) {
+	                        return rxjs_observable_of.of(new UrlSegmentGroup(consumedSegments_1, {}));
+	                    }
+	                    else {
+	                        var expanded$ = _this.expandSegment(childInjector, segmentGroup, childConfig, slicedSegments, PRIMARY_OUTLET, true);
+	                        return rxjs_operator_map.map.call(expanded$, function (cs) { return new UrlSegmentGroup(consumedSegments_1.concat(cs.segments), cs.children); });
+	                    }
+	                });
+	            }
+	        };
+	        ApplyRedirects.prototype.getChildConfig = function (injector, route) {
+	            var _this = this;
+	            if (route.children) {
+	                return rxjs_observable_of.of(new LoadedRouterConfig(route.children, injector, null));
+	            }
+	            else if (route.loadChildren) {
+	                return rxjs_operator_mergeMap.mergeMap.call(runGuards(injector, route), function (shouldLoad) {
+	                    if (shouldLoad) {
+	                        if (route._loadedConfig) {
+	                            return rxjs_observable_of.of(route._loadedConfig);
+	                        }
+	                        else {
+	                            return rxjs_operator_map.map.call(_this.configLoader.load(injector, route.loadChildren), function (r) {
+	                                route._loadedConfig = r;
+	                                return r;
+	                            });
+	                        }
+	                    }
+	                    else {
+	                        return canLoadFails(route);
+	                    }
+	                });
+	            }
+	            else {
+	                return rxjs_observable_of.of(new LoadedRouterConfig([], injector, null));
+	            }
+	        };
+	        return ApplyRedirects;
+	    }());
+	    function runGuards(injector, route) {
+	        var canLoad = route.canLoad;
+	        if (!canLoad || canLoad.length === 0)
+	            return rxjs_observable_of.of(true);
+	        var obs = rxjs_operator_map.map.call(rxjs_observable_from.from(canLoad), function (c) {
+	            var guard = injector.get(c);
+	            if (guard.canLoad) {
+	                return wrapIntoObservable(guard.canLoad(route));
+	            }
+	            else {
+	                return wrapIntoObservable(guard(route));
+	            }
+	        });
+	        return andObservables(obs);
+	    }
+	    function match(segmentGroup, route, segments) {
+	        var noMatch = { matched: false, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
+	        if (route.path === '') {
+	            if ((route.pathMatch === 'full') && (segmentGroup.hasChildren() || segments.length > 0)) {
+	                return { matched: false, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
+	            }
+	            else {
+	                return { matched: true, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
+	            }
+	        }
+	        var path = route.path;
+	        var parts = path.split('/');
+	        var positionalParamSegments = {};
+	        var consumedSegments = [];
+	        var currentIndex = 0;
+	        for (var i = 0; i < parts.length; ++i) {
+	            if (currentIndex >= segments.length)
+	                return noMatch;
+	            var current = segments[currentIndex];
+	            var p = parts[i];
+	            var isPosParam = p.startsWith(':');
+	            if (!isPosParam && p !== current.path)
+	                return noMatch;
+	            if (isPosParam) {
+	                positionalParamSegments[p.substring(1)] = current;
+	            }
+	            consumedSegments.push(current);
+	            currentIndex++;
+	        }
+	        if (route.pathMatch === 'full' &&
+	            (segmentGroup.hasChildren() || currentIndex < segments.length)) {
+	            return { matched: false, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
+	        }
+	        return { matched: true, consumedSegments: consumedSegments, lastChild: currentIndex, positionalParamSegments: positionalParamSegments };
+	    }
+	    function applyRedirectCommands(segments, redirectTo, posParams) {
+	        var r = redirectTo.startsWith('/') ? redirectTo.substring(1) : redirectTo;
+	        if (r === '') {
+	            return [];
+	        }
+	        else {
+	            return createSegments(redirectTo, r.split('/'), segments, posParams);
+	        }
+	    }
+	    function createSegments(redirectTo, parts, segments, posParams) {
+	        return parts.map(function (p) { return p.startsWith(':') ? findPosParam(p, posParams, redirectTo) :
+	            findOrCreateSegment(p, segments); });
+	    }
+	    function findPosParam(part, posParams, redirectTo) {
+	        var paramName = part.substring(1);
+	        var pos = posParams[paramName];
+	        if (!pos)
+	            throw new Error("Cannot redirect to '" + redirectTo + "'. Cannot find '" + part + "'.");
+	        return pos;
+	    }
+	    function findOrCreateSegment(part, segments) {
+	        var idx = 0;
+	        for (var _i = 0, segments_1 = segments; _i < segments_1.length; _i++) {
+	            var s = segments_1[_i];
+	            if (s.path === part) {
+	                segments.splice(idx);
+	                return s;
+	            }
+	            idx++;
+	        }
+	        return new UrlSegment(part, {});
+	    }
+	    function split(segmentGroup, consumedSegments, slicedSegments, config) {
+	        if (slicedSegments.length > 0 &&
+	            containsEmptyPathRedirectsWithNamedOutlets(segmentGroup, slicedSegments, config)) {
+	            var s = new UrlSegmentGroup(consumedSegments, createChildrenForEmptySegments(config, new UrlSegmentGroup(slicedSegments, segmentGroup.children)));
+	            return { segmentGroup: mergeTrivialChildren(s), slicedSegments: [] };
+	        }
+	        else if (slicedSegments.length === 0 &&
+	            containsEmptyPathRedirects(segmentGroup, slicedSegments, config)) {
+	            var s = new UrlSegmentGroup(segmentGroup.segments, addEmptySegmentsToChildrenIfNeeded(segmentGroup, slicedSegments, config, segmentGroup.children));
+	            return { segmentGroup: mergeTrivialChildren(s), slicedSegments: slicedSegments };
+	        }
+	        else {
+	            return { segmentGroup: segmentGroup, slicedSegments: slicedSegments };
+	        }
+	    }
+	    function mergeTrivialChildren(s) {
+	        if (s.numberOfChildren === 1 && s.children[PRIMARY_OUTLET]) {
+	            var c = s.children[PRIMARY_OUTLET];
+	            return new UrlSegmentGroup(s.segments.concat(c.segments), c.children);
+	        }
+	        else {
+	            return s;
+	        }
+	    }
+	    function addEmptySegmentsToChildrenIfNeeded(segmentGroup, slicedSegments, routes, children) {
+	        var res = {};
+	        for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
+	            var r = routes_1[_i];
+	            if (emptyPathRedirect(segmentGroup, slicedSegments, r) && !children[getOutlet$1(r)]) {
+	                res[getOutlet$1(r)] = new UrlSegmentGroup([], {});
+	            }
+	        }
+	        return merge(children, res);
+	    }
+	    function createChildrenForEmptySegments(routes, primarySegmentGroup) {
+	        var res = {};
+	        res[PRIMARY_OUTLET] = primarySegmentGroup;
+	        for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
+	            var r = routes_2[_i];
+	            if (r.path === '' && getOutlet$1(r) !== PRIMARY_OUTLET) {
+	                res[getOutlet$1(r)] = new UrlSegmentGroup([], {});
+	            }
+	        }
+	        return res;
+	    }
+	    function containsEmptyPathRedirectsWithNamedOutlets(segmentGroup, slicedSegments, routes) {
+	        return routes
+	            .filter(function (r) { return emptyPathRedirect(segmentGroup, slicedSegments, r) &&
+	            getOutlet$1(r) !== PRIMARY_OUTLET; })
+	            .length > 0;
+	    }
+	    function containsEmptyPathRedirects(segmentGroup, slicedSegments, routes) {
+	        return routes.filter(function (r) { return emptyPathRedirect(segmentGroup, slicedSegments, r); }).length > 0;
+	    }
+	    function emptyPathRedirect(segmentGroup, slicedSegments, r) {
+	        if ((segmentGroup.hasChildren() || slicedSegments.length > 0) && r.pathMatch === 'full')
+	            return false;
+	        return r.path === '' && r.redirectTo !== undefined;
+	    }
+	    function getOutlet$1(route) {
+	        return route.outlet ? route.outlet : PRIMARY_OUTLET;
+	    }
+
+	    function validateConfig(config) {
+	        config.forEach(validateNode);
+	    }
+	    function validateNode(route) {
+	        if (Array.isArray(route)) {
+	            throw new Error("Invalid route configuration: Array cannot be specified");
+	        }
+	        if (route.component === undefined && (route.outlet && route.outlet !== PRIMARY_OUTLET)) {
+	            throw new Error("Invalid route configuration of route '" + route.path + "': a componentless route cannot have a named outlet set");
+	        }
+	        if (!!route.redirectTo && !!route.children) {
+	            throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and children cannot be used together");
+	        }
+	        if (!!route.redirectTo && !!route.loadChildren) {
+	            throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and loadChildren cannot be used together");
+	        }
+	        if (!!route.children && !!route.loadChildren) {
+	            throw new Error("Invalid configuration of route '" + route.path + "': children and loadChildren cannot be used together");
+	        }
+	        if (!!route.redirectTo && !!route.component) {
+	            throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and component cannot be used together");
+	        }
+	        if (route.redirectTo === undefined && !route.component && !route.children &&
+	            !route.loadChildren) {
+	            throw new Error("Invalid configuration of route '" + route.path + "': one of the following must be provided (component or redirectTo or children or loadChildren)");
+	        }
+	        if (route.path === undefined) {
+	            throw new Error("Invalid route configuration: routes must have path specified");
+	        }
+	        if (route.path.startsWith('/')) {
+	            throw new Error("Invalid route configuration of route '" + route.path + "': path cannot start with a slash");
+	        }
+	        if (route.path === '' && route.redirectTo !== undefined && route.pathMatch === undefined) {
+	            var exp = "The default value of 'pathMatch' is 'prefix', but often the intent is to use 'full'.";
+	            throw new Error("Invalid route configuration of route '{path: \"" + route.path + "\", redirectTo: \"" + route.redirectTo + "\"}': please provide 'pathMatch'. " + exp);
+	        }
+	        if (route.pathMatch !== undefined && route.pathMatch !== 'full' && route.pathMatch !== 'prefix') {
+	            throw new Error("Invalid configuration of route '" + route.path + "': pathMatch can only be set to 'prefix' or 'full'");
+	        }
+	    }
+
+	    /**
+	     * @license
+	     * Copyright Google Inc. All Rights Reserved.
+	     *
+	     * Use of this source code is governed by an MIT-style license that can be
+	     * found in the LICENSE file at https://angular.io/license
+	     */
+	    var Tree = (function () {
+	        function Tree(root) {
+	            this._root = root;
+	        }
+	        Object.defineProperty(Tree.prototype, "root", {
+	            get: function () { return this._root.value; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        /**
+	         * @internal
+	         */
+	        Tree.prototype.parent = function (t) {
+	            var p = this.pathFromRoot(t);
+	            return p.length > 1 ? p[p.length - 2] : null;
+	        };
+	        /**
+	         * @internal
+	         */
+	        Tree.prototype.children = function (t) {
+	            var n = findNode(t, this._root);
+	            return n ? n.children.map(function (t) { return t.value; }) : [];
+	        };
+	        /**
+	         * @internal
+	         */
+	        Tree.prototype.firstChild = function (t) {
+	            var n = findNode(t, this._root);
+	            return n && n.children.length > 0 ? n.children[0].value : null;
+	        };
+	        /**
+	         * @internal
+	         */
+	        Tree.prototype.siblings = function (t) {
+	            var p = findPath(t, this._root, []);
+	            if (p.length < 2)
+	                return [];
+	            var c = p[p.length - 2].children.map(function (c) { return c.value; });
+	            return c.filter(function (cc) { return cc !== t; });
+	        };
+	        /**
+	         * @internal
+	         */
+	        Tree.prototype.pathFromRoot = function (t) { return findPath(t, this._root, []).map(function (s) { return s.value; }); };
+	        return Tree;
+	    }());
+	    function findNode(expected, c) {
+	        if (expected === c.value)
+	            return c;
+	        for (var _i = 0, _a = c.children; _i < _a.length; _i++) {
+	            var cc = _a[_i];
+	            var r = findNode(expected, cc);
+	            if (r)
+	                return r;
+	        }
+	        return null;
+	    }
+	    function findPath(expected, c, collected) {
+	        collected.push(c);
+	        if (expected === c.value)
+	            return collected;
+	        for (var _i = 0, _a = c.children; _i < _a.length; _i++) {
+	            var cc = _a[_i];
+	            var cloned = collected.slice(0);
+	            var r = findPath(expected, cc, cloned);
+	            if (r.length > 0)
+	                return r;
+	        }
+	        return [];
+	    }
+	    var TreeNode = (function () {
+	        function TreeNode(value, children) {
+	            this.value = value;
+	            this.children = children;
+	        }
+	        TreeNode.prototype.toString = function () { return "TreeNode(" + this.value + ")"; };
+	        return TreeNode;
+	    }());
+
+	    /**
+	     * @license
+	     * Copyright Google Inc. All Rights Reserved.
+	     *
+	     * Use of this source code is governed by an MIT-style license that can be
+	     * found in the LICENSE file at https://angular.io/license
+	     */
+	    var __extends$1 = (this && this.__extends) || function (d, b) {
+	        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	        function __() { this.constructor = d; }
+	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	    };
+	    /**
+	     * @whatItDoes Represents the state of the router.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * @Component({templateUrl:'template.html'})
+	     * class MyComponent {
+	     *   constructor(router: Router) {
+	     *     const state: RouterState = router.routerState;
+	     *     const root: ActivatedRoute = state.root;
+	     *     const child = root.firstChild;
+	     *     const id: Observable<string> = child.params.map(p => p.id);
+	     *     //...
+	     *   }
+	     * }
+	     * ```
+	     *
+	     * @description
+	     * RouterState is a tree of activated routes. Every node in this tree knows about the "consumed" URL
+	     * segments,
+	     * the extracted parameters, and the resolved data.
+	     *
+	     * See {@link ActivatedRoute} for more information.
+	     *
+	     * @stable
+	     */
+	    var RouterState = (function (_super) {
+	        __extends$1(RouterState, _super);
+	        /**
+	         * @internal
+	         */
+	        function RouterState(root,
+	            /**
+	             * The current snapshot of the router state.
+	             */
+	            snapshot) {
+	            _super.call(this, root);
+	            this.snapshot = snapshot;
+	            setRouterStateSnapshot(this, root);
+	        }
+	        RouterState.prototype.toString = function () { return this.snapshot.toString(); };
+	        return RouterState;
+	    }(Tree));
+	    function createEmptyState(urlTree, rootComponent) {
+	        var snapshot = createEmptyStateSnapshot(urlTree, rootComponent);
+	        var emptyUrl = new rxjs_BehaviorSubject.BehaviorSubject([new UrlSegment('', {})]);
+	        var emptyParams = new rxjs_BehaviorSubject.BehaviorSubject({});
+	        var emptyData = new rxjs_BehaviorSubject.BehaviorSubject({});
+	        var emptyQueryParams = new rxjs_BehaviorSubject.BehaviorSubject({});
+	        var fragment = new rxjs_BehaviorSubject.BehaviorSubject('');
+	        var activated = new ActivatedRoute(emptyUrl, emptyParams, emptyQueryParams, fragment, emptyData, PRIMARY_OUTLET, rootComponent, snapshot.root);
+	        activated.snapshot = snapshot.root;
+	        return new RouterState(new TreeNode(activated, []), snapshot);
+	    }
+	    function createEmptyStateSnapshot(urlTree, rootComponent) {
+	        var emptyParams = {};
+	        var emptyData = {};
+	        var emptyQueryParams = {};
+	        var fragment = '';
+	        var activated = new ActivatedRouteSnapshot([], emptyParams, emptyQueryParams, fragment, emptyData, PRIMARY_OUTLET, rootComponent, null, urlTree.root, -1, {});
+	        return new RouterStateSnapshot('', new TreeNode(activated, []));
+	    }
+	    /**
+	     * @whatItDoes Contains the information about a route associated with a component loaded in an
+	     * outlet.
+	     * ActivatedRoute can also be used to traverse the router state tree.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * @Component({templateUrl:'./my-component.html'})
+	     * class MyComponent {
+	     *   constructor(route: ActivatedRoute) {
+	     *     const id: Observable<string> = route.params.map(p => p.id);
+	     *     const url: Observable<string> = route.url.map(s => s.join(''));
+	     *     const user = route.data.map(d => d.user); //includes `data` and `resolve`
+	     *   }
+	     * }
+	     * ```
+	     *
+	     * @stable
+	     */
+	    var ActivatedRoute = (function () {
+	        /**
+	         * @internal
+	         */
+	        function ActivatedRoute(
+	            /**
+	             *  The URL segments matched by this route. The observable will emit a new value when
+	             *  the array of segments changes.
+	             */
+	            url,
+	            /**
+	             * The matrix parameters scoped to this route. The observable will emit a new value when
+	             * the set of the parameters changes.
+	             */
+	            params,
+	            /**
+	             * The query parameters shared by all the routes. The observable will emit a new value when
+	             * the set of the parameters changes.
+	             */
+	            queryParams,
+	            /**
+	             * The URL fragment shared by all the routes. The observable will emit a new value when
+	             * the URL fragment changes.
+	             */
+	            fragment,
+	            /**
+	             * The static and resolved data of this route. The observable will emit a new value when
+	             * any of the resolvers returns a new object.
+	             */
+	            data,
+	            /**
+	             * The outlet name of the route. It's a constant.
+	             */
+	            outlet,
+	            /**
+	             * The component of the route. It's a constant.
+	             */
+	            component, // TODO: vsavkin: remove |string
+	            futureSnapshot) {
+	            this.url = url;
+	            this.params = params;
+	            this.queryParams = queryParams;
+	            this.fragment = fragment;
+	            this.data = data;
+	            this.outlet = outlet;
+	            this.component = component;
+	            this._futureSnapshot = futureSnapshot;
+	        }
+	        Object.defineProperty(ActivatedRoute.prototype, "routeConfig", {
+	            /**
+	             * The configuration used to match this route.
+	             */
+	            get: function () { return this._futureSnapshot.routeConfig; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRoute.prototype, "root", {
+	            /**
+	             * The root of the router state.
+	             */
+	            get: function () { return this._routerState.root; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRoute.prototype, "parent", {
+	            /**
+	             * The parent of this route in the router state tree.
+	             */
+	            get: function () { return this._routerState.parent(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRoute.prototype, "firstChild", {
+	            /**
+	             * The first child of this route in the router state tree.
+	             */
+	            get: function () { return this._routerState.firstChild(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRoute.prototype, "children", {
+	            /**
+	             * The children of this route in the router state tree.
+	             */
+	            get: function () { return this._routerState.children(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRoute.prototype, "pathFromRoot", {
+	            /**
+	             * The path from the root of the router state tree to this route.
+	             */
+	            get: function () { return this._routerState.pathFromRoot(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        /**
+	         * @docsNotRequired
+	         */
+	        ActivatedRoute.prototype.toString = function () {
+	            return this.snapshot ? this.snapshot.toString() : "Future(" + this._futureSnapshot + ")";
+	        };
+	        return ActivatedRoute;
+	    }());
+	    /**
+	     * @internal
+	     */
+	    function inheritedParamsDataResolve(route) {
+	        var pathToRoot = route.pathFromRoot;
+	        var inhertingStartingFrom = pathToRoot.length - 1;
+	        while (inhertingStartingFrom >= 1) {
+	            var current = pathToRoot[inhertingStartingFrom];
+	            var parent_1 = pathToRoot[inhertingStartingFrom - 1];
+	            // current route is an empty path => inherits its parent's params and data
+	            if (current.routeConfig && current.routeConfig.path === '') {
+	                inhertingStartingFrom--;
+	            }
+	            else if (!parent_1.component) {
+	                inhertingStartingFrom--;
+	            }
+	            else {
+	                break;
+	            }
+	        }
+	        return pathToRoot.slice(inhertingStartingFrom).reduce(function (res, curr) {
+	            var params = merge(res.params, curr.params);
+	            var data = merge(res.data, curr.data);
+	            var resolve = merge(res.resolve, curr._resolvedData);
+	            return { params: params, data: data, resolve: resolve };
+	        }, { params: {}, data: {}, resolve: {} });
+	    }
+	    /**
+	     * @whatItDoes Contains the information about a route associated with a component loaded in an
+	     * outlet
+	     * at a particular moment in time. ActivatedRouteSnapshot can also be used to traverse the router
+	     * state tree.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * @Component({templateUrl:'./my-component.html'})
+	     * class MyComponent {
+	     *   constructor(route: ActivatedRoute) {
+	     *     const id: string = route.snapshot.params.id;
+	     *     const url: string = route.snapshot.url.join('');
+	     *     const user = route.snapshot.data.user;
+	     *   }
+	     * }
+	     * ```
+	     *
+	     * @stable
+	     */
+	    var ActivatedRouteSnapshot = (function () {
+	        /**
+	         * @internal
+	         */
+	        function ActivatedRouteSnapshot(
+	            /**
+	             *  The URL segments matched by this route.
+	             */
+	            url,
+	            /**
+	             * The matrix parameters scoped to this route.
+	             */
+	            params,
+	            /**
+	             * The query parameters shared by all the routes.
+	             */
+	            queryParams,
+	            /**
+	             * The URL fragment shared by all the routes.
+	             */
+	            fragment,
+	            /**
+	             * The static and resolved data of this route.
+	             */
+	            data,
+	            /**
+	             * The outlet name of the route.
+	             */
+	            outlet,
+	            /**
+	             * The component of the route.
+	             */
+	            component, routeConfig, urlSegment, lastPathIndex, resolve) {
+	            this.url = url;
+	            this.params = params;
+	            this.queryParams = queryParams;
+	            this.fragment = fragment;
+	            this.data = data;
+	            this.outlet = outlet;
+	            this.component = component;
+	            this._routeConfig = routeConfig;
+	            this._urlSegment = urlSegment;
+	            this._lastPathIndex = lastPathIndex;
+	            this._resolve = resolve;
+	        }
+	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "routeConfig", {
+	            /**
+	             * The configuration used to match this route.
+	             */
+	            get: function () { return this._routeConfig; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "root", {
+	            /**
+	             * The root of the router state.
+	             */
+	            get: function () { return this._routerState.root; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "parent", {
+	            /**
+	             * The parent of this route in the router state tree.
+	             */
+	            get: function () { return this._routerState.parent(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "firstChild", {
+	            /**
+	             * The first child of this route in the router state tree.
+	             */
+	            get: function () { return this._routerState.firstChild(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "children", {
+	            /**
+	             * The children of this route in the router state tree.
+	             */
+	            get: function () { return this._routerState.children(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "pathFromRoot", {
+	            /**
+	             * The path from the root of the router state tree to this route.
+	             */
+	            get: function () { return this._routerState.pathFromRoot(this); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        /**
+	         * @docsNotRequired
+	         */
+	        ActivatedRouteSnapshot.prototype.toString = function () {
+	            var url = this.url.map(function (s) { return s.toString(); }).join('/');
+	            var matched = this._routeConfig ? this._routeConfig.path : '';
+	            return "Route(url:'" + url + "', path:'" + matched + "')";
+	        };
+	        return ActivatedRouteSnapshot;
+	    }());
+	    /**
+	     * @whatItDoes Represents the state of the router at a moment in time.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * @Component({templateUrl:'template.html'})
+	     * class MyComponent {
+	     *   constructor(router: Router) {
+	     *     const state: RouterState = router.routerState;
+	     *     const snapshot: RouterStateSnapshot = state.snapshot;
+	     *     const root: ActivatedRouteSnapshot = snapshot.root;
+	     *     const child = root.firstChild;
+	     *     const id: Observable<string> = child.params.map(p => p.id);
+	     *     //...
+	     *   }
+	     * }
+	     * ```
+	     *
+	     * @description
+	     * RouterStateSnapshot is a tree of activated route snapshots. Every node in this tree knows about
+	     * the "consumed" URL segments, the extracted parameters, and the resolved data.
+	     *
+	     * @stable
+	     */
+	    var RouterStateSnapshot = (function (_super) {
+	        __extends$1(RouterStateSnapshot, _super);
+	        /**
+	         * @internal
+	         */
+	        function RouterStateSnapshot(
+	            /** The url from which this snapshot was created */
+	            url, root) {
+	            _super.call(this, root);
+	            this.url = url;
+	            setRouterStateSnapshot(this, root);
+	        }
+	        RouterStateSnapshot.prototype.toString = function () { return serializeNode(this._root); };
+	        return RouterStateSnapshot;
+	    }(Tree));
+	    function setRouterStateSnapshot(state, node) {
+	        node.value._routerState = state;
+	        node.children.forEach(function (c) { return setRouterStateSnapshot(state, c); });
+	    }
+	    function serializeNode(node) {
+	        var c = node.children.length > 0 ? " { " + node.children.map(serializeNode).join(", ") + " } " : '';
+	        return "" + node.value + c;
+	    }
+	    /**
+	     * The expectation is that the activate route is created with the right set of parameters.
+	     * So we push new values into the observables only when they are not the initial values.
+	     * And we detect that by checking if the snapshot field is set.
+	     */
+	    function advanceActivatedRoute(route) {
+	        if (route.snapshot) {
+	            if (!shallowEqual(route.snapshot.queryParams, route._futureSnapshot.queryParams)) {
+	                route.queryParams.next(route._futureSnapshot.queryParams);
+	            }
+	            if (route.snapshot.fragment !== route._futureSnapshot.fragment) {
+	                route.fragment.next(route._futureSnapshot.fragment);
+	            }
+	            if (!shallowEqual(route.snapshot.params, route._futureSnapshot.params)) {
+	                route.params.next(route._futureSnapshot.params);
+	                route.data.next(route._futureSnapshot.data);
+	            }
+	            if (!shallowEqualArrays(route.snapshot.url, route._futureSnapshot.url)) {
+	                route.url.next(route._futureSnapshot.url);
+	            }
+	            route.snapshot = route._futureSnapshot;
+	        }
+	        else {
+	            route.snapshot = route._futureSnapshot;
+	            // this is for resolved data
+	            route.data.next(route._futureSnapshot.data);
+	        }
+	    }
+
+	    function createRouterState(curr, prevState) {
+	        var root = createNode(curr._root, prevState ? prevState._root : undefined);
+	        return new RouterState(root, curr);
+	    }
+	    function createNode(curr, prevState) {
+	        if (prevState && equalRouteSnapshots(prevState.value.snapshot, curr.value)) {
+	            var value = prevState.value;
+	            value._futureSnapshot = curr.value;
+	            var children = createOrReuseChildren(curr, prevState);
+	            return new TreeNode(value, children);
+	        }
+	        else {
+	            var value = createActivatedRoute(curr.value);
+	            var children = curr.children.map(function (c) { return createNode(c); });
+	            return new TreeNode(value, children);
+	        }
+	    }
+	    function createOrReuseChildren(curr, prevState) {
+	        return curr.children.map(function (child) {
+	            for (var _i = 0, _a = prevState.children; _i < _a.length; _i++) {
+	                var p = _a[_i];
+	                if (equalRouteSnapshots(p.value.snapshot, child.value)) {
+	                    return createNode(child, p);
+	                }
+	            }
+	            return createNode(child);
+	        });
+	    }
+	    function createActivatedRoute(c) {
+	        return new ActivatedRoute(new rxjs_BehaviorSubject.BehaviorSubject(c.url), new rxjs_BehaviorSubject.BehaviorSubject(c.params), new rxjs_BehaviorSubject.BehaviorSubject(c.queryParams), new rxjs_BehaviorSubject.BehaviorSubject(c.fragment), new rxjs_BehaviorSubject.BehaviorSubject(c.data), c.outlet, c.component, c);
+	    }
+	    function equalRouteSnapshots(a, b) {
+	        return a._routeConfig === b._routeConfig;
+	    }
+
+	    function createUrlTree(route, urlTree, commands, queryParams, fragment) {
+	        if (commands.length === 0) {
+	            return tree(urlTree.root, urlTree.root, urlTree, queryParams, fragment);
+	        }
+	        var normalizedCommands = normalizeCommands(commands);
+	        validateCommands(normalizedCommands);
+	        if (navigateToRoot(normalizedCommands)) {
+	            return tree(urlTree.root, new UrlSegmentGroup([], {}), urlTree, queryParams, fragment);
+	        }
+	        var startingPosition = findStartingPosition(normalizedCommands, urlTree, route);
+	        var segmentGroup = startingPosition.processChildren ?
+	            updateSegmentGroupChildren(startingPosition.segmentGroup, startingPosition.index, normalizedCommands.commands) :
+	            updateSegmentGroup(startingPosition.segmentGroup, startingPosition.index, normalizedCommands.commands);
+	        return tree(startingPosition.segmentGroup, segmentGroup, urlTree, queryParams, fragment);
+	    }
+	    function validateCommands(n) {
+	        if (n.isAbsolute && n.commands.length > 0 && isMatrixParams(n.commands[0])) {
+	            throw new Error('Root segment cannot have matrix parameters');
+	        }
+	        var c = n.commands.filter(function (c) { return typeof c === 'object' && c.outlets !== undefined; });
+	        if (c.length > 0 && c[0] !== n.commands[n.commands.length - 1]) {
+	            throw new Error('{outlets:{}} has to be the last command');
+	        }
+	    }
+	    function isMatrixParams(command) {
+	        return typeof command === 'object' && command.outlets === undefined &&
+	            command.segmentPath === undefined;
+	    }
+	    function tree(oldSegmentGroup, newSegmentGroup, urlTree, queryParams, fragment) {
+	        if (urlTree.root === oldSegmentGroup) {
+	            return new UrlTree(newSegmentGroup, stringify(queryParams), fragment);
+	        }
+	        else {
+	            return new UrlTree(replaceSegment(urlTree.root, oldSegmentGroup, newSegmentGroup), stringify(queryParams), fragment);
+	        }
+	    }
+	    function replaceSegment(current, oldSegment, newSegment) {
+	        var children = {};
+	        forEach(current.children, function (c, outletName) {
+	            if (c === oldSegment) {
+	                children[outletName] = newSegment;
+	            }
+	            else {
+	                children[outletName] = replaceSegment(c, oldSegment, newSegment);
+	            }
+	        });
+	        return new UrlSegmentGroup(current.segments, children);
+	    }
+	    function navigateToRoot(normalizedChange) {
+	        return normalizedChange.isAbsolute && normalizedChange.commands.length === 1 &&
+	            normalizedChange.commands[0] == '/';
+	    }
+	    var NormalizedNavigationCommands = (function () {
+	        function NormalizedNavigationCommands(isAbsolute, numberOfDoubleDots, commands) {
+	            this.isAbsolute = isAbsolute;
+	            this.numberOfDoubleDots = numberOfDoubleDots;
+	            this.commands = commands;
+	        }
+	        return NormalizedNavigationCommands;
+	    }());
+	    function normalizeCommands(commands) {
+	        if ((typeof commands[0] === 'string') && commands.length === 1 && commands[0] == '/') {
+	            return new NormalizedNavigationCommands(true, 0, commands);
+	        }
+	        var numberOfDoubleDots = 0;
+	        var isAbsolute = false;
+	        var res = [];
+	        var _loop_1 = function(i) {
+	            var c = commands[i];
+	            if (typeof c === 'object' && c.outlets !== undefined) {
+	                var r_1 = {};
+	                forEach(c.outlets, function (commands, name) {
+	                    if (typeof commands === 'string') {
+	                        r_1[name] = commands.split('/');
+	                    }
+	                    else {
+	                        r_1[name] = commands;
+	                    }
+	                });
+	                res.push({ outlets: r_1 });
+	                return "continue";
+	            }
+	            if (typeof c === 'object' && c.segmentPath !== undefined) {
+	                res.push(c.segmentPath);
+	                return "continue";
+	            }
+	            if (!(typeof c === 'string')) {
+	                res.push(c);
+	                return "continue";
+	            }
+	            if (i === 0) {
+	                var parts = c.split('/');
+	                for (var j = 0; j < parts.length; ++j) {
+	                    var cc = parts[j];
+	                    if (j == 0 && cc == '.') {
+	                    }
+	                    else if (j == 0 && cc == '') {
+	                        isAbsolute = true;
+	                    }
+	                    else if (cc == '..') {
+	                        numberOfDoubleDots++;
+	                    }
+	                    else if (cc != '') {
+	                        res.push(cc);
+	                    }
+	                }
+	            }
+	            else {
+	                res.push(c);
+	            }
+	        };
+	        for (var i = 0; i < commands.length; ++i) {
+	            _loop_1(i);
+	        }
+	        return new NormalizedNavigationCommands(isAbsolute, numberOfDoubleDots, res);
+	    }
+	    var Position = (function () {
+	        function Position(segmentGroup, processChildren, index) {
+	            this.segmentGroup = segmentGroup;
+	            this.processChildren = processChildren;
+	            this.index = index;
+	        }
+	        return Position;
+	    }());
+	    function findStartingPosition(normalizedChange, urlTree, route) {
+	        if (normalizedChange.isAbsolute) {
+	            return new Position(urlTree.root, true, 0);
+	        }
+	        else if (route.snapshot._lastPathIndex === -1) {
+	            return new Position(route.snapshot._urlSegment, true, 0);
+	        }
+	        else {
+	            var modifier = isMatrixParams(normalizedChange.commands[0]) ? 0 : 1;
+	            var index = route.snapshot._lastPathIndex + modifier;
+	            return createPositionApplyingDoubleDots(route.snapshot._urlSegment, index, normalizedChange.numberOfDoubleDots);
+	        }
+	    }
+	    function createPositionApplyingDoubleDots(group, index, numberOfDoubleDots) {
+	        var g = group;
+	        var ci = index;
+	        var dd = numberOfDoubleDots;
+	        while (dd > ci) {
+	            dd -= ci;
+	            g = g.parent;
+	            if (!g) {
+	                throw new Error('Invalid number of \'../\'');
+	            }
+	            ci = g.segments.length;
+	        }
+	        return new Position(g, false, ci - dd);
+	    }
+	    function getPath(command) {
+	        if (typeof command === 'object' && command.outlets)
+	            return command.outlets[PRIMARY_OUTLET];
+	        return "" + command;
+	    }
+	    function getOutlets(commands) {
+	        if (!(typeof commands[0] === 'object'))
+	            return (_a = {}, _a[PRIMARY_OUTLET] = commands, _a);
+	        if (commands[0].outlets === undefined)
+	            return (_b = {}, _b[PRIMARY_OUTLET] = commands, _b);
+	        return commands[0].outlets;
+	        var _a, _b;
+	    }
+	    function updateSegmentGroup(segmentGroup, startIndex, commands) {
+	        if (!segmentGroup) {
+	            segmentGroup = new UrlSegmentGroup([], {});
+	        }
+	        if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
+	            return updateSegmentGroupChildren(segmentGroup, startIndex, commands);
+	        }
+	        var m = prefixedWith(segmentGroup, startIndex, commands);
+	        var slicedCommands = commands.slice(m.commandIndex);
+	        if (m.match && m.pathIndex < segmentGroup.segments.length) {
+	            var g = new UrlSegmentGroup(segmentGroup.segments.slice(0, m.pathIndex), {});
+	            g.children[PRIMARY_OUTLET] =
+	                new UrlSegmentGroup(segmentGroup.segments.slice(m.pathIndex), segmentGroup.children);
+	            return updateSegmentGroupChildren(g, 0, slicedCommands);
+	        }
+	        else if (m.match && slicedCommands.length === 0) {
+	            return new UrlSegmentGroup(segmentGroup.segments, {});
+	        }
+	        else if (m.match && !segmentGroup.hasChildren()) {
+	            return createNewSegmentGroup(segmentGroup, startIndex, commands);
+	        }
+	        else if (m.match) {
+	            return updateSegmentGroupChildren(segmentGroup, 0, slicedCommands);
+	        }
+	        else {
+	            return createNewSegmentGroup(segmentGroup, startIndex, commands);
+	        }
+	    }
+	    function updateSegmentGroupChildren(segmentGroup, startIndex, commands) {
+	        if (commands.length === 0) {
+	            return new UrlSegmentGroup(segmentGroup.segments, {});
+	        }
+	        else {
+	            var outlets_1 = getOutlets(commands);
+	            var children_1 = {};
+	            forEach(outlets_1, function (commands, outlet) {
+	                if (commands !== null) {
+	                    children_1[outlet] = updateSegmentGroup(segmentGroup.children[outlet], startIndex, commands);
+	                }
+	            });
+	            forEach(segmentGroup.children, function (child, childOutlet) {
+	                if (outlets_1[childOutlet] === undefined) {
+	                    children_1[childOutlet] = child;
+	                }
+	            });
+	            return new UrlSegmentGroup(segmentGroup.segments, children_1);
+	        }
+	    }
+	    function prefixedWith(segmentGroup, startIndex, commands) {
+	        var currentCommandIndex = 0;
+	        var currentPathIndex = startIndex;
+	        var noMatch = { match: false, pathIndex: 0, commandIndex: 0 };
+	        while (currentPathIndex < segmentGroup.segments.length) {
+	            if (currentCommandIndex >= commands.length)
+	                return noMatch;
+	            var path = segmentGroup.segments[currentPathIndex];
+	            var curr = getPath(commands[currentCommandIndex]);
+	            var next = currentCommandIndex < commands.length - 1 ? commands[currentCommandIndex + 1] : null;
+	            if (currentPathIndex > 0 && curr === undefined)
+	                break;
+	            if (curr && next && (typeof next === 'object') && next.outlets === undefined) {
+	                if (!compare(curr, next, path))
+	                    return noMatch;
+	                currentCommandIndex += 2;
+	            }
+	            else {
+	                if (!compare(curr, {}, path))
+	                    return noMatch;
+	                currentCommandIndex++;
+	            }
+	            currentPathIndex++;
+	        }
+	        return { match: true, pathIndex: currentPathIndex, commandIndex: currentCommandIndex };
+	    }
+	    function createNewSegmentGroup(segmentGroup, startIndex, commands) {
+	        var paths = segmentGroup.segments.slice(0, startIndex);
+	        var i = 0;
+	        while (i < commands.length) {
+	            if (typeof commands[i] === 'object' && commands[i].outlets !== undefined) {
+	                var children = createNewSegmentChldren(commands[i].outlets);
+	                return new UrlSegmentGroup(paths, children);
+	            }
+	            // if we start with an object literal, we need to reuse the path part from the segment
+	            if (i === 0 && isMatrixParams(commands[0])) {
+	                var p = segmentGroup.segments[startIndex];
+	                paths.push(new UrlSegment(p.path, commands[0]));
+	                i++;
+	                continue;
+	            }
+	            var curr = getPath(commands[i]);
+	            var next = (i < commands.length - 1) ? commands[i + 1] : null;
+	            if (curr && next && isMatrixParams(next)) {
+	                paths.push(new UrlSegment(curr, stringify(next)));
+	                i += 2;
+	            }
+	            else {
+	                paths.push(new UrlSegment(curr, {}));
+	                i++;
+	            }
+	        }
+	        return new UrlSegmentGroup(paths, {});
+	    }
+	    function createNewSegmentChldren(outlets) {
+	        var children = {};
+	        forEach(outlets, function (commands, outlet) {
+	            if (commands !== null) {
+	                children[outlet] = createNewSegmentGroup(new UrlSegmentGroup([], {}), 0, commands);
+	            }
+	        });
+	        return children;
+	    }
+	    function stringify(params) {
+	        var res = {};
+	        forEach(params, function (v, k) { return res[k] = "" + v; });
+	        return res;
+	    }
+	    function compare(path, params, segment) {
+	        return path == segment.path && shallowEqual(params, segment.parameters);
+	    }
+
+	    var NoMatch$1 = (function () {
+	        function NoMatch() {
+	        }
+	        return NoMatch;
+	    }());
+	    function recognize(rootComponentType, config, urlTree, url) {
+	        return new Recognizer(rootComponentType, config, urlTree, url).recognize();
+	    }
+	    var Recognizer = (function () {
+	        function Recognizer(rootComponentType, config, urlTree, url) {
+	            this.rootComponentType = rootComponentType;
+	            this.config = config;
+	            this.urlTree = urlTree;
+	            this.url = url;
+	        }
+	        Recognizer.prototype.recognize = function () {
+	            try {
+	                var rootSegmentGroup = split$1(this.urlTree.root, [], [], this.config).segmentGroup;
+	                var children = this.processSegmentGroup(this.config, rootSegmentGroup, PRIMARY_OUTLET);
+	                var root = new ActivatedRouteSnapshot([], Object.freeze({}), Object.freeze(this.urlTree.queryParams), this.urlTree.fragment, {}, PRIMARY_OUTLET, this.rootComponentType, null, this.urlTree.root, -1, {});
+	                var rootNode = new TreeNode(root, children);
+	                var routeState = new RouterStateSnapshot(this.url, rootNode);
+	                this.inheriteParamsAndData(routeState._root);
+	                return rxjs_observable_of.of(routeState);
+	            }
+	            catch (e) {
+	                return new rxjs_Observable.Observable(function (obs) { return obs.error(e); });
+	            }
+	        };
+	        Recognizer.prototype.inheriteParamsAndData = function (routeNode) {
+	            var _this = this;
+	            var route = routeNode.value;
+	            var i = inheritedParamsDataResolve(route);
+	            route.params = Object.freeze(i.params);
+	            route.data = Object.freeze(i.data);
+	            routeNode.children.forEach(function (n) { return _this.inheriteParamsAndData(n); });
+	        };
+	        Recognizer.prototype.processSegmentGroup = function (config, segmentGroup, outlet) {
+	            if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
+	                return this.processChildren(config, segmentGroup);
+	            }
+	            else {
+	                return this.processSegment(config, segmentGroup, 0, segmentGroup.segments, outlet);
+	            }
+	        };
+	        Recognizer.prototype.processChildren = function (config, segmentGroup) {
+	            var _this = this;
+	            var children = mapChildrenIntoArray(segmentGroup, function (child, childOutlet) { return _this.processSegmentGroup(config, child, childOutlet); });
+	            checkOutletNameUniqueness(children);
+	            sortActivatedRouteSnapshots(children);
+	            return children;
+	        };
+	        Recognizer.prototype.processSegment = function (config, segmentGroup, pathIndex, segments, outlet) {
+	            for (var _i = 0, config_1 = config; _i < config_1.length; _i++) {
+	                var r = config_1[_i];
+	                try {
+	                    return this.processSegmentAgainstRoute(r, segmentGroup, pathIndex, segments, outlet);
+	                }
+	                catch (e) {
+	                    if (!(e instanceof NoMatch$1))
+	                        throw e;
+	                }
+	            }
+	            throw new NoMatch$1();
+	        };
+	        Recognizer.prototype.processSegmentAgainstRoute = function (route, rawSegment, pathIndex, segments, outlet) {
+	            if (route.redirectTo)
+	                throw new NoMatch$1();
+	            if ((route.outlet ? route.outlet : PRIMARY_OUTLET) !== outlet)
+	                throw new NoMatch$1();
+	            if (route.path === '**') {
+	                var params = segments.length > 0 ? last(segments).parameters : {};
+	                var snapshot_1 = new ActivatedRouteSnapshot(segments, params, Object.freeze(this.urlTree.queryParams), this.urlTree.fragment, getData(route), outlet, route.component, route, getSourceSegmentGroup(rawSegment), getPathIndexShift(rawSegment) + segments.length, getResolve(route));
+	                return [new TreeNode(snapshot_1, [])];
+	            }
+	            var _a = match$1(rawSegment, route, segments), consumedSegments = _a.consumedSegments, parameters = _a.parameters, lastChild = _a.lastChild;
+	            var rawSlicedSegments = segments.slice(lastChild);
+	            var childConfig = getChildConfig(route);
+	            var _b = split$1(rawSegment, consumedSegments, rawSlicedSegments, childConfig), segmentGroup = _b.segmentGroup, slicedSegments = _b.slicedSegments;
+	            var snapshot = new ActivatedRouteSnapshot(consumedSegments, parameters, Object.freeze(this.urlTree.queryParams), this.urlTree.fragment, getData(route), outlet, route.component, route, getSourceSegmentGroup(rawSegment), getPathIndexShift(rawSegment) + consumedSegments.length, getResolve(route));
+	            if (slicedSegments.length === 0 && segmentGroup.hasChildren()) {
+	                var children = this.processChildren(childConfig, segmentGroup);
+	                return [new TreeNode(snapshot, children)];
+	            }
+	            else if (childConfig.length === 0 && slicedSegments.length === 0) {
+	                return [new TreeNode(snapshot, [])];
+	            }
+	            else {
+	                var children = this.processSegment(childConfig, segmentGroup, pathIndex + lastChild, slicedSegments, PRIMARY_OUTLET);
+	                return [new TreeNode(snapshot, children)];
+	            }
+	        };
+	        return Recognizer;
+	    }());
+	    function sortActivatedRouteSnapshots(nodes) {
+	        nodes.sort(function (a, b) {
+	            if (a.value.outlet === PRIMARY_OUTLET)
+	                return -1;
+	            if (b.value.outlet === PRIMARY_OUTLET)
+	                return 1;
+	            return a.value.outlet.localeCompare(b.value.outlet);
+	        });
+	    }
+	    function getChildConfig(route) {
+	        if (route.children) {
+	            return route.children;
+	        }
+	        else if (route.loadChildren) {
+	            return route._loadedConfig.routes;
+	        }
+	        else {
+	            return [];
+	        }
+	    }
+	    function match$1(segmentGroup, route, segments) {
+	        if (route.path === '') {
+	            if (route.pathMatch === 'full' && (segmentGroup.hasChildren() || segments.length > 0)) {
+	                throw new NoMatch$1();
+	            }
+	            else {
+	                return { consumedSegments: [], lastChild: 0, parameters: {} };
+	            }
+	        }
+	        var path = route.path;
+	        var parts = path.split('/');
+	        var posParameters = {};
+	        var consumedSegments = [];
+	        var currentIndex = 0;
+	        for (var i = 0; i < parts.length; ++i) {
+	            if (currentIndex >= segments.length)
+	                throw new NoMatch$1();
+	            var current = segments[currentIndex];
+	            var p = parts[i];
+	            var isPosParam = p.startsWith(':');
+	            if (!isPosParam && p !== current.path)
+	                throw new NoMatch$1();
+	            if (isPosParam) {
+	                posParameters[p.substring(1)] = current.path;
+	            }
+	            consumedSegments.push(current);
+	            currentIndex++;
+	        }
+	        if (route.pathMatch === 'full' &&
+	            (segmentGroup.hasChildren() || currentIndex < segments.length)) {
+	            throw new NoMatch$1();
+	        }
+	        var parameters = merge(posParameters, consumedSegments[consumedSegments.length - 1].parameters);
+	        return { consumedSegments: consumedSegments, lastChild: currentIndex, parameters: parameters };
+	    }
+	    function checkOutletNameUniqueness(nodes) {
+	        var names = {};
+	        nodes.forEach(function (n) {
+	            var routeWithSameOutletName = names[n.value.outlet];
+	            if (routeWithSameOutletName) {
+	                var p = routeWithSameOutletName.url.map(function (s) { return s.toString(); }).join('/');
+	                var c = n.value.url.map(function (s) { return s.toString(); }).join('/');
+	                throw new Error("Two segments cannot have the same outlet name: '" + p + "' and '" + c + "'.");
+	            }
+	            names[n.value.outlet] = n.value;
+	        });
+	    }
+	    function getSourceSegmentGroup(segmentGroup) {
+	        var s = segmentGroup;
+	        while (s._sourceSegment) {
+	            s = s._sourceSegment;
+	        }
+	        return s;
+	    }
+	    function getPathIndexShift(segmentGroup) {
+	        var s = segmentGroup;
+	        var res = (s._segmentIndexShift ? s._segmentIndexShift : 0);
+	        while (s._sourceSegment) {
+	            s = s._sourceSegment;
+	            res += (s._segmentIndexShift ? s._segmentIndexShift : 0);
+	        }
+	        return res - 1;
+	    }
+	    function split$1(segmentGroup, consumedSegments, slicedSegments, config) {
+	        if (slicedSegments.length > 0 &&
+	            containsEmptyPathMatchesWithNamedOutlets(segmentGroup, slicedSegments, config)) {
+	            var s = new UrlSegmentGroup(consumedSegments, createChildrenForEmptyPaths(segmentGroup, consumedSegments, config, new UrlSegmentGroup(slicedSegments, segmentGroup.children)));
+	            s._sourceSegment = segmentGroup;
+	            s._segmentIndexShift = consumedSegments.length;
+	            return { segmentGroup: s, slicedSegments: [] };
+	        }
+	        else if (slicedSegments.length === 0 &&
+	            containsEmptyPathMatches(segmentGroup, slicedSegments, config)) {
+	            var s = new UrlSegmentGroup(segmentGroup.segments, addEmptyPathsToChildrenIfNeeded(segmentGroup, slicedSegments, config, segmentGroup.children));
+	            s._sourceSegment = segmentGroup;
+	            s._segmentIndexShift = consumedSegments.length;
+	            return { segmentGroup: s, slicedSegments: slicedSegments };
+	        }
+	        else {
+	            var s = new UrlSegmentGroup(segmentGroup.segments, segmentGroup.children);
+	            s._sourceSegment = segmentGroup;
+	            s._segmentIndexShift = consumedSegments.length;
+	            return { segmentGroup: s, slicedSegments: slicedSegments };
+	        }
+	    }
+	    function addEmptyPathsToChildrenIfNeeded(segmentGroup, slicedSegments, routes, children) {
+	        var res = {};
+	        for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
+	            var r = routes_1[_i];
+	            if (emptyPathMatch(segmentGroup, slicedSegments, r) && !children[getOutlet$2(r)]) {
+	                var s = new UrlSegmentGroup([], {});
+	                s._sourceSegment = segmentGroup;
+	                s._segmentIndexShift = segmentGroup.segments.length;
+	                res[getOutlet$2(r)] = s;
+	            }
+	        }
+	        return merge(children, res);
+	    }
+	    function createChildrenForEmptyPaths(segmentGroup, consumedSegments, routes, primarySegment) {
+	        var res = {};
+	        res[PRIMARY_OUTLET] = primarySegment;
+	        primarySegment._sourceSegment = segmentGroup;
+	        primarySegment._segmentIndexShift = consumedSegments.length;
+	        for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
+	            var r = routes_2[_i];
+	            if (r.path === '' && getOutlet$2(r) !== PRIMARY_OUTLET) {
+	                var s = new UrlSegmentGroup([], {});
+	                s._sourceSegment = segmentGroup;
+	                s._segmentIndexShift = consumedSegments.length;
+	                res[getOutlet$2(r)] = s;
+	            }
+	        }
+	        return res;
+	    }
+	    function containsEmptyPathMatchesWithNamedOutlets(segmentGroup, slicedSegments, routes) {
+	        return routes
+	            .filter(function (r) { return emptyPathMatch(segmentGroup, slicedSegments, r) &&
+	            getOutlet$2(r) !== PRIMARY_OUTLET; })
+	            .length > 0;
+	    }
+	    function containsEmptyPathMatches(segmentGroup, slicedSegments, routes) {
+	        return routes.filter(function (r) { return emptyPathMatch(segmentGroup, slicedSegments, r); }).length > 0;
+	    }
+	    function emptyPathMatch(segmentGroup, slicedSegments, r) {
+	        if ((segmentGroup.hasChildren() || slicedSegments.length > 0) && r.pathMatch === 'full')
+	            return false;
+	        return r.path === '' && r.redirectTo === undefined;
+	    }
+	    function getOutlet$2(route) {
+	        return route.outlet ? route.outlet : PRIMARY_OUTLET;
+	    }
+	    function getData(route) {
+	        return route.data ? route.data : {};
+	    }
+	    function getResolve(route) {
+	        return route.resolve ? route.resolve : {};
+	    }
+
+	    /**
+	     * @license
+	     * Copyright Google Inc. All Rights Reserved.
+	     *
+	     * Use of this source code is governed by an MIT-style license that can be
+	     * found in the LICENSE file at https://angular.io/license
+	     */
+	    /**
+	     * @whatItDoes Contains all the router outlets created in a component.
+	     *
+	     * @stable
+	     */
+	    var RouterOutletMap = (function () {
+	        function RouterOutletMap() {
+	            /** @internal */
+	            this._outlets = {};
+	        }
+	        /**
+	         * Adds an outlet to this map.
+	         */
+	        RouterOutletMap.prototype.registerOutlet = function (name, outlet) { this._outlets[name] = outlet; };
+	        /**
+	         * Removes an outlet from this map.
+	         */
+	        RouterOutletMap.prototype.removeOutlet = function (name) { this._outlets[name] = undefined; };
+	        return RouterOutletMap;
+	    }());
+
+	    /**
+	     * @whatItDoes Represents an event triggered when a navigation starts.
+	     *
+	     * @stable
+	     */
+	    var NavigationStart = (function () {
+	        // TODO: vsavkin: make internal
+	        function NavigationStart(
+	            /** @docsNotRequired */
+	            id,
+	            /** @docsNotRequired */
+	            url) {
+	            this.id = id;
+	            this.url = url;
+	        }
+	        /** @docsNotRequired */
+	        NavigationStart.prototype.toString = function () { return "NavigationStart(id: " + this.id + ", url: '" + this.url + "')"; };
+	        return NavigationStart;
+	    }());
+	    /**
+	     * @whatItDoes Represents an event triggered when a navigation ends successfully.
+	     *
+	     * @stable
+	     */
+	    var NavigationEnd = (function () {
+	        // TODO: vsavkin: make internal
+	        function NavigationEnd(
+	            /** @docsNotRequired */
+	            id,
+	            /** @docsNotRequired */
+	            url,
+	            /** @docsNotRequired */
+	            urlAfterRedirects) {
+	            this.id = id;
+	            this.url = url;
+	            this.urlAfterRedirects = urlAfterRedirects;
+	        }
+	        /** @docsNotRequired */
+	        NavigationEnd.prototype.toString = function () {
+	            return "NavigationEnd(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "')";
+	        };
+	        return NavigationEnd;
+	    }());
+	    /**
+	     * @whatItDoes Represents an event triggered when a navigation is canceled.
+	     *
+	     * @stable
+	     */
+	    var NavigationCancel = (function () {
+	        // TODO: vsavkin: make internal
+	        function NavigationCancel(
+	            /** @docsNotRequired */
+	            id,
+	            /** @docsNotRequired */
+	            url,
+	            /** @docsNotRequired */
+	            reason) {
+	            this.id = id;
+	            this.url = url;
+	            this.reason = reason;
+	        }
+	        /** @docsNotRequired */
+	        NavigationCancel.prototype.toString = function () { return "NavigationCancel(id: " + this.id + ", url: '" + this.url + "')"; };
+	        return NavigationCancel;
+	    }());
+	    /**
+	     * @whatItDoes Represents an event triggered when a navigation fails due to an unexpected error.
+	     *
+	     * @stable
+	     */
+	    var NavigationError = (function () {
+	        // TODO: vsavkin: make internal
+	        function NavigationError(
+	            /** @docsNotRequired */
+	            id,
+	            /** @docsNotRequired */
+	            url,
+	            /** @docsNotRequired */
+	            error) {
+	            this.id = id;
+	            this.url = url;
+	            this.error = error;
+	        }
+	        /** @docsNotRequired */
+	        NavigationError.prototype.toString = function () {
+	            return "NavigationError(id: " + this.id + ", url: '" + this.url + "', error: " + this.error + ")";
+	        };
+	        return NavigationError;
+	    }());
+	    /**
+	     * @whatItDoes Represents an event triggered when routes are recognized.
+	     *
+	     * @stable
+	     */
+	    var RoutesRecognized = (function () {
+	        // TODO: vsavkin: make internal
+	        function RoutesRecognized(
+	            /** @docsNotRequired */
+	            id,
+	            /** @docsNotRequired */
+	            url,
+	            /** @docsNotRequired */
+	            urlAfterRedirects,
+	            /** @docsNotRequired */
+	            state) {
+	            this.id = id;
+	            this.url = url;
+	            this.urlAfterRedirects = urlAfterRedirects;
+	            this.state = state;
+	        }
+	        /** @docsNotRequired */
+	        RoutesRecognized.prototype.toString = function () {
+	            return "RoutesRecognized(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "', state: " + this.state + ")";
+	        };
+	        return RoutesRecognized;
+	    }());
+	    function defaultErrorHandler(error) {
+	        throw error;
+	    }
+	    /**
+	     * @whatItDoes Provides the navigation and url manipulation capabilities.
+	     *
+	     * See {@link Routes} for more details and examples.
+	     *
+	     * @ngModule RouterModule
+	     *
+	     * @stable
+	     */
+	    var Router = (function () {
+	        /**
+	         * Creates the router service.
+	         */
+	        // TODO: vsavkin make internal after the final is out.
+	        function Router(rootComponentType, urlSerializer, outletMap, location, injector, loader, compiler, config) {
+	            this.rootComponentType = rootComponentType;
+	            this.urlSerializer = urlSerializer;
+	            this.outletMap = outletMap;
+	            this.location = location;
+	            this.injector = injector;
+	            this.config = config;
+	            this.navigationId = 0;
+	            /**
+	             * Error handler that is invoked when a navigation errors.
+	             *
+	             * See {@link ErrorHandler} for more information.
+	             */
+	            this.errorHandler = defaultErrorHandler;
+	            /**
+	             * Indicates if at least one navigation happened.
+	             */
+	            this.navigated = false;
+	            this.resetConfig(config);
+	            this.routerEvents = new rxjs_Subject.Subject();
+	            this.currentUrlTree = createEmptyUrlTree();
+	            this.configLoader = new RouterConfigLoader(loader, compiler);
+	            this.currentRouterState = createEmptyState(this.currentUrlTree, this.rootComponentType);
+	        }
+	        /**
+	         * @internal
+	         * TODO: this should be removed once the constructor of the router made internal
+	         */
+	        Router.prototype.resetRootComponentType = function (rootComponentType) {
+	            this.rootComponentType = rootComponentType;
+	            // TODO: vsavkin router 4.0 should make the root component set to null
+	            // this will simplify the lifecycle of the router.
+	            this.currentRouterState.root.component = this.rootComponentType;
+	        };
+	        /**
+	         * Sets up the location change listener and performs the initial navigation.
+	         */
+	        Router.prototype.initialNavigation = function () {
+	            this.setUpLocationChangeListener();
+	            this.navigateByUrl(this.location.path(true), { replaceUrl: true });
+	        };
+	        /**
+	         * Sets up the location change listener.
+	         */
+	        Router.prototype.setUpLocationChangeListener = function () {
+	            var _this = this;
+	            // Zone.current.wrap is needed because of the issue with RxJS scheduler,
+	            // which does not work properly with zone.js in IE and Safari
+	            this.locationSubscription = this.location.subscribe(Zone.current.wrap(function (change) {
+	                var tree = _this.urlSerializer.parse(change['url']);
+	                // we fire multiple events for a single URL change
+	                // we should navigate only once
+	                return _this.currentUrlTree.toString() !== tree.toString() ?
+	                    _this.scheduleNavigation(tree, { skipLocationChange: change['pop'], replaceUrl: true }) :
+	                    null;
+	            }));
+	        };
+	        Object.defineProperty(Router.prototype, "routerState", {
+	            /**
+	             * Returns the current route state.
+	             */
+	            get: function () { return this.currentRouterState; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(Router.prototype, "url", {
+	            /**
+	             * Returns the current url.
+	             */
+	            get: function () { return this.serializeUrl(this.currentUrlTree); },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(Router.prototype, "events", {
+	            /**
+	             * Returns an observable of route events
+	             */
+	            get: function () { return this.routerEvents; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        /**
+	         * Resets the configuration used for navigation and generating links.
+	         *
+	         * ### Usage
+	         *
+	         * ```
+	         * router.resetConfig([
+	         *  { path: 'team/:id', component: TeamCmp, children: [
+	         *    { path: 'simple', component: SimpleCmp },
+	         *    { path: 'user/:name', component: UserCmp }
+	         *  ] }
+	         * ]);
+	         * ```
+	         */
+	        Router.prototype.resetConfig = function (config) {
+	            validateConfig(config);
+	            this.config = config;
+	        };
+	        /**
+	         * @docsNotRequired
+	         */
+	        Router.prototype.ngOnDestroy = function () { this.dispose(); };
+	        /**
+	         * Disposes of the router.
+	         */
+	        Router.prototype.dispose = function () { this.locationSubscription.unsubscribe(); };
+	        /**
+	         * Applies an array of commands to the current url tree and creates a new url tree.
+	         *
+	         * When given an activate route, applies the given commands starting from the route.
+	         * When not given a route, applies the given command starting from the root.
+	         *
+	         * ### Usage
+	         *
+	         * ```
+	         * // create /team/33/user/11
+	         * router.createUrlTree(['/team', 33, 'user', 11]);
+	         *
+	         * // create /team/33;expand=true/user/11
+	         * router.createUrlTree(['/team', 33, {expand: true}, 'user', 11]);
+	         *
+	         * // you can collapse static segments like this (this works only with the first passed-in value):
+	         * router.createUrlTree(['/team/33/user', userId]);
+	         *
+	         * // If the first segment can contain slashes, and you do not want the router to split it, you
+	         * // can do the following:
+	         *
+	         * router.createUrlTree([{segmentPath: '/one/two'}]);
+	         *
+	         * // create /team/33/(user/11//right:chat)
+	         * router.createUrlTree(['/team', 33, {outlets: {primary: 'user/11', right: 'chat'}}]);
+	         *
+	         * // remove the right secondary node
+	         * router.createUrlTree(['/team', 33, {outlets: {primary: 'user/11', right: null}}]);
+	         *
+	         * // assuming the current url is `/team/33/user/11` and the route points to `user/11`
+	         *
+	         * // navigate to /team/33/user/11/details
+	         * router.createUrlTree(['details'], {relativeTo: route});
+	         *
+	         * // navigate to /team/33/user/22
+	         * router.createUrlTree(['../22'], {relativeTo: route});
+	         *
+	         * // navigate to /team/44/user/22
+	         * router.createUrlTree(['../../team/44/user/22'], {relativeTo: route});
+	         * ```
+	         */
+	        Router.prototype.createUrlTree = function (commands, _a) {
+	            var _b = _a === void 0 ? {} : _a, relativeTo = _b.relativeTo, queryParams = _b.queryParams, fragment = _b.fragment, preserveQueryParams = _b.preserveQueryParams, preserveFragment = _b.preserveFragment;
+	            var a = relativeTo ? relativeTo : this.routerState.root;
+	            var q = preserveQueryParams ? this.currentUrlTree.queryParams : queryParams;
+	            var f = preserveFragment ? this.currentUrlTree.fragment : fragment;
+	            return createUrlTree(a, this.currentUrlTree, commands, q, f);
+	        };
+	        /**
+	         * Navigate based on the provided url. This navigation is always absolute.
+	         *
+	         * Returns a promise that:
+	         * - is resolved with 'true' when navigation succeeds
+	         * - is resolved with 'false' when navigation fails
+	         * - is rejected when an error happens
+	         *
+	         * ### Usage
+	         *
+	         * ```
+	         * router.navigateByUrl("/team/33/user/11");
+	         *
+	         * // Navigate without updating the URL
+	         * router.navigateByUrl("/team/33/user/11", { skipLocationChange: true });
+	         * ```
+	         *
+	         * In opposite to `navigate`, `navigateByUrl` takes a whole URL
+	         * and does not apply any delta to the current one.
+	         */
+	        Router.prototype.navigateByUrl = function (url, extras) {
+	            if (extras === void 0) { extras = { skipLocationChange: false }; }
+	            if (url instanceof UrlTree) {
+	                return this.scheduleNavigation(url, extras);
+	            }
+	            else {
+	                var urlTree = this.urlSerializer.parse(url);
+	                return this.scheduleNavigation(urlTree, extras);
+	            }
+	        };
+	        /**
+	         * Navigate based on the provided array of commands and a starting point.
+	         * If no starting route is provided, the navigation is absolute.
+	         *
+	         * Returns a promise that:
+	         * - is resolved with 'true' when navigation succeeds
+	         * - is resolved with 'false' when navigation fails
+	         * - is rejected when an error happens
+	         *
+	         * ### Usage
+	         *
+	         * ```
+	         * router.navigate(['team', 33, 'user', 11], {relativeTo: route});
+	         *
+	         * // Navigate without updating the URL
+	         * router.navigate(['team', 33, 'user', 11], {relativeTo: route, skipLocationChange: true });
+	         * ```
+	         *
+	         * In opposite to `navigateByUrl`, `navigate` always takes a delta
+	         * that is applied to the current URL.
+	         */
+	        Router.prototype.navigate = function (commands, extras) {
+	            if (extras === void 0) { extras = { skipLocationChange: false }; }
+	            return this.scheduleNavigation(this.createUrlTree(commands, extras), extras);
+	        };
+	        /**
+	         * Serializes a {@link UrlTree} into a string.
+	         */
+	        Router.prototype.serializeUrl = function (url) { return this.urlSerializer.serialize(url); };
+	        /**
+	         * Parses a string into a {@link UrlTree}.
+	         */
+	        Router.prototype.parseUrl = function (url) { return this.urlSerializer.parse(url); };
+	        /**
+	         * Returns if the url is activated or not.
+	         */
+	        Router.prototype.isActive = function (url, exact) {
+	            if (url instanceof UrlTree) {
+	                return containsTree(this.currentUrlTree, url, exact);
+	            }
+	            else {
+	                var urlTree = this.urlSerializer.parse(url);
+	                return containsTree(this.currentUrlTree, urlTree, exact);
+	            }
+	        };
+	        Router.prototype.scheduleNavigation = function (url, extras) {
+	            var _this = this;
+	            var id = ++this.navigationId;
+	            this.routerEvents.next(new NavigationStart(id, this.serializeUrl(url)));
+	            return Promise.resolve().then(function (_) { return _this.runNavigate(url, extras.skipLocationChange, extras.replaceUrl, id); });
+	        };
+	        Router.prototype.runNavigate = function (url, shouldPreventPushState, shouldReplaceUrl, id) {
+	            var _this = this;
+	            if (id !== this.navigationId) {
+	                this.location.go(this.urlSerializer.serialize(this.currentUrlTree));
+	                this.routerEvents.next(new NavigationCancel(id, this.serializeUrl(url), "Navigation ID " + id + " is not equal to the current navigation id " + this.navigationId));
+	                return Promise.resolve(false);
+	            }
+	            return new Promise(function (resolvePromise, rejectPromise) {
+	                var state;
+	                var navigationIsSuccessful;
+	                var preActivation;
+	                var appliedUrl;
+	                var storedState = _this.currentRouterState;
+	                var storedUrl = _this.currentUrlTree;
+	                var redirectsApplied$ = applyRedirects(_this.injector, _this.configLoader, url, _this.config);
+	                var snapshot$ = rxjs_operator_mergeMap.mergeMap.call(redirectsApplied$, function (u) {
+	                    appliedUrl = u;
+	                    return recognize(_this.rootComponentType, _this.config, appliedUrl, _this.serializeUrl(appliedUrl));
+	                });
+	                var emitRecognzied$ = rxjs_operator_map.map.call(snapshot$, function (newRouterStateSnapshot) {
+	                    _this.routerEvents.next(new RoutesRecognized(id, _this.serializeUrl(url), _this.serializeUrl(appliedUrl), newRouterStateSnapshot));
+	                    return newRouterStateSnapshot;
+	                });
+	                var routerState$ = rxjs_operator_map.map.call(emitRecognzied$, function (routerStateSnapshot) {
+	                    return createRouterState(routerStateSnapshot, _this.currentRouterState);
+	                });
+	                var preactivation$ = rxjs_operator_map.map.call(routerState$, function (newState) {
+	                    state = newState;
+	                    preActivation =
+	                        new PreActivation(state.snapshot, _this.currentRouterState.snapshot, _this.injector);
+	                    preActivation.traverse(_this.outletMap);
+	                });
+	                var preactivation2$ = rxjs_operator_mergeMap.mergeMap.call(preactivation$, function () { return preActivation.checkGuards(); });
+	                var resolveData$ = rxjs_operator_mergeMap.mergeMap.call(preactivation2$, function (shouldActivate) {
+	                    if (shouldActivate) {
+	                        return rxjs_operator_map.map.call(preActivation.resolveData(), function () { return shouldActivate; });
+	                    }
+	                    else {
+	                        return rxjs_observable_of.of(shouldActivate);
+	                    }
+	                });
+	                resolveData$
+	                    .forEach(function (shouldActivate) {
+	                    if (!shouldActivate || id !== _this.navigationId) {
+	                        navigationIsSuccessful = false;
+	                        return;
+	                    }
+	                    _this.currentUrlTree = appliedUrl;
+	                    _this.currentRouterState = state;
+	                    if (!shouldPreventPushState) {
+	                        var path = _this.urlSerializer.serialize(appliedUrl);
+	                        if (_this.location.isCurrentPathEqualTo(path) || shouldReplaceUrl) {
+	                            _this.location.replaceState(path);
+	                        }
+	                        else {
+	                            _this.location.go(path);
+	                        }
+	                    }
+	                    new ActivateRoutes(state, storedState).activate(_this.outletMap);
+	                    navigationIsSuccessful = true;
+	                })
+	                    .then(function () {
+	                    _this.navigated = true;
+	                    if (navigationIsSuccessful) {
+	                        _this.routerEvents.next(new NavigationEnd(id, _this.serializeUrl(url), _this.serializeUrl(appliedUrl)));
+	                        resolvePromise(true);
+	                    }
+	                    else {
+	                        _this.routerEvents.next(new NavigationCancel(id, _this.serializeUrl(url), ''));
+	                        resolvePromise(false);
+	                    }
+	                }, function (e) {
+	                    if (e instanceof NavigationCancelingError) {
+	                        _this.navigated = true;
+	                        _this.routerEvents.next(new NavigationCancel(id, _this.serializeUrl(url), e.message));
+	                        resolvePromise(false);
+	                    }
+	                    else {
+	                        _this.routerEvents.next(new NavigationError(id, _this.serializeUrl(url), e));
+	                        try {
+	                            resolvePromise(_this.errorHandler(e));
+	                        }
+	                        catch (ee) {
+	                            rejectPromise(ee);
+	                        }
+	                    }
+	                    if (id === _this.navigationId) {
+	                        _this.currentRouterState = storedState;
+	                        _this.currentUrlTree = storedUrl;
+	                        _this.location.replaceState(_this.serializeUrl(storedUrl));
+	                    }
+	                });
+	            });
+	        };
+	        return Router;
+	    }());
+	    var CanActivate = (function () {
+	        function CanActivate(path) {
+	            this.path = path;
+	        }
+	        Object.defineProperty(CanActivate.prototype, "route", {
+	            get: function () { return this.path[this.path.length - 1]; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        return CanActivate;
+	    }());
+	    var CanDeactivate = (function () {
+	        function CanDeactivate(component, route) {
+	            this.component = component;
+	            this.route = route;
+	        }
+	        return CanDeactivate;
+	    }());
+	    var PreActivation = (function () {
+	        function PreActivation(future, curr, injector) {
+	            this.future = future;
+	            this.curr = curr;
+	            this.injector = injector;
+	            this.checks = [];
+	        }
+	        PreActivation.prototype.traverse = function (parentOutletMap) {
+	            var futureRoot = this.future._root;
+	            var currRoot = this.curr ? this.curr._root : null;
+	            this.traverseChildRoutes(futureRoot, currRoot, parentOutletMap, [futureRoot.value]);
+	        };
+	        PreActivation.prototype.checkGuards = function () {
+	            var _this = this;
+	            if (this.checks.length === 0)
+	                return rxjs_observable_of.of(true);
+	            var checks$ = rxjs_observable_from.from(this.checks);
+	            var runningChecks$ = rxjs_operator_map.map.call(checks$, function (s) {
+	                if (s instanceof CanActivate) {
+	                    return andObservables(rxjs_observable_from.from([_this.runCanActivateChild(s.path), _this.runCanActivate(s.route)]));
+	                }
+	                else if (s instanceof CanDeactivate) {
+	                    // workaround https://github.com/Microsoft/TypeScript/issues/7271
+	                    var s2 = s;
+	                    return _this.runCanDeactivate(s2.component, s2.route);
+	                }
+	                else {
+	                    throw new Error('Cannot be reached');
+	                }
+	            });
+	            var mergedChecks$ = rxjs_operator_mergeAll.mergeAll.call(runningChecks$);
+	            return rxjs_operator_every.every.call(mergedChecks$, function (result) { return result === true; });
+	        };
+	        PreActivation.prototype.resolveData = function () {
+	            var _this = this;
+	            if (this.checks.length === 0)
+	                return rxjs_observable_of.of(null);
+	            var checks$ = rxjs_observable_from.from(this.checks);
+	            var runningChecks$ = rxjs_operator_concatMap.concatMap.call(checks$, function (s) {
+	                if (s instanceof CanActivate) {
+	                    return _this.runResolve(s.route);
+	                }
+	                else {
+	                    return rxjs_observable_of.of(null);
+	                }
+	            });
+	            return rxjs_operator_reduce.reduce.call(runningChecks$, function (_, __) { return _; });
+	        };
+	        PreActivation.prototype.traverseChildRoutes = function (futureNode, currNode, outletMap, futurePath) {
+	            var _this = this;
+	            var prevChildren = nodeChildrenAsMap(currNode);
+	            futureNode.children.forEach(function (c) {
+	                _this.traverseRoutes(c, prevChildren[c.value.outlet], outletMap, futurePath.concat([c.value]));
+	                delete prevChildren[c.value.outlet];
+	            });
+	            forEach(prevChildren, function (v, k) { return _this.deactiveRouteAndItsChildren(v, outletMap._outlets[k]); });
+	        };
+	        PreActivation.prototype.traverseRoutes = function (futureNode, currNode, parentOutletMap, futurePath) {
+	            var future = futureNode.value;
+	            var curr = currNode ? currNode.value : null;
+	            var outlet = parentOutletMap ? parentOutletMap._outlets[futureNode.value.outlet] : null;
+	            // reusing the node
+	            if (curr && future._routeConfig === curr._routeConfig) {
+	                if (!shallowEqual(future.params, curr.params)) {
+	                    this.checks.push(new CanDeactivate(outlet.component, curr), new CanActivate(futurePath));
+	                }
+	                else {
+	                    // we need to set the data
+	                    future.data = curr.data;
+	                    future._resolvedData = curr._resolvedData;
+	                }
+	                // If we have a component, we need to go through an outlet.
+	                if (future.component) {
+	                    this.traverseChildRoutes(futureNode, currNode, outlet ? outlet.outletMap : null, futurePath);
+	                }
+	                else {
+	                    this.traverseChildRoutes(futureNode, currNode, parentOutletMap, futurePath);
+	                }
+	            }
+	            else {
+	                if (curr) {
+	                    this.deactiveRouteAndItsChildren(currNode, outlet);
+	                }
+	                this.checks.push(new CanActivate(futurePath));
+	                // If we have a component, we need to go through an outlet.
+	                if (future.component) {
+	                    this.traverseChildRoutes(futureNode, null, outlet ? outlet.outletMap : null, futurePath);
+	                }
+	                else {
+	                    this.traverseChildRoutes(futureNode, null, parentOutletMap, futurePath);
+	                }
+	            }
+	        };
+	        PreActivation.prototype.deactiveRouteAndItsChildren = function (route, outlet) {
+	            var _this = this;
+	            var prevChildren = nodeChildrenAsMap(route);
+	            forEach(prevChildren, function (v, k) {
+	                var childOutlet = outlet ? outlet.outletMap._outlets[k] : null;
+	                _this.deactiveRouteAndItsChildren(v, childOutlet);
+	            });
+	            var component = outlet && outlet.isActivated ? outlet.component : null;
+	            this.checks.push(new CanDeactivate(component, route.value));
+	        };
+	        PreActivation.prototype.runCanActivate = function (future) {
+	            var _this = this;
+	            var canActivate = future._routeConfig ? future._routeConfig.canActivate : null;
+	            if (!canActivate || canActivate.length === 0)
+	                return rxjs_observable_of.of(true);
+	            var obs = rxjs_operator_map.map.call(rxjs_observable_from.from(canActivate), function (c) {
+	                var guard = _this.getToken(c, future);
+	                if (guard.canActivate) {
+	                    return wrapIntoObservable(guard.canActivate(future, _this.future));
+	                }
+	                else {
+	                    return wrapIntoObservable(guard(future, _this.future));
+	                }
+	            });
+	            return andObservables(obs);
+	        };
+	        PreActivation.prototype.runCanActivateChild = function (path) {
+	            var _this = this;
+	            var future = path[path.length - 1];
+	            var canActivateChildGuards = path.slice(0, path.length - 1)
+	                .reverse()
+	                .map(function (p) { return _this.extractCanActivateChild(p); })
+	                .filter(function (_) { return _ !== null; });
+	            return andObservables(rxjs_operator_map.map.call(rxjs_observable_from.from(canActivateChildGuards), function (d) {
+	                var obs = rxjs_operator_map.map.call(rxjs_observable_from.from(d.guards), function (c) {
+	                    var guard = _this.getToken(c, c.node);
+	                    if (guard.canActivateChild) {
+	                        return wrapIntoObservable(guard.canActivateChild(future, _this.future));
+	                    }
+	                    else {
+	                        return wrapIntoObservable(guard(future, _this.future));
+	                    }
+	                });
+	                return andObservables(obs);
+	            }));
+	        };
+	        PreActivation.prototype.extractCanActivateChild = function (p) {
+	            var canActivateChild = p._routeConfig ? p._routeConfig.canActivateChild : null;
+	            if (!canActivateChild || canActivateChild.length === 0)
+	                return null;
+	            return { node: p, guards: canActivateChild };
+	        };
+	        PreActivation.prototype.runCanDeactivate = function (component, curr) {
+	            var _this = this;
+	            var canDeactivate = curr && curr._routeConfig ? curr._routeConfig.canDeactivate : null;
+	            if (!canDeactivate || canDeactivate.length === 0)
+	                return rxjs_observable_of.of(true);
+	            var canDeactivate$ = rxjs_operator_map.map.call(rxjs_observable_from.from(canDeactivate), function (c) {
+	                var guard = _this.getToken(c, curr);
+	                if (guard.canDeactivate) {
+	                    return wrapIntoObservable(guard.canDeactivate(component, curr, _this.curr));
+	                }
+	                else {
+	                    return wrapIntoObservable(guard(component, curr, _this.curr));
+	                }
+	            });
+	            var merged$ = rxjs_operator_mergeAll.mergeAll.call(canDeactivate$);
+	            return rxjs_operator_every.every.call(merged$, function (result) { return result === true; });
+	        };
+	        PreActivation.prototype.runResolve = function (future) {
+	            var resolve = future._resolve;
+	            return rxjs_operator_map.map.call(this.resolveNode(resolve, future), function (resolvedData) {
+	                future._resolvedData = resolvedData;
+	                future.data = merge(future.data, inheritedParamsDataResolve(future).resolve);
+	                return null;
+	            });
+	        };
+	        PreActivation.prototype.resolveNode = function (resolve, future) {
+	            var _this = this;
+	            return waitForMap(resolve, function (k, v) {
+	                var resolver = _this.getToken(v, future);
+	                return resolver.resolve ? wrapIntoObservable(resolver.resolve(future, _this.future)) :
+	                    wrapIntoObservable(resolver(future, _this.future));
+	            });
+	        };
+	        PreActivation.prototype.getToken = function (token, snapshot) {
+	            var config = closestLoadedConfig(snapshot);
+	            var injector = config ? config.injector : this.injector;
+	            return injector.get(token);
+	        };
+	        return PreActivation;
+	    }());
+	    var ActivateRoutes = (function () {
+	        function ActivateRoutes(futureState, currState) {
+	            this.futureState = futureState;
+	            this.currState = currState;
+	        }
+	        ActivateRoutes.prototype.activate = function (parentOutletMap) {
+	            var futureRoot = this.futureState._root;
+	            var currRoot = this.currState ? this.currState._root : null;
+	            advanceActivatedRoute(this.futureState.root);
+	            this.activateChildRoutes(futureRoot, currRoot, parentOutletMap);
+	        };
+	        ActivateRoutes.prototype.activateChildRoutes = function (futureNode, currNode, outletMap) {
+	            var _this = this;
+	            var prevChildren = nodeChildrenAsMap(currNode);
+	            futureNode.children.forEach(function (c) {
+	                _this.activateRoutes(c, prevChildren[c.value.outlet], outletMap);
+	                delete prevChildren[c.value.outlet];
+	            });
+	            forEach(prevChildren, function (v, k) { return _this.deactiveRouteAndItsChildren(v, outletMap); });
+	        };
+	        ActivateRoutes.prototype.activateRoutes = function (futureNode, currNode, parentOutletMap) {
+	            var future = futureNode.value;
+	            var curr = currNode ? currNode.value : null;
+	            // reusing the node
+	            if (future === curr) {
+	                // advance the route to push the parameters
+	                advanceActivatedRoute(future);
+	                // If we have a normal route, we need to go through an outlet.
+	                if (future.component) {
+	                    var outlet = getOutlet(parentOutletMap, future);
+	                    this.activateChildRoutes(futureNode, currNode, outlet.outletMap);
+	                }
+	                else {
+	                    this.activateChildRoutes(futureNode, currNode, parentOutletMap);
+	                }
+	            }
+	            else {
+	                if (curr) {
+	                    this.deactiveRouteAndItsChildren(currNode, parentOutletMap);
+	                }
+	                // if we have a normal route, we need to advance the route
+	                // and place the component into the outlet. After that recurse.
+	                if (future.component) {
+	                    advanceActivatedRoute(future);
+	                    var outlet = getOutlet(parentOutletMap, futureNode.value);
+	                    var outletMap = new RouterOutletMap();
+	                    this.placeComponentIntoOutlet(outletMap, future, outlet);
+	                    this.activateChildRoutes(futureNode, null, outletMap);
+	                }
+	                else {
+	                    advanceActivatedRoute(future);
+	                    this.activateChildRoutes(futureNode, null, parentOutletMap);
+	                }
+	            }
+	        };
+	        ActivateRoutes.prototype.placeComponentIntoOutlet = function (outletMap, future, outlet) {
+	            var resolved = [{ provide: ActivatedRoute, useValue: future }, {
+	                    provide: RouterOutletMap,
+	                    useValue: outletMap
+	                }];
+	            var config = parentLoadedConfig(future.snapshot);
+	            var loadedFactoryResolver = null;
+	            var loadedInjector = null;
+	            if (config) {
+	                loadedFactoryResolver = config.factoryResolver;
+	                loadedInjector = config.injector;
+	                resolved.push({ provide: _angular_core.ComponentFactoryResolver, useValue: loadedFactoryResolver });
+	            }
+	            outlet.activate(future, loadedFactoryResolver, loadedInjector, _angular_core.ReflectiveInjector.resolve(resolved), outletMap);
+	        };
+	        ActivateRoutes.prototype.deactiveRouteAndItsChildren = function (route, parentOutletMap) {
+	            var _this = this;
+	            var prevChildren = nodeChildrenAsMap(route);
+	            var outlet = null;
+	            // getOutlet throws when cannot find the right outlet,
+	            // which can happen if an outlet was in an NgIf and was removed
+	            try {
+	                outlet = getOutlet(parentOutletMap, route.value);
+	            }
+	            catch (e) {
+	                return;
+	            }
+	            var childOutletMap = outlet.outletMap;
+	            forEach(prevChildren, function (v, k) {
+	                if (route.value.component) {
+	                    _this.deactiveRouteAndItsChildren(v, childOutletMap);
+	                }
+	                else {
+	                    _this.deactiveRouteAndItsChildren(v, parentOutletMap);
+	                }
+	            });
+	            if (outlet && outlet.isActivated) {
+	                outlet.deactivate();
+	            }
+	        };
+	        return ActivateRoutes;
+	    }());
+	    function parentLoadedConfig(snapshot) {
+	        var s = snapshot.parent;
+	        while (s) {
+	            var c = s._routeConfig;
+	            if (c && c._loadedConfig)
+	                return c._loadedConfig;
+	            if (c && c.component)
+	                return null;
+	            s = s.parent;
+	        }
+	        return null;
+	    }
+	    function closestLoadedConfig(snapshot) {
+	        if (!snapshot)
+	            return null;
+	        var s = snapshot.parent;
+	        while (s) {
+	            var c = s._routeConfig;
+	            if (c && c._loadedConfig)
+	                return c._loadedConfig;
+	            s = s.parent;
+	        }
+	        return null;
+	    }
+	    function nodeChildrenAsMap(node) {
+	        return node ? node.children.reduce(function (m, c) {
+	            m[c.value.outlet] = c;
+	            return m;
+	        }, {}) : {};
+	    }
+	    function getOutlet(outletMap, route) {
+	        var outlet = outletMap._outlets[route.outlet];
+	        if (!outlet) {
+	            var componentName = route.component.name;
+	            if (route.outlet === PRIMARY_OUTLET) {
+	                throw new Error("Cannot find primary outlet to load '" + componentName + "'");
+	            }
+	            else {
+	                throw new Error("Cannot find the outlet " + route.outlet + " to load '" + componentName + "'");
+	            }
+	        }
+	        return outlet;
+	    }
+
+	    /**
+	     * @whatItDoes Lets you link to specific parts of your app.
+	     *
+	     * @howToUse
+	     *
+	     * Consider the following route configuration:
+
+	     * ```
+	     * [{ path: 'user/:name', component: UserCmp }]
+	     * ```
+	     *
+	     * When linking to this `user/:name` route, you can write:
+	     *
+	     * ```
+	     * <a routerLink='/user/bob'>link to user component</a>
+	     * ```
+	     *
+	     * @description
+	     *
+	     * The RouterLink directives let you link to specific parts of your app.
+	     *
+	     * Whe the link is static, you can use the directive as follows:
+	     *
+	     * ```
+	     * <a routerLink="/user/bob">link to user component</a>
+	     * ```
+	     *
+	     * If you use dynamic values to generate the link, you can pass an array of path
+	     * segments, followed by the params for each segment.
+	     *
+	     * For instance `['/team', teamId, 'user', userName, {details: true}]`
+	     * means that we want to generate a link to `/team/11/user/bob;details=true`.
+	     *
+	     * Multiple static segments can be merged into one (e.g., `['/team/11/user', userName, {details:
+	     true}]`).
+	     *
+	     * The first segment name can be prepended with `/`, `./`, or `../`:
+	     * * If the first segment begins with `/`, the router will look up the route from the root of the
+	     app.
+	     * * If the first segment begins with `./`, or doesn't begin with a slash, the router will
+	     * instead look in the children of the current activated route.
+	     * * And if the first segment begins with `../`, the router will go up one level.
+	     *
+	     * You can set query params and fragment as follows:
+	     *
+	     * ```
+	     * <a [routerLink]="['/user/bob']" [queryParams]="{debug: true}" fragment="education">link to user
+	     component</a>
+	     * ```
+	     * RouterLink will use these to generate this link: `/user/bob#education?debug=true`.
+	     *
+	     * You can also tell the directive to preserve the current query params and fragment:
+	     *
+	     * ```
+	     * <a [routerLink]="['/user/bob']" preserveQueryParams preserveFragment>link to user
+	     component</a>
+	     * ```
+	     *
+	     * The router link directive always treats the provided input as a delta to the current url.
+	     *
+	     * For instance, if the current url is `/user/(box//aux:team)`.
+	     *
+	     * Then the following link `<a [routerLink]="['/user/jim']">Jim</a>` will generate the link
+	     * `/user/(jim//aux:team)`.
+	     *
+	     * @selector ':not(a)[routerLink]'
+	     * @ngModule RouterModule
+	     *
+	     * See {@link Router.createUrlTree} for more information.
+	     *
+	     * @stable
+	     */
+	    var RouterLink = (function () {
+	        function RouterLink(router, route, locationStrategy) {
+	            this.router = router;
+	            this.route = route;
+	            this.locationStrategy = locationStrategy;
+	            this.commands = [];
+	        }
+	        Object.defineProperty(RouterLink.prototype, "routerLink", {
+	            set: function (data) {
+	                if (Array.isArray(data)) {
+	                    this.commands = data;
+	                }
+	                else {
+	                    this.commands = [data];
+	                }
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        RouterLink.prototype.onClick = function (button, ctrlKey, metaKey) {
+	            if (button !== 0 || ctrlKey || metaKey) {
+	                return true;
+	            }
+	            this.router.navigateByUrl(this.urlTree);
+	            return false;
+	        };
+	        Object.defineProperty(RouterLink.prototype, "urlTree", {
+	            get: function () {
+	                return this.router.createUrlTree(this.commands, {
+	                    relativeTo: this.route,
+	                    queryParams: this.queryParams,
+	                    fragment: this.fragment,
+	                    preserveQueryParams: toBool(this.preserveQueryParams),
+	                    preserveFragment: toBool(this.preserveFragment)
+	                });
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        RouterLink.decorators = [
+	            { type: _angular_core.Directive, args: [{ selector: ':not(a)[routerLink]' },] },
+	        ];
+	        /** @nocollapse */
+	        RouterLink.ctorParameters = [
+	            { type: Router, },
+	            { type: ActivatedRoute, },
+	            { type: _angular_common.LocationStrategy, },
+	        ];
+	        RouterLink.propDecorators = {
+	            'queryParams': [{ type: _angular_core.Input },],
+	            'fragment': [{ type: _angular_core.Input },],
+	            'preserveQueryParams': [{ type: _angular_core.Input },],
+	            'preserveFragment': [{ type: _angular_core.Input },],
+	            'routerLink': [{ type: _angular_core.Input },],
+	            'onClick': [{ type: _angular_core.HostListener, args: ['click', ['$event.button', '$event.ctrlKey', '$event.metaKey'],] },],
+	        };
+	        return RouterLink;
+	    }());
+	    /**
+	     * @whatItDoes Lets you link to specific parts of your app.
+	     *
+	     * See {@link RouterLink} for more information.
+	     *
+	     * @selector 'a[routerLink]'
+	     * @ngModule RouterModule
+	     *
+	     * @stable
+	     */
+	    var RouterLinkWithHref = (function () {
+	        function RouterLinkWithHref(router, route, locationStrategy) {
+	            var _this = this;
+	            this.router = router;
+	            this.route = route;
+	            this.locationStrategy = locationStrategy;
+	            this.commands = [];
+	            this.subscription = router.events.subscribe(function (s) {
+	                if (s instanceof NavigationEnd) {
+	                    _this.updateTargetUrlAndHref();
+	                }
+	            });
+	        }
+	        Object.defineProperty(RouterLinkWithHref.prototype, "routerLink", {
+	            set: function (data) {
+	                if (Array.isArray(data)) {
+	                    this.commands = data;
+	                }
+	                else {
+	                    this.commands = [data];
+	                }
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        RouterLinkWithHref.prototype.ngOnChanges = function (changes) { this.updateTargetUrlAndHref(); };
+	        RouterLinkWithHref.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
+	        RouterLinkWithHref.prototype.onClick = function (button, ctrlKey, metaKey) {
+	            if (button !== 0 || ctrlKey || metaKey) {
+	                return true;
+	            }
+	            if (typeof this.target === 'string' && this.target != '_self') {
+	                return true;
+	            }
+	            this.router.navigateByUrl(this.urlTree);
+	            return false;
+	        };
+	        RouterLinkWithHref.prototype.updateTargetUrlAndHref = function () {
+	            this.href = this.locationStrategy.prepareExternalUrl(this.router.serializeUrl(this.urlTree));
+	        };
+	        Object.defineProperty(RouterLinkWithHref.prototype, "urlTree", {
+	            get: function () {
+	                return this.router.createUrlTree(this.commands, {
+	                    relativeTo: this.route,
+	                    queryParams: this.queryParams,
+	                    fragment: this.fragment,
+	                    preserveQueryParams: toBool(this.preserveQueryParams),
+	                    preserveFragment: toBool(this.preserveFragment)
+	                });
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        RouterLinkWithHref.decorators = [
+	            { type: _angular_core.Directive, args: [{ selector: 'a[routerLink]' },] },
+	        ];
+	        /** @nocollapse */
+	        RouterLinkWithHref.ctorParameters = [
+	            { type: Router, },
+	            { type: ActivatedRoute, },
+	            { type: _angular_common.LocationStrategy, },
+	        ];
+	        RouterLinkWithHref.propDecorators = {
+	            'target': [{ type: _angular_core.Input },],
+	            'queryParams': [{ type: _angular_core.Input },],
+	            'fragment': [{ type: _angular_core.Input },],
+	            'routerLinkOptions': [{ type: _angular_core.Input },],
+	            'preserveQueryParams': [{ type: _angular_core.Input },],
+	            'preserveFragment': [{ type: _angular_core.Input },],
+	            'href': [{ type: _angular_core.HostBinding },],
+	            'routerLink': [{ type: _angular_core.Input },],
+	            'onClick': [{ type: _angular_core.HostListener, args: ['click', ['$event.button', '$event.ctrlKey', '$event.metaKey'],] },],
+	        };
+	        return RouterLinkWithHref;
+	    }());
+	    function toBool(s) {
+	        if (s === '')
+	            return true;
+	        return !!s;
+	    }
+
+	    /**
+	     * @whatItDoes Lets you add a CSS class to an element when the link's route becomes active.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * <a routerLink="/user/bob" routerLinkActive="active-link">Bob</a>
+	     * ```
+	     *
+	     * @description
+	     *
+	     * The RouterLinkActive directive lets you add a CSS class to an element when the link's route
+	     * becomes active.
+	     *
+	     * Consider the following example:
+	     *
+	     * ```
+	     * <a routerLink="/user/bob" routerLinkActive="active-link">Bob</a>
+	     * ```
+	     *
+	     * When the url is either '/user' or '/user/bob', the active-link class will
+	     * be added to the `a` tag. If the url changes, the class will be removed.
+	     *
+	     * You can set more than one class, as follows:
+	     *
+	     * ```
+	     * <a routerLink="/user/bob" routerLinkActive="class1 class2">Bob</a>
+	     * <a routerLink="/user/bob" [routerLinkActive]="['class1', 'class2']">Bob</a>
+	     * ```
+	     *
+	     * You can configure RouterLinkActive by passing `exact: true`. This will add the classes
+	     * only when the url matches the link exactly.
+	     *
+	     * ```
+	     * <a routerLink="/user/bob" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:
+	     * true}">Bob</a>
+	     * ```
+	     *
+	     * Finally, you can apply the RouterLinkActive directive to an ancestor of a RouterLink.
+	     *
+	     * ```
+	     * <div routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+	     *   <a routerLink="/user/jim">Jim</a>
+	     *   <a routerLink="/user/bob">Bob</a>
+	     * </div>
+	     * ```
+	     *
+	     * This will set the active-link class on the div tag if the url is either '/user/jim' or
+	     * '/user/bob'.
+	     *
+	     * @selector ':not(a)[routerLink]'
+	     * @ngModule RouterModule
+	     *
+	     * @stable
+	     */
+	    var RouterLinkActive = (function () {
+	        function RouterLinkActive(router, element, renderer) {
+	            var _this = this;
+	            this.router = router;
+	            this.element = element;
+	            this.renderer = renderer;
+	            this.classes = [];
+	            this.routerLinkActiveOptions = { exact: false };
+	            this.subscription = router.events.subscribe(function (s) {
+	                if (s instanceof NavigationEnd) {
+	                    _this.update();
+	                }
+	            });
+	        }
+	        RouterLinkActive.prototype.ngAfterContentInit = function () {
+	            var _this = this;
+	            this.links.changes.subscribe(function (s) { return _this.update(); });
+	            this.linksWithHrefs.changes.subscribe(function (s) { return _this.update(); });
+	            this.update();
+	        };
+	        Object.defineProperty(RouterLinkActive.prototype, "routerLinkActive", {
+	            set: function (data) {
+	                if (Array.isArray(data)) {
+	                    this.classes = data;
+	                }
+	                else {
+	                    this.classes = data.split(' ');
+	                }
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        RouterLinkActive.prototype.ngOnChanges = function (changes) { this.update(); };
+	        RouterLinkActive.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
+	        RouterLinkActive.prototype.update = function () {
+	            var _this = this;
+	            if (!this.links || !this.linksWithHrefs || !this.router.navigated)
+	                return;
+	            var isActive = this.hasActiveLink();
+	            this.classes.forEach(function (c) { return _this.renderer.setElementClass(_this.element.nativeElement, c, isActive); });
+	        };
+	        RouterLinkActive.prototype.isLinkActive = function (router) {
+	            var _this = this;
+	            return function (link) {
+	                return router.isActive(link.urlTree, _this.routerLinkActiveOptions.exact);
+	            };
+	        };
+	        RouterLinkActive.prototype.hasActiveLink = function () {
+	            return this.links.some(this.isLinkActive(this.router)) ||
+	                this.linksWithHrefs.some(this.isLinkActive(this.router));
+	        };
+	        RouterLinkActive.decorators = [
+	            { type: _angular_core.Directive, args: [{ selector: '[routerLinkActive]' },] },
+	        ];
+	        /** @nocollapse */
+	        RouterLinkActive.ctorParameters = [
+	            { type: Router, },
+	            { type: _angular_core.ElementRef, },
+	            { type: _angular_core.Renderer, },
+	        ];
+	        RouterLinkActive.propDecorators = {
+	            'links': [{ type: _angular_core.ContentChildren, args: [RouterLink, { descendants: true },] },],
+	            'linksWithHrefs': [{ type: _angular_core.ContentChildren, args: [RouterLinkWithHref, { descendants: true },] },],
+	            'routerLinkActiveOptions': [{ type: _angular_core.Input },],
+	            'routerLinkActive': [{ type: _angular_core.Input },],
+	        };
+	        return RouterLinkActive;
+	    }());
+
+	    /**
+	     * @whatItDoes Acts as a placeholder that Angular dynamically fills based on the current router
+	     * state.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * <router-outlet></router-outlet>
+	     * <router-outlet name='left'></router-outlet>
+	     * <router-outlet name='right'></router-outlet>
+	     * ```
+	     *
+	     * A router outlet will emit an activate event any time a new component is being instantiated,
+	     * and a deactivate event when it is being destroyed.
+	     *
+	     * ```
+	     * <router-outlet
+	     *   (activate)='onActivate($event)'
+	     *   (deactivate)='onDeactivate($event)'></router-outlet>
+	     * ```
+	     * @selector 'a[routerLink]'
+	     * @ngModule RouterModule
+	     *
+	     * @stable
+	     */
+	    var RouterOutlet = (function () {
+	        function RouterOutlet(parentOutletMap, location, resolver, name) {
+	            this.parentOutletMap = parentOutletMap;
+	            this.location = location;
+	            this.resolver = resolver;
+	            this.name = name;
+	            this.activateEvents = new _angular_core.EventEmitter();
+	            this.deactivateEvents = new _angular_core.EventEmitter();
+	            parentOutletMap.registerOutlet(name ? name : PRIMARY_OUTLET, this);
+	        }
+	        RouterOutlet.prototype.ngOnDestroy = function () { this.parentOutletMap.removeOutlet(this.name ? this.name : PRIMARY_OUTLET); };
+	        Object.defineProperty(RouterOutlet.prototype, "isActivated", {
+	            get: function () { return !!this.activated; },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(RouterOutlet.prototype, "component", {
+	            get: function () {
+	                if (!this.activated)
+	                    throw new Error('Outlet is not activated');
+	                return this.activated.instance;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        Object.defineProperty(RouterOutlet.prototype, "activatedRoute", {
+	            get: function () {
+	                if (!this.activated)
+	                    throw new Error('Outlet is not activated');
+	                return this._activatedRoute;
+	            },
+	            enumerable: true,
+	            configurable: true
+	        });
+	        RouterOutlet.prototype.deactivate = function () {
+	            if (this.activated) {
+	                var c = this.component;
+	                this.activated.destroy();
+	                this.activated = null;
+	                this.deactivateEvents.emit(c);
+	            }
+	        };
+	        RouterOutlet.prototype.activate = function (activatedRoute, loadedResolver, loadedInjector, providers, outletMap) {
+	            if (this.isActivated) {
+	                throw new Error('Cannot activate an already activated outlet');
+	            }
+	            this.outletMap = outletMap;
+	            this._activatedRoute = activatedRoute;
+	            var snapshot = activatedRoute._futureSnapshot;
+	            var component = snapshot._routeConfig.component;
+	            var factory;
+	            if (loadedResolver) {
+	                factory = loadedResolver.resolveComponentFactory(component);
+	            }
+	            else {
+	                factory = this.resolver.resolveComponentFactory(component);
+	            }
+	            var injector = loadedInjector ? loadedInjector : this.location.parentInjector;
+	            var inj = _angular_core.ReflectiveInjector.fromResolvedProviders(providers, injector);
+	            this.activated = this.location.createComponent(factory, this.location.length, inj, []);
+	            this.activated.changeDetectorRef.detectChanges();
+	            this.activateEvents.emit(this.activated.instance);
+	        };
+	        RouterOutlet.decorators = [
+	            { type: _angular_core.Directive, args: [{ selector: 'router-outlet' },] },
+	        ];
+	        /** @nocollapse */
+	        RouterOutlet.ctorParameters = [
+	            { type: RouterOutletMap, },
+	            { type: _angular_core.ViewContainerRef, },
+	            { type: _angular_core.ComponentFactoryResolver, },
+	            { type: undefined, decorators: [{ type: _angular_core.Attribute, args: ['name',] },] },
+	        ];
+	        RouterOutlet.propDecorators = {
+	            'activateEvents': [{ type: _angular_core.Output, args: ['activate',] },],
+	            'deactivateEvents': [{ type: _angular_core.Output, args: ['deactivate',] },],
+	        };
+	        return RouterOutlet;
+	    }());
+
+	    /**
+	     * @whatItDoes Provides a preloading strategy.
+	     *
+	     * @experimental
+	     */
+	    var PreloadingStrategy = (function () {
+	        function PreloadingStrategy() {
+	        }
+	        return PreloadingStrategy;
+	    }());
+	    /**
+	     * @whatItDoes Provides a preloading strategy that preloads all modules as quicky as possible.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * RouteModule.forRoot(ROUTES, {preloadingStrategy: PreloadAllModules})
+	     * ```
+	     *
+	     * @experimental
+	     */
+	    var PreloadAllModules = (function () {
+	        function PreloadAllModules() {
+	        }
+	        PreloadAllModules.prototype.preload = function (route, fn) {
+	            return rxjs_operator_catch._catch.call(fn(), function () { return rxjs_observable_of.of(null); });
+	        };
+	        return PreloadAllModules;
+	    }());
+	    /**
+	     * @whatItDoes Provides a preloading strategy that does not preload any modules.
+	     *
+	     * @description
+	     *
+	     * This strategy is enabled by default.
+	     *
+	     * @experimental
+	     */
+	    var NoPreloading = (function () {
+	        function NoPreloading() {
+	        }
+	        NoPreloading.prototype.preload = function (route, fn) { return rxjs_observable_of.of(null); };
+	        return NoPreloading;
+	    }());
+	    /**
+	     * The preloader optimistically loads all router configurations to
+	     * make navigations into lazily-loaded sections of the application faster.
+	     *
+	     * The preloader runs in the background. When the router bootstraps, the preloader
+	     * starts listening to all navigation events. After every such event, the preloader
+	     * will check if any configurations can be loaded lazily.
+	     *
+	     * If a route is protected by `canLoad` guards, the preloaded will not load it.
+	     */
+	    var RouterPreloader = (function () {
+	        function RouterPreloader(router, moduleLoader, compiler, injector, preloadingStrategy) {
+	            this.router = router;
+	            this.injector = injector;
+	            this.preloadingStrategy = preloadingStrategy;
+	            this.loader = new RouterConfigLoader(moduleLoader, compiler);
+	        }
+	        ;
+	        RouterPreloader.prototype.setUpPreloading = function () {
+	            var _this = this;
+	            var navigations = rxjs_operator_filter.filter.call(this.router.events, function (e) { return e instanceof NavigationEnd; });
+	            this.subscription = rxjs_operator_concatMap.concatMap.call(navigations, function () { return _this.preload(); }).subscribe(function (v) { });
+	        };
+	        RouterPreloader.prototype.preload = function () { return this.processRoutes(this.injector, this.router.config); };
+	        RouterPreloader.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
+	        RouterPreloader.prototype.processRoutes = function (injector, routes) {
+	            var res = [];
+	            for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
+	                var c = routes_1[_i];
+	                // we already have the config loaded, just recurce
+	                if (c.loadChildren && !c.canLoad && c._loadedConfig) {
+	                    var childConfig = c._loadedConfig;
+	                    res.push(this.processRoutes(childConfig.injector, childConfig.routes));
+	                }
+	                else if (c.loadChildren && !c.canLoad) {
+	                    res.push(this.preloadConfig(injector, c));
+	                }
+	                else if (c.children) {
+	                    res.push(this.processRoutes(injector, c.children));
+	                }
+	            }
+	            return rxjs_operator_mergeAll.mergeAll.call(rxjs_observable_from.from(res));
+	        };
+	        RouterPreloader.prototype.preloadConfig = function (injector, route) {
+	            var _this = this;
+	            return this.preloadingStrategy.preload(route, function () {
+	                var loaded = _this.loader.load(injector, route.loadChildren);
+	                return rxjs_operator_mergeMap.mergeMap.call(loaded, function (config) {
+	                    var c = route;
+	                    c._loadedConfig = config;
+	                    return _this.processRoutes(config.injector, config.routes);
+	                });
+	            });
+	        };
+	        RouterPreloader.decorators = [
+	            { type: _angular_core.Injectable },
+	        ];
+	        /** @nocollapse */
+	        RouterPreloader.ctorParameters = [
+	            { type: Router, },
+	            { type: _angular_core.NgModuleFactoryLoader, },
+	            { type: _angular_core.Compiler, },
+	            { type: _angular_core.Injector, },
+	            { type: PreloadingStrategy, },
+	        ];
+	        return RouterPreloader;
+	    }());
+
+	    /**
+	     * @whatItDoes Contains a list of directives
+	     * @stable
+	     */
+	    var ROUTER_DIRECTIVES = [RouterOutlet, RouterLink, RouterLinkWithHref, RouterLinkActive];
+	    /**
+	     * @whatItDoes Is used in DI to configure the router.
+	     * @stable
+	     */
+	    var ROUTER_CONFIGURATION = new _angular_core.OpaqueToken('ROUTER_CONFIGURATION');
+	    /**
+	     * @docsNotRequired
+	     */
+	    var ROUTER_FORROOT_GUARD = new _angular_core.OpaqueToken('ROUTER_FORROOT_GUARD');
+	    var ROUTER_PROVIDERS = [
+	        _angular_common.Location, { provide: UrlSerializer, useClass: DefaultUrlSerializer }, {
+	            provide: Router,
+	            useFactory: setupRouter,
+	            deps: [
+	                _angular_core.ApplicationRef, UrlSerializer, RouterOutletMap, _angular_common.Location, _angular_core.Injector, _angular_core.NgModuleFactoryLoader,
+	                _angular_core.Compiler, ROUTES, ROUTER_CONFIGURATION
+	            ]
+	        },
+	        RouterOutletMap, { provide: ActivatedRoute, useFactory: rootRoute, deps: [Router] },
+	        { provide: _angular_core.NgModuleFactoryLoader, useClass: _angular_core.SystemJsNgModuleLoader }, RouterPreloader, NoPreloading,
+	        PreloadAllModules, { provide: ROUTER_CONFIGURATION, useValue: { enableTracing: false } }
+	    ];
+	    /**
+	     * @whatItDoes Adds router directives and providers.
+	     *
+	     * @howToUse
+	     *
+	     * RouterModule can be imported multiple times: once per lazily-loaded bundle.
+	     * Since the router deals with a global shared resource--location, we cannot have
+	     * more than one router service active.
+	     *
+	     * That is why there are two ways to create the module: `RouterModule.forRoot` and
+	     * `RouterModule.forChild`.
+	     *
+	     * * `forRoot` creates a module that contains all the directives, the given routes, and the router
+	     * service itself.
+	     * * `forChild` creates a module that contains all the directives and the given routes, but does not
+	     * include
+	     * the router service.
+	     *
+	     * When registered at the root, the module should be used as follows
+	     *
+	     * ```
+	     * @NgModule({
+	     *   imports: [RouterModule.forRoot(ROUTES)]
+	     * })
+	     * class MyNgModule {}
+	     * ```
+	     *
+	     * For submodules and lazy loaded submodules the module should be used as follows:
+	     *
+	     * ```
+	     * @NgModule({
+	     *   imports: [RouterModule.forChild(ROUTES)]
+	     * })
+	     * class MyNgModule {}
+	     * ```
+	     *
+	     * @description
+	     *
+	     * Managing state transitions is one of the hardest parts of building applications. This is
+	     * especially true on the web, where you also need to ensure that the state is reflected in the URL.
+	     * In addition, we often want to split applications into multiple bundles and load them on demand.
+	     * Doing this transparently is not trivial.
+	     *
+	     * The Angular 2 router solves these problems. Using the router, you can declaratively specify
+	     * application states, manage state transitions while taking care of the URL, and load bundles on
+	     * demand.
+	     *
+	     * [Read this developer guide](https://angular.io/docs/ts/latest/guide/router.html) to get an
+	     * overview of how the router should be used.
+	     *
+	     * @stable
+	     */
+	    var RouterModule = (function () {
+	        function RouterModule(guard) {
+	        }
+	        /**
+	         * Creates a module with all the router providers and directives. It also optionally sets up an
+	         * application listener to perform an initial navigation.
+	         *
+	         * Options:
+	         * * `enableTracing` makes the router log all its internal events to the console.
+	         * * `useHash` enables the location strategy that uses the URL fragment instead of the history
+	         * API.
+	         * * `initialNavigation` disables the initial navigation.
+	         * * `errorHandler` provides a custom error handler.
+	         */
+	        RouterModule.forRoot = function (routes, config) {
+	            return {
+	                ngModule: RouterModule,
+	                providers: [
+	                    ROUTER_PROVIDERS, provideRoutes(routes), {
+	                        provide: ROUTER_FORROOT_GUARD,
+	                        useFactory: provideForRootGuard,
+	                        deps: [[Router, new _angular_core.Optional(), new _angular_core.SkipSelf()]]
+	                    },
+	                    { provide: ROUTER_CONFIGURATION, useValue: config ? config : {} }, {
+	                        provide: _angular_common.LocationStrategy,
+	                        useFactory: provideLocationStrategy,
+	                        deps: [
+	                            _angular_common.PlatformLocation, [new _angular_core.Inject(_angular_common.APP_BASE_HREF), new _angular_core.Optional()], ROUTER_CONFIGURATION
+	                        ]
+	                    },
+	                    {
+	                        provide: PreloadingStrategy,
+	                        useExisting: config && config.preloadingStrategy ? config.preloadingStrategy :
+	                            NoPreloading
+	                    },
+	                    provideRouterInitializer()
+	                ]
+	            };
+	        };
+	        /**
+	         * Creates a module with all the router directives and a provider registering routes.
+	         */
+	        RouterModule.forChild = function (routes) {
+	            return { ngModule: RouterModule, providers: [provideRoutes(routes)] };
+	        };
+	        RouterModule.decorators = [
+	            { type: _angular_core.NgModule, args: [{ declarations: ROUTER_DIRECTIVES, exports: ROUTER_DIRECTIVES },] },
+	        ];
+	        /** @nocollapse */
+	        RouterModule.ctorParameters = [
+	            { type: undefined, decorators: [{ type: _angular_core.Optional }, { type: _angular_core.Inject, args: [ROUTER_FORROOT_GUARD,] },] },
+	        ];
+	        return RouterModule;
+	    }());
+	    function provideLocationStrategy(platformLocationStrategy, baseHref, options) {
+	        if (options === void 0) { options = {}; }
+	        return options.useHash ? new _angular_common.HashLocationStrategy(platformLocationStrategy, baseHref) :
+	            new _angular_common.PathLocationStrategy(platformLocationStrategy, baseHref);
+	    }
+	    function provideForRootGuard(router) {
+	        if (router) {
+	            throw new Error("RouterModule.forRoot() called twice. Lazy loaded modules should use RouterModule.forChild() instead.");
+	        }
+	        return 'guarded';
+	    }
+	    /**
+	     * @whatItDoes Registers routes.
+	     *
+	     * @howToUse
+	     *
+	     * ```
+	     * @NgModule({
+	     *   imports: [RouterModule.forChild(ROUTES)],
+	     *   providers: [provideRoutes(EXTRA_ROUTES)]
+	     * })
+	     * class MyNgModule {}
+	     * ```
+	     *
+	     * @stable
+	     */
+	    function provideRoutes(routes) {
+	        return [
+	            { provide: _angular_core.ANALYZE_FOR_ENTRY_COMPONENTS, multi: true, useValue: routes },
+	            { provide: ROUTES, multi: true, useValue: routes }
+	        ];
+	    }
+	    function setupRouter(ref, urlSerializer, outletMap, location, injector, loader, compiler, config, opts) {
+	        if (opts === void 0) { opts = {}; }
+	        var r = new Router(null, urlSerializer, outletMap, location, injector, loader, compiler, flatten(config));
+	        if (opts.errorHandler) {
+	            r.errorHandler = opts.errorHandler;
+	        }
+	        if (opts.enableTracing) {
+	            r.events.subscribe(function (e) {
+	                console.group("Router Event: " + e.constructor.name);
+	                console.log(e.toString());
+	                console.log(e);
+	                console.groupEnd();
+	            });
+	        }
+	        return r;
+	    }
+	    function rootRoute(router) {
+	        return router.routerState.root;
+	    }
+	    function initialRouterNavigation(router, ref, preloader, opts) {
+	        return function () {
+	            router.resetRootComponentType(ref.componentTypes[0]);
+	            preloader.setUpPreloading();
+	            if (opts.initialNavigation === false) {
+	                router.setUpLocationChangeListener();
+	            }
+	            else {
+	                router.initialNavigation();
+	            }
+	        };
+	    }
+	    function provideRouterInitializer() {
+	        return {
+	            provide: _angular_core.APP_BOOTSTRAP_LISTENER,
+	            multi: true,
+	            useFactory: initialRouterNavigation,
+	            deps: [Router, _angular_core.ApplicationRef, RouterPreloader, ROUTER_CONFIGURATION]
+	        };
+	    }
+
+	    var __router_private__ = {
+	        ROUTER_PROVIDERS: ROUTER_PROVIDERS,
+	        ROUTES: ROUTES,
+	        flatten: flatten
+	    };
+
+	    exports.RouterLink = RouterLink;
+	    exports.RouterLinkWithHref = RouterLinkWithHref;
+	    exports.RouterLinkActive = RouterLinkActive;
+	    exports.RouterOutlet = RouterOutlet;
+	    exports.NavigationCancel = NavigationCancel;
+	    exports.NavigationEnd = NavigationEnd;
+	    exports.NavigationError = NavigationError;
+	    exports.NavigationStart = NavigationStart;
+	    exports.Router = Router;
+	    exports.RoutesRecognized = RoutesRecognized;
+	    exports.RouterModule = RouterModule;
+	    exports.provideRoutes = provideRoutes;
+	    exports.RouterOutletMap = RouterOutletMap;
+	    exports.NoPreloading = NoPreloading;
+	    exports.PreloadAllModules = PreloadAllModules;
+	    exports.PreloadingStrategy = PreloadingStrategy;
+	    exports.ActivatedRoute = ActivatedRoute;
+	    exports.ActivatedRouteSnapshot = ActivatedRouteSnapshot;
+	    exports.RouterState = RouterState;
+	    exports.RouterStateSnapshot = RouterStateSnapshot;
+	    exports.PRIMARY_OUTLET = PRIMARY_OUTLET;
+	    exports.DefaultUrlSerializer = DefaultUrlSerializer;
+	    exports.UrlSegment = UrlSegment;
+	    exports.UrlSerializer = UrlSerializer;
+	    exports.UrlTree = UrlTree;
+	    exports.__router_private__ = __router_private__;
+
+	}));
+
 
 /***/ },
 /* 341 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var FromObservable_1 = __webpack_require__(342);
+	exports.from = FromObservable_1.FromObservable.create;
+	//# sourceMappingURL=from.js.map
+
+/***/ },
+/* 342 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var isArray_1 = __webpack_require__(321);
+	var isPromise_1 = __webpack_require__(343);
+	var PromiseObservable_1 = __webpack_require__(337);
+	var IteratorObservable_1 = __webpack_require__(344);
+	var ArrayObservable_1 = __webpack_require__(346);
+	var ArrayLikeObservable_1 = __webpack_require__(350);
+	var iterator_1 = __webpack_require__(345);
+	var Observable_1 = __webpack_require__(315);
+	var observeOn_1 = __webpack_require__(351);
+	var observable_1 = __webpack_require__(328);
+	var isArrayLike = (function (x) { return x && typeof x.length === 'number'; });
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @extends {Ignored}
+	 * @hide true
+	 */
+	var FromObservable = (function (_super) {
+	    __extends(FromObservable, _super);
+	    function FromObservable(ish, scheduler) {
+	        _super.call(this, null);
+	        this.ish = ish;
+	        this.scheduler = scheduler;
+	    }
+	    /**
+	     * Creates an Observable from an Array, an array-like object, a Promise, an
+	     * iterable object, or an Observable-like object.
+	     *
+	     * <span class="informal">Converts almost anything to an Observable.</span>
+	     *
+	     * <img src="./img/from.png" width="100%">
+	     *
+	     * Convert various other objects and data types into Observables. `from`
+	     * converts a Promise or an array-like or an
+	     * [iterable](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#iterable)
+	     * object into an Observable that emits the items in that promise or array or
+	     * iterable. A String, in this context, is treated as an array of characters.
+	     * Observable-like objects (contains a function named with the ES2015 Symbol
+	     * for Observable) can also be converted through this operator.
+	     *
+	     * @example <caption>Converts an array to an Observable</caption>
+	     * var array = [10, 20, 30];
+	     * var result = Rx.Observable.from(array);
+	     * result.subscribe(x => console.log(x));
+	     *
+	     * @example <caption>Convert an infinite iterable (from a generator) to an Observable</caption>
+	     * function* generateDoubles(seed) {
+	     *   var i = seed;
+	     *   while (true) {
+	     *     yield i;
+	     *     i = 2 * i; // double it
+	     *   }
+	     * }
+	     *
+	     * var iterator = generateDoubles(3);
+	     * var result = Rx.Observable.from(iterator).take(10);
+	     * result.subscribe(x => console.log(x));
+	     *
+	     * @see {@link create}
+	     * @see {@link fromEvent}
+	     * @see {@link fromEventPattern}
+	     * @see {@link fromPromise}
+	     *
+	     * @param {ObservableInput<T>} ish A subscribable object, a Promise, an
+	     * Observable-like, an Array, an iterable or an array-like object to be
+	     * converted.
+	     * @param {Scheduler} [scheduler] The scheduler on which to schedule the
+	     * emissions of values.
+	     * @return {Observable<T>} The Observable whose values are originally from the
+	     * input object that was converted.
+	     * @static true
+	     * @name from
+	     * @owner Observable
+	     */
+	    FromObservable.create = function (ish, scheduler) {
+	        if (ish != null) {
+	            if (typeof ish[observable_1.$$observable] === 'function') {
+	                if (ish instanceof Observable_1.Observable && !scheduler) {
+	                    return ish;
+	                }
+	                return new FromObservable(ish, scheduler);
+	            }
+	            else if (isArray_1.isArray(ish)) {
+	                return new ArrayObservable_1.ArrayObservable(ish, scheduler);
+	            }
+	            else if (isPromise_1.isPromise(ish)) {
+	                return new PromiseObservable_1.PromiseObservable(ish, scheduler);
+	            }
+	            else if (typeof ish[iterator_1.$$iterator] === 'function' || typeof ish === 'string') {
+	                return new IteratorObservable_1.IteratorObservable(ish, scheduler);
+	            }
+	            else if (isArrayLike(ish)) {
+	                return new ArrayLikeObservable_1.ArrayLikeObservable(ish, scheduler);
+	            }
+	        }
+	        throw new TypeError((ish !== null && typeof ish || ish) + ' is not observable');
+	    };
+	    FromObservable.prototype._subscribe = function (subscriber) {
+	        var ish = this.ish;
+	        var scheduler = this.scheduler;
+	        if (scheduler == null) {
+	            return ish[observable_1.$$observable]().subscribe(subscriber);
+	        }
+	        else {
+	            return ish[observable_1.$$observable]().subscribe(new observeOn_1.ObserveOnSubscriber(subscriber, scheduler, 0));
+	        }
+	    };
+	    return FromObservable;
+	}(Observable_1.Observable));
+	exports.FromObservable = FromObservable;
+	//# sourceMappingURL=FromObservable.js.map
+
+/***/ },
+/* 343 */
+/***/ function(module, exports) {
+
+	"use strict";
+	function isPromise(value) {
+	    return value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
+	}
+	exports.isPromise = isPromise;
+	//# sourceMappingURL=isPromise.js.map
+
+/***/ },
+/* 344 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var root_1 = __webpack_require__(316);
+	var Observable_1 = __webpack_require__(315);
+	var iterator_1 = __webpack_require__(345);
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @extends {Ignored}
+	 * @hide true
+	 */
+	var IteratorObservable = (function (_super) {
+	    __extends(IteratorObservable, _super);
+	    function IteratorObservable(iterator, scheduler) {
+	        _super.call(this);
+	        this.scheduler = scheduler;
+	        if (iterator == null) {
+	            throw new Error('iterator cannot be null.');
+	        }
+	        this.iterator = getIterator(iterator);
+	    }
+	    IteratorObservable.create = function (iterator, scheduler) {
+	        return new IteratorObservable(iterator, scheduler);
+	    };
+	    IteratorObservable.dispatch = function (state) {
+	        var index = state.index, hasError = state.hasError, iterator = state.iterator, subscriber = state.subscriber;
+	        if (hasError) {
+	            subscriber.error(state.error);
+	            return;
+	        }
+	        var result = iterator.next();
+	        if (result.done) {
+	            subscriber.complete();
+	            return;
+	        }
+	        subscriber.next(result.value);
+	        state.index = index + 1;
+	        if (subscriber.closed) {
+	            return;
+	        }
+	        this.schedule(state);
+	    };
+	    IteratorObservable.prototype._subscribe = function (subscriber) {
+	        var index = 0;
+	        var _a = this, iterator = _a.iterator, scheduler = _a.scheduler;
+	        if (scheduler) {
+	            return scheduler.schedule(IteratorObservable.dispatch, 0, {
+	                index: index, iterator: iterator, subscriber: subscriber
+	            });
+	        }
+	        else {
+	            do {
+	                var result = iterator.next();
+	                if (result.done) {
+	                    subscriber.complete();
+	                    break;
+	                }
+	                else {
+	                    subscriber.next(result.value);
+	                }
+	                if (subscriber.closed) {
+	                    break;
+	                }
+	            } while (true);
+	        }
+	    };
+	    return IteratorObservable;
+	}(Observable_1.Observable));
+	exports.IteratorObservable = IteratorObservable;
+	var StringIterator = (function () {
+	    function StringIterator(str, idx, len) {
+	        if (idx === void 0) { idx = 0; }
+	        if (len === void 0) { len = str.length; }
+	        this.str = str;
+	        this.idx = idx;
+	        this.len = len;
+	    }
+	    StringIterator.prototype[iterator_1.$$iterator] = function () { return (this); };
+	    StringIterator.prototype.next = function () {
+	        return this.idx < this.len ? {
+	            done: false,
+	            value: this.str.charAt(this.idx++)
+	        } : {
+	            done: true,
+	            value: undefined
+	        };
+	    };
+	    return StringIterator;
+	}());
+	var ArrayIterator = (function () {
+	    function ArrayIterator(arr, idx, len) {
+	        if (idx === void 0) { idx = 0; }
+	        if (len === void 0) { len = toLength(arr); }
+	        this.arr = arr;
+	        this.idx = idx;
+	        this.len = len;
+	    }
+	    ArrayIterator.prototype[iterator_1.$$iterator] = function () { return this; };
+	    ArrayIterator.prototype.next = function () {
+	        return this.idx < this.len ? {
+	            done: false,
+	            value: this.arr[this.idx++]
+	        } : {
+	            done: true,
+	            value: undefined
+	        };
+	    };
+	    return ArrayIterator;
+	}());
+	function getIterator(obj) {
+	    var i = obj[iterator_1.$$iterator];
+	    if (!i && typeof obj === 'string') {
+	        return new StringIterator(obj);
+	    }
+	    if (!i && obj.length !== undefined) {
+	        return new ArrayIterator(obj);
+	    }
+	    if (!i) {
+	        throw new TypeError('object is not iterable');
+	    }
+	    return obj[iterator_1.$$iterator]();
+	}
+	var maxSafeInteger = Math.pow(2, 53) - 1;
+	function toLength(o) {
+	    var len = +o.length;
+	    if (isNaN(len)) {
+	        return 0;
+	    }
+	    if (len === 0 || !numberIsFinite(len)) {
+	        return len;
+	    }
+	    len = sign(len) * Math.floor(Math.abs(len));
+	    if (len <= 0) {
+	        return 0;
+	    }
+	    if (len > maxSafeInteger) {
+	        return maxSafeInteger;
+	    }
+	    return len;
+	}
+	function numberIsFinite(value) {
+	    return typeof value === 'number' && root_1.root.isFinite(value);
+	}
+	function sign(value) {
+	    var valueAsNumber = +value;
+	    if (valueAsNumber === 0) {
+	        return valueAsNumber;
+	    }
+	    if (isNaN(valueAsNumber)) {
+	        return valueAsNumber;
+	    }
+	    return valueAsNumber < 0 ? -1 : 1;
+	}
+	//# sourceMappingURL=IteratorObservable.js.map
+
+/***/ },
+/* 345 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var root_1 = __webpack_require__(316);
+	var Symbol = root_1.root.Symbol;
+	if (typeof Symbol === 'function') {
+	    if (Symbol.iterator) {
+	        exports.$$iterator = Symbol.iterator;
+	    }
+	    else if (typeof Symbol.for === 'function') {
+	        exports.$$iterator = Symbol.for('iterator');
+	    }
+	}
+	else {
+	    if (root_1.root.Set && typeof new root_1.root.Set()['@@iterator'] === 'function') {
+	        // Bug for mozilla version
+	        exports.$$iterator = '@@iterator';
+	    }
+	    else if (root_1.root.Map) {
+	        // es6-shim specific logic
+	        var keys = Object.getOwnPropertyNames(root_1.root.Map.prototype);
+	        for (var i = 0; i < keys.length; ++i) {
+	            var key = keys[i];
+	            if (key !== 'entries' && key !== 'size' && root_1.root.Map.prototype[key] === root_1.root.Map.prototype['entries']) {
+	                exports.$$iterator = key;
+	                break;
+	            }
+	        }
+	    }
+	    else {
+	        exports.$$iterator = '@@iterator';
+	    }
+	}
+	//# sourceMappingURL=iterator.js.map
+
+/***/ },
+/* 346 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Observable_1 = __webpack_require__(315);
+	var ScalarObservable_1 = __webpack_require__(347);
+	var EmptyObservable_1 = __webpack_require__(348);
+	var isScheduler_1 = __webpack_require__(349);
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @extends {Ignored}
+	 * @hide true
+	 */
+	var ArrayObservable = (function (_super) {
+	    __extends(ArrayObservable, _super);
+	    function ArrayObservable(array, scheduler) {
+	        _super.call(this);
+	        this.array = array;
+	        this.scheduler = scheduler;
+	        if (!scheduler && array.length === 1) {
+	            this._isScalar = true;
+	            this.value = array[0];
+	        }
+	    }
+	    ArrayObservable.create = function (array, scheduler) {
+	        return new ArrayObservable(array, scheduler);
+	    };
+	    /**
+	     * Creates an Observable that emits some values you specify as arguments,
+	     * immediately one after the other, and then emits a complete notification.
+	     *
+	     * <span class="informal">Emits the arguments you provide, then completes.
+	     * </span>
+	     *
+	     * <img src="./img/of.png" width="100%">
+	     *
+	     * This static operator is useful for creating a simple Observable that only
+	     * emits the arguments given, and the complete notification thereafter. It can
+	     * be used for composing with other Observables, such as with {@link concat}.
+	     * By default, it uses a `null` Scheduler, which means the `next`
+	     * notifications are sent synchronously, although with a different Scheduler
+	     * it is possible to determine when those notifications will be delivered.
+	     *
+	     * @example <caption>Emit 10, 20, 30, then 'a', 'b', 'c', then start ticking every second.</caption>
+	     * var numbers = Rx.Observable.of(10, 20, 30);
+	     * var letters = Rx.Observable.of('a', 'b', 'c');
+	     * var interval = Rx.Observable.interval(1000);
+	     * var result = numbers.concat(letters).concat(interval);
+	     * result.subscribe(x => console.log(x));
+	     *
+	     * @see {@link create}
+	     * @see {@link empty}
+	     * @see {@link never}
+	     * @see {@link throw}
+	     *
+	     * @param {...T} values Arguments that represent `next` values to be emitted.
+	     * @param {Scheduler} [scheduler] A {@link Scheduler} to use for scheduling
+	     * the emissions of the `next` notifications.
+	     * @return {Observable<T>} An Observable that emits each given input value.
+	     * @static true
+	     * @name of
+	     * @owner Observable
+	     */
+	    ArrayObservable.of = function () {
+	        var array = [];
+	        for (var _i = 0; _i < arguments.length; _i++) {
+	            array[_i - 0] = arguments[_i];
+	        }
+	        var scheduler = array[array.length - 1];
+	        if (isScheduler_1.isScheduler(scheduler)) {
+	            array.pop();
+	        }
+	        else {
+	            scheduler = null;
+	        }
+	        var len = array.length;
+	        if (len > 1) {
+	            return new ArrayObservable(array, scheduler);
+	        }
+	        else if (len === 1) {
+	            return new ScalarObservable_1.ScalarObservable(array[0], scheduler);
+	        }
+	        else {
+	            return new EmptyObservable_1.EmptyObservable(scheduler);
+	        }
+	    };
+	    ArrayObservable.dispatch = function (state) {
+	        var array = state.array, index = state.index, count = state.count, subscriber = state.subscriber;
+	        if (index >= count) {
+	            subscriber.complete();
+	            return;
+	        }
+	        subscriber.next(array[index]);
+	        if (subscriber.closed) {
+	            return;
+	        }
+	        state.index = index + 1;
+	        this.schedule(state);
+	    };
+	    ArrayObservable.prototype._subscribe = function (subscriber) {
+	        var index = 0;
+	        var array = this.array;
+	        var count = array.length;
+	        var scheduler = this.scheduler;
+	        if (scheduler) {
+	            return scheduler.schedule(ArrayObservable.dispatch, 0, {
+	                array: array, index: index, count: count, subscriber: subscriber
+	            });
+	        }
+	        else {
+	            for (var i = 0; i < count && !subscriber.closed; i++) {
+	                subscriber.next(array[i]);
+	            }
+	            subscriber.complete();
+	        }
+	    };
+	    return ArrayObservable;
+	}(Observable_1.Observable));
+	exports.ArrayObservable = ArrayObservable;
+	//# sourceMappingURL=ArrayObservable.js.map
+
+/***/ },
+/* 347 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Observable_1 = __webpack_require__(315);
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @extends {Ignored}
+	 * @hide true
+	 */
+	var ScalarObservable = (function (_super) {
+	    __extends(ScalarObservable, _super);
+	    function ScalarObservable(value, scheduler) {
+	        _super.call(this);
+	        this.value = value;
+	        this.scheduler = scheduler;
+	        this._isScalar = true;
+	        if (scheduler) {
+	            this._isScalar = false;
+	        }
+	    }
+	    ScalarObservable.create = function (value, scheduler) {
+	        return new ScalarObservable(value, scheduler);
+	    };
+	    ScalarObservable.dispatch = function (state) {
+	        var done = state.done, value = state.value, subscriber = state.subscriber;
+	        if (done) {
+	            subscriber.complete();
+	            return;
+	        }
+	        subscriber.next(value);
+	        if (subscriber.closed) {
+	            return;
+	        }
+	        state.done = true;
+	        this.schedule(state);
+	    };
+	    ScalarObservable.prototype._subscribe = function (subscriber) {
+	        var value = this.value;
+	        var scheduler = this.scheduler;
+	        if (scheduler) {
+	            return scheduler.schedule(ScalarObservable.dispatch, 0, {
+	                done: false, value: value, subscriber: subscriber
+	            });
+	        }
+	        else {
+	            subscriber.next(value);
+	            if (!subscriber.closed) {
+	                subscriber.complete();
+	            }
+	        }
+	    };
+	    return ScalarObservable;
+	}(Observable_1.Observable));
+	exports.ScalarObservable = ScalarObservable;
+	//# sourceMappingURL=ScalarObservable.js.map
+
+/***/ },
+/* 348 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Observable_1 = __webpack_require__(315);
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @extends {Ignored}
+	 * @hide true
+	 */
+	var EmptyObservable = (function (_super) {
+	    __extends(EmptyObservable, _super);
+	    function EmptyObservable(scheduler) {
+	        _super.call(this);
+	        this.scheduler = scheduler;
+	    }
+	    /**
+	     * Creates an Observable that emits no items to the Observer and immediately
+	     * emits a complete notification.
+	     *
+	     * <span class="informal">Just emits 'complete', and nothing else.
+	     * </span>
+	     *
+	     * <img src="./img/empty.png" width="100%">
+	     *
+	     * This static operator is useful for creating a simple Observable that only
+	     * emits the complete notification. It can be used for composing with other
+	     * Observables, such as in a {@link mergeMap}.
+	     *
+	     * @example <caption>Emit the number 7, then complete.</caption>
+	     * var result = Rx.Observable.empty().startWith(7);
+	     * result.subscribe(x => console.log(x));
+	     *
+	     * @example <caption>Map and flatten only odd numbers to the sequence 'a', 'b', 'c'</caption>
+	     * var interval = Rx.Observable.interval(1000);
+	     * var result = interval.mergeMap(x =>
+	     *   x % 2 === 1 ? Rx.Observable.of('a', 'b', 'c') : Rx.Observable.empty()
+	     * );
+	     * result.subscribe(x => console.log(x));
+	     *
+	     * @see {@link create}
+	     * @see {@link never}
+	     * @see {@link of}
+	     * @see {@link throw}
+	     *
+	     * @param {Scheduler} [scheduler] A {@link Scheduler} to use for scheduling
+	     * the emission of the complete notification.
+	     * @return {Observable} An "empty" Observable: emits only the complete
+	     * notification.
+	     * @static true
+	     * @name empty
+	     * @owner Observable
+	     */
+	    EmptyObservable.create = function (scheduler) {
+	        return new EmptyObservable(scheduler);
+	    };
+	    EmptyObservable.dispatch = function (arg) {
+	        var subscriber = arg.subscriber;
+	        subscriber.complete();
+	    };
+	    EmptyObservable.prototype._subscribe = function (subscriber) {
+	        var scheduler = this.scheduler;
+	        if (scheduler) {
+	            return scheduler.schedule(EmptyObservable.dispatch, 0, { subscriber: subscriber });
+	        }
+	        else {
+	            subscriber.complete();
+	        }
+	    };
+	    return EmptyObservable;
+	}(Observable_1.Observable));
+	exports.EmptyObservable = EmptyObservable;
+	//# sourceMappingURL=EmptyObservable.js.map
+
+/***/ },
+/* 349 */
+/***/ function(module, exports) {
+
+	"use strict";
+	function isScheduler(value) {
+	    return value && typeof value.schedule === 'function';
+	}
+	exports.isScheduler = isScheduler;
+	//# sourceMappingURL=isScheduler.js.map
+
+/***/ },
+/* 350 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Observable_1 = __webpack_require__(315);
+	var ScalarObservable_1 = __webpack_require__(347);
+	var EmptyObservable_1 = __webpack_require__(348);
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @extends {Ignored}
+	 * @hide true
+	 */
+	var ArrayLikeObservable = (function (_super) {
+	    __extends(ArrayLikeObservable, _super);
+	    function ArrayLikeObservable(arrayLike, scheduler) {
+	        _super.call(this);
+	        this.arrayLike = arrayLike;
+	        this.scheduler = scheduler;
+	        if (!scheduler && arrayLike.length === 1) {
+	            this._isScalar = true;
+	            this.value = arrayLike[0];
+	        }
+	    }
+	    ArrayLikeObservable.create = function (arrayLike, scheduler) {
+	        var length = arrayLike.length;
+	        if (length === 0) {
+	            return new EmptyObservable_1.EmptyObservable();
+	        }
+	        else if (length === 1) {
+	            return new ScalarObservable_1.ScalarObservable(arrayLike[0], scheduler);
+	        }
+	        else {
+	            return new ArrayLikeObservable(arrayLike, scheduler);
+	        }
+	    };
+	    ArrayLikeObservable.dispatch = function (state) {
+	        var arrayLike = state.arrayLike, index = state.index, length = state.length, subscriber = state.subscriber;
+	        if (subscriber.closed) {
+	            return;
+	        }
+	        if (index >= length) {
+	            subscriber.complete();
+	            return;
+	        }
+	        subscriber.next(arrayLike[index]);
+	        state.index = index + 1;
+	        this.schedule(state);
+	    };
+	    ArrayLikeObservable.prototype._subscribe = function (subscriber) {
+	        var index = 0;
+	        var _a = this, arrayLike = _a.arrayLike, scheduler = _a.scheduler;
+	        var length = arrayLike.length;
+	        if (scheduler) {
+	            return scheduler.schedule(ArrayLikeObservable.dispatch, 0, {
+	                arrayLike: arrayLike, index: index, length: length, subscriber: subscriber
+	            });
+	        }
+	        else {
+	            for (var i = 0; i < length && !subscriber.closed; i++) {
+	                subscriber.next(arrayLike[i]);
+	            }
+	            subscriber.complete();
+	        }
+	    };
+	    return ArrayLikeObservable;
+	}(Observable_1.Observable));
+	exports.ArrayLikeObservable = ArrayLikeObservable;
+	//# sourceMappingURL=ArrayLikeObservable.js.map
+
+/***/ },
+/* 351 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	var Notification_1 = __webpack_require__(352);
+	/**
+	 * @see {@link Notification}
+	 *
+	 * @param scheduler
+	 * @param delay
+	 * @return {Observable<R>|WebSocketSubject<T>|Observable<T>}
+	 * @method observeOn
+	 * @owner Observable
+	 */
+	function observeOn(scheduler, delay) {
+	    if (delay === void 0) { delay = 0; }
+	    return this.lift(new ObserveOnOperator(scheduler, delay));
+	}
+	exports.observeOn = observeOn;
+	var ObserveOnOperator = (function () {
+	    function ObserveOnOperator(scheduler, delay) {
+	        if (delay === void 0) { delay = 0; }
+	        this.scheduler = scheduler;
+	        this.delay = delay;
+	    }
+	    ObserveOnOperator.prototype.call = function (subscriber, source) {
+	        return source._subscribe(new ObserveOnSubscriber(subscriber, this.scheduler, this.delay));
+	    };
+	    return ObserveOnOperator;
+	}());
+	exports.ObserveOnOperator = ObserveOnOperator;
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var ObserveOnSubscriber = (function (_super) {
+	    __extends(ObserveOnSubscriber, _super);
+	    function ObserveOnSubscriber(destination, scheduler, delay) {
+	        if (delay === void 0) { delay = 0; }
+	        _super.call(this, destination);
+	        this.scheduler = scheduler;
+	        this.delay = delay;
+	    }
+	    ObserveOnSubscriber.dispatch = function (arg) {
+	        var notification = arg.notification, destination = arg.destination;
+	        notification.observe(destination);
+	    };
+	    ObserveOnSubscriber.prototype.scheduleMessage = function (notification) {
+	        this.add(this.scheduler.schedule(ObserveOnSubscriber.dispatch, this.delay, new ObserveOnMessage(notification, this.destination)));
+	    };
+	    ObserveOnSubscriber.prototype._next = function (value) {
+	        this.scheduleMessage(Notification_1.Notification.createNext(value));
+	    };
+	    ObserveOnSubscriber.prototype._error = function (err) {
+	        this.scheduleMessage(Notification_1.Notification.createError(err));
+	    };
+	    ObserveOnSubscriber.prototype._complete = function () {
+	        this.scheduleMessage(Notification_1.Notification.createComplete());
+	    };
+	    return ObserveOnSubscriber;
+	}(Subscriber_1.Subscriber));
+	exports.ObserveOnSubscriber = ObserveOnSubscriber;
+	var ObserveOnMessage = (function () {
+	    function ObserveOnMessage(notification, destination) {
+	        this.notification = notification;
+	        this.destination = destination;
+	    }
+	    return ObserveOnMessage;
+	}());
+	exports.ObserveOnMessage = ObserveOnMessage;
+	//# sourceMappingURL=observeOn.js.map
+
+/***/ },
+/* 352 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var Observable_1 = __webpack_require__(315);
+	/**
+	 * Represents a push-based event or value that an {@link Observable} can emit.
+	 * This class is particularly useful for operators that manage notifications,
+	 * like {@link materialize}, {@link dematerialize}, {@link observeOn}, and
+	 * others. Besides wrapping the actual delivered value, it also annotates it
+	 * with metadata of, for instance, what type of push message it is (`next`,
+	 * `error`, or `complete`).
+	 *
+	 * @see {@link materialize}
+	 * @see {@link dematerialize}
+	 * @see {@link observeOn}
+	 *
+	 * @class Notification<T>
+	 */
+	var Notification = (function () {
+	    function Notification(kind, value, exception) {
+	        this.kind = kind;
+	        this.value = value;
+	        this.exception = exception;
+	        this.hasValue = kind === 'N';
+	    }
+	    /**
+	     * Delivers to the given `observer` the value wrapped by this Notification.
+	     * @param {Observer} observer
+	     * @return
+	     */
+	    Notification.prototype.observe = function (observer) {
+	        switch (this.kind) {
+	            case 'N':
+	                return observer.next && observer.next(this.value);
+	            case 'E':
+	                return observer.error && observer.error(this.exception);
+	            case 'C':
+	                return observer.complete && observer.complete();
+	        }
+	    };
+	    /**
+	     * Given some {@link Observer} callbacks, deliver the value represented by the
+	     * current Notification to the correctly corresponding callback.
+	     * @param {function(value: T): void} next An Observer `next` callback.
+	     * @param {function(err: any): void} [error] An Observer `error` callback.
+	     * @param {function(): void} [complete] An Observer `complete` callback.
+	     * @return {any}
+	     */
+	    Notification.prototype.do = function (next, error, complete) {
+	        var kind = this.kind;
+	        switch (kind) {
+	            case 'N':
+	                return next && next(this.value);
+	            case 'E':
+	                return error && error(this.exception);
+	            case 'C':
+	                return complete && complete();
+	        }
+	    };
+	    /**
+	     * Takes an Observer or its individual callback functions, and calls `observe`
+	     * or `do` methods accordingly.
+	     * @param {Observer|function(value: T): void} nextOrObserver An Observer or
+	     * the `next` callback.
+	     * @param {function(err: any): void} [error] An Observer `error` callback.
+	     * @param {function(): void} [complete] An Observer `complete` callback.
+	     * @return {any}
+	     */
+	    Notification.prototype.accept = function (nextOrObserver, error, complete) {
+	        if (nextOrObserver && typeof nextOrObserver.next === 'function') {
+	            return this.observe(nextOrObserver);
+	        }
+	        else {
+	            return this.do(nextOrObserver, error, complete);
+	        }
+	    };
+	    /**
+	     * Returns a simple Observable that just delivers the notification represented
+	     * by this Notification instance.
+	     * @return {any}
+	     */
+	    Notification.prototype.toObservable = function () {
+	        var kind = this.kind;
+	        switch (kind) {
+	            case 'N':
+	                return Observable_1.Observable.of(this.value);
+	            case 'E':
+	                return Observable_1.Observable.throw(this.exception);
+	            case 'C':
+	                return Observable_1.Observable.empty();
+	        }
+	        throw new Error('unexpected notification kind value');
+	    };
+	    /**
+	     * A shortcut to create a Notification instance of the type `next` from a
+	     * given value.
+	     * @param {T} value The `next` value.
+	     * @return {Notification<T>} The "next" Notification representing the
+	     * argument.
+	     */
+	    Notification.createNext = function (value) {
+	        if (typeof value !== 'undefined') {
+	            return new Notification('N', value);
+	        }
+	        return this.undefinedValueNotification;
+	    };
+	    /**
+	     * A shortcut to create a Notification instance of the type `error` from a
+	     * given error.
+	     * @param {any} [err] The `error` exception.
+	     * @return {Notification<T>} The "error" Notification representing the
+	     * argument.
+	     */
+	    Notification.createError = function (err) {
+	        return new Notification('E', undefined, err);
+	    };
+	    /**
+	     * A shortcut to create a Notification instance of the type `complete`.
+	     * @return {Notification<any>} The valueless "complete" Notification.
+	     */
+	    Notification.createComplete = function () {
+	        return this.completeNotification;
+	    };
+	    Notification.completeNotification = new Notification('C');
+	    Notification.undefinedValueNotification = new Notification('N', undefined);
+	    return Notification;
+	}());
+	exports.Notification = Notification;
+	//# sourceMappingURL=Notification.js.map
+
+/***/ },
+/* 353 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var ArrayObservable_1 = __webpack_require__(346);
+	exports.of = ArrayObservable_1.ArrayObservable.of;
+	//# sourceMappingURL=of.js.map
+
+/***/ },
+/* 354 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var mergeMap_1 = __webpack_require__(355);
+	/**
+	 * Projects each source value to an Observable which is merged in the output
+	 * Observable, in a serialized fashion waiting for each one to complete before
+	 * merging the next.
+	 *
+	 * <span class="informal">Maps each value to an Observable, then flattens all of
+	 * these inner Observables using {@link concatAll}.</span>
+	 *
+	 * <img src="./img/concatMap.png" width="100%">
+	 *
+	 * Returns an Observable that emits items based on applying a function that you
+	 * supply to each item emitted by the source Observable, where that function
+	 * returns an (so-called "inner") Observable. Each new inner Observable is
+	 * concatenated with the previous inner Observable.
+	 *
+	 * __Warning:__ if source values arrive endlessly and faster than their
+	 * corresponding inner Observables can complete, it will result in memory issues
+	 * as inner Observables amass in an unbounded buffer waiting for their turn to
+	 * be subscribed to.
+	 *
+	 * Note: `concatMap` is equivalent to `mergeMap` with concurrency parameter set
+	 * to `1`.
+	 *
+	 * @example <caption>For each click event, tick every second from 0 to 3, with no concurrency</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var result = clicks.concatMap(ev => Rx.Observable.interval(1000).take(4));
+	 * result.subscribe(x => console.log(x));
+	 *
+	 * @see {@link concat}
+	 * @see {@link concatAll}
+	 * @see {@link concatMapTo}
+	 * @see {@link exhaustMap}
+	 * @see {@link mergeMap}
+	 * @see {@link switchMap}
+	 *
+	 * @param {function(value: T, ?index: number): Observable} project A function
+	 * that, when applied to an item emitted by the source Observable, returns an
+	 * Observable.
+	 * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
+	 * A function to produce the value on the output Observable based on the values
+	 * and the indices of the source (outer) emission and the inner Observable
+	 * emission. The arguments passed to this function are:
+	 * - `outerValue`: the value that came from the source
+	 * - `innerValue`: the value that came from the projected Observable
+	 * - `outerIndex`: the "index" of the value that came from the source
+	 * - `innerIndex`: the "index" of the value from the projected Observable
+	 * @return {Observable} an observable of values merged from the projected
+	 * Observables as they were subscribed to, one at a time. Optionally, these
+	 * values may have been projected from a passed `projectResult` argument.
+	 * @return {Observable} An Observable that emits the result of applying the
+	 * projection function (and the optional `resultSelector`) to each item emitted
+	 * by the source Observable and taking values from each projected inner
+	 * Observable sequentially.
+	 * @method concatMap
+	 * @owner Observable
+	 */
+	function concatMap(project, resultSelector) {
+	    return this.lift(new mergeMap_1.MergeMapOperator(project, resultSelector, 1));
+	}
+	exports.concatMap = concatMap;
+	//# sourceMappingURL=concatMap.js.map
+
+/***/ },
+/* 355 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var subscribeToResult_1 = __webpack_require__(356);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	/**
+	 * Projects each source value to an Observable which is merged in the output
+	 * Observable.
+	 *
+	 * <span class="informal">Maps each value to an Observable, then flattens all of
+	 * these inner Observables using {@link mergeAll}.</span>
+	 *
+	 * <img src="./img/mergeMap.png" width="100%">
+	 *
+	 * Returns an Observable that emits items based on applying a function that you
+	 * supply to each item emitted by the source Observable, where that function
+	 * returns an Observable, and then merging those resulting Observables and
+	 * emitting the results of this merger.
+	 *
+	 * @example <caption>Map and flatten each letter to an Observable ticking every 1 second</caption>
+	 * var letters = Rx.Observable.of('a', 'b', 'c');
+	 * var result = letters.mergeMap(x =>
+	 *   Rx.Observable.interval(1000).map(i => x+i)
+	 * );
+	 * result.subscribe(x => console.log(x));
+	 *
+	 * @see {@link concatMap}
+	 * @see {@link exhaustMap}
+	 * @see {@link merge}
+	 * @see {@link mergeAll}
+	 * @see {@link mergeMapTo}
+	 * @see {@link mergeScan}
+	 * @see {@link switchMap}
+	 *
+	 * @param {function(value: T, ?index: number): Observable} project A function
+	 * that, when applied to an item emitted by the source Observable, returns an
+	 * Observable.
+	 * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
+	 * A function to produce the value on the output Observable based on the values
+	 * and the indices of the source (outer) emission and the inner Observable
+	 * emission. The arguments passed to this function are:
+	 * - `outerValue`: the value that came from the source
+	 * - `innerValue`: the value that came from the projected Observable
+	 * - `outerIndex`: the "index" of the value that came from the source
+	 * - `innerIndex`: the "index" of the value from the projected Observable
+	 * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
+	 * Observables being subscribed to concurrently.
+	 * @return {Observable} An Observable that emits the result of applying the
+	 * projection function (and the optional `resultSelector`) to each item emitted
+	 * by the source Observable and merging the results of the Observables obtained
+	 * from this transformation.
+	 * @method mergeMap
+	 * @owner Observable
+	 */
+	function mergeMap(project, resultSelector, concurrent) {
+	    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+	    if (typeof resultSelector === 'number') {
+	        concurrent = resultSelector;
+	        resultSelector = null;
+	    }
+	    return this.lift(new MergeMapOperator(project, resultSelector, concurrent));
+	}
+	exports.mergeMap = mergeMap;
+	var MergeMapOperator = (function () {
+	    function MergeMapOperator(project, resultSelector, concurrent) {
+	        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+	        this.project = project;
+	        this.resultSelector = resultSelector;
+	        this.concurrent = concurrent;
+	    }
+	    MergeMapOperator.prototype.call = function (observer, source) {
+	        return source._subscribe(new MergeMapSubscriber(observer, this.project, this.resultSelector, this.concurrent));
+	    };
+	    return MergeMapOperator;
+	}());
+	exports.MergeMapOperator = MergeMapOperator;
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var MergeMapSubscriber = (function (_super) {
+	    __extends(MergeMapSubscriber, _super);
+	    function MergeMapSubscriber(destination, project, resultSelector, concurrent) {
+	        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+	        _super.call(this, destination);
+	        this.project = project;
+	        this.resultSelector = resultSelector;
+	        this.concurrent = concurrent;
+	        this.hasCompleted = false;
+	        this.buffer = [];
+	        this.active = 0;
+	        this.index = 0;
+	    }
+	    MergeMapSubscriber.prototype._next = function (value) {
+	        if (this.active < this.concurrent) {
+	            this._tryNext(value);
+	        }
+	        else {
+	            this.buffer.push(value);
+	        }
+	    };
+	    MergeMapSubscriber.prototype._tryNext = function (value) {
+	        var result;
+	        var index = this.index++;
+	        try {
+	            result = this.project(value, index);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        this.active++;
+	        this._innerSub(result, value, index);
+	    };
+	    MergeMapSubscriber.prototype._innerSub = function (ish, value, index) {
+	        this.add(subscribeToResult_1.subscribeToResult(this, ish, value, index));
+	    };
+	    MergeMapSubscriber.prototype._complete = function () {
+	        this.hasCompleted = true;
+	        if (this.active === 0 && this.buffer.length === 0) {
+	            this.destination.complete();
+	        }
+	    };
+	    MergeMapSubscriber.prototype.notifyNext = function (outerValue, innerValue, outerIndex, innerIndex, innerSub) {
+	        if (this.resultSelector) {
+	            this._notifyResultSelector(outerValue, innerValue, outerIndex, innerIndex);
+	        }
+	        else {
+	            this.destination.next(innerValue);
+	        }
+	    };
+	    MergeMapSubscriber.prototype._notifyResultSelector = function (outerValue, innerValue, outerIndex, innerIndex) {
+	        var result;
+	        try {
+	            result = this.resultSelector(outerValue, innerValue, outerIndex, innerIndex);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        this.destination.next(result);
+	    };
+	    MergeMapSubscriber.prototype.notifyComplete = function (innerSub) {
+	        var buffer = this.buffer;
+	        this.remove(innerSub);
+	        this.active--;
+	        if (buffer.length > 0) {
+	            this._next(buffer.shift());
+	        }
+	        else if (this.active === 0 && this.hasCompleted) {
+	            this.destination.complete();
+	        }
+	    };
+	    return MergeMapSubscriber;
+	}(OuterSubscriber_1.OuterSubscriber));
+	exports.MergeMapSubscriber = MergeMapSubscriber;
+	//# sourceMappingURL=mergeMap.js.map
+
+/***/ },
+/* 356 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var root_1 = __webpack_require__(316);
+	var isArray_1 = __webpack_require__(321);
+	var isPromise_1 = __webpack_require__(343);
+	var Observable_1 = __webpack_require__(315);
+	var iterator_1 = __webpack_require__(345);
+	var InnerSubscriber_1 = __webpack_require__(357);
+	var observable_1 = __webpack_require__(328);
+	function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
+	    var destination = new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex);
+	    if (destination.closed) {
+	        return null;
+	    }
+	    if (result instanceof Observable_1.Observable) {
+	        if (result._isScalar) {
+	            destination.next(result.value);
+	            destination.complete();
+	            return null;
+	        }
+	        else {
+	            return result.subscribe(destination);
+	        }
+	    }
+	    if (isArray_1.isArray(result)) {
+	        for (var i = 0, len = result.length; i < len && !destination.closed; i++) {
+	            destination.next(result[i]);
+	        }
+	        if (!destination.closed) {
+	            destination.complete();
+	        }
+	    }
+	    else if (isPromise_1.isPromise(result)) {
+	        result.then(function (value) {
+	            if (!destination.closed) {
+	                destination.next(value);
+	                destination.complete();
+	            }
+	        }, function (err) { return destination.error(err); })
+	            .then(null, function (err) {
+	            // Escaping the Promise trap: globally throw unhandled errors
+	            root_1.root.setTimeout(function () { throw err; });
+	        });
+	        return destination;
+	    }
+	    else if (typeof result[iterator_1.$$iterator] === 'function') {
+	        var iterator = result[iterator_1.$$iterator]();
+	        do {
+	            var item = iterator.next();
+	            if (item.done) {
+	                destination.complete();
+	                break;
+	            }
+	            destination.next(item.value);
+	            if (destination.closed) {
+	                break;
+	            }
+	        } while (true);
+	    }
+	    else if (typeof result[observable_1.$$observable] === 'function') {
+	        var obs = result[observable_1.$$observable]();
+	        if (typeof obs.subscribe !== 'function') {
+	            destination.error(new Error('invalid observable'));
+	        }
+	        else {
+	            return obs.subscribe(new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex));
+	        }
+	    }
+	    else {
+	        destination.error(new TypeError('unknown type returned'));
+	    }
+	    return null;
+	}
+	exports.subscribeToResult = subscribeToResult;
+	//# sourceMappingURL=subscribeToResult.js.map
+
+/***/ },
+/* 357 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var InnerSubscriber = (function (_super) {
+	    __extends(InnerSubscriber, _super);
+	    function InnerSubscriber(parent, outerValue, outerIndex) {
+	        _super.call(this);
+	        this.parent = parent;
+	        this.outerValue = outerValue;
+	        this.outerIndex = outerIndex;
+	        this.index = 0;
+	    }
+	    InnerSubscriber.prototype._next = function (value) {
+	        this.parent.notifyNext(this.outerValue, value, this.outerIndex, this.index++, this);
+	    };
+	    InnerSubscriber.prototype._error = function (error) {
+	        this.parent.notifyError(error, this);
+	        this.unsubscribe();
+	    };
+	    InnerSubscriber.prototype._complete = function () {
+	        this.parent.notifyComplete(this);
+	        this.unsubscribe();
+	    };
+	    return InnerSubscriber;
+	}(Subscriber_1.Subscriber));
+	exports.InnerSubscriber = InnerSubscriber;
+	//# sourceMappingURL=InnerSubscriber.js.map
+
+/***/ },
+/* 358 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var OuterSubscriber = (function (_super) {
+	    __extends(OuterSubscriber, _super);
+	    function OuterSubscriber() {
+	        _super.apply(this, arguments);
+	    }
+	    OuterSubscriber.prototype.notifyNext = function (outerValue, innerValue, outerIndex, innerIndex, innerSub) {
+	        this.destination.next(innerValue);
+	    };
+	    OuterSubscriber.prototype.notifyError = function (error, innerSub) {
+	        this.destination.error(error);
+	    };
+	    OuterSubscriber.prototype.notifyComplete = function (innerSub) {
+	        this.destination.complete();
+	    };
+	    return OuterSubscriber;
+	}(Subscriber_1.Subscriber));
+	exports.OuterSubscriber = OuterSubscriber;
+	//# sourceMappingURL=OuterSubscriber.js.map
+
+/***/ },
+/* 359 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	/**
+	 * Returns an Observable that emits whether or not every item of the source satisfies the condition specified.
+	 * @param {function} predicate a function for determining if an item meets a specified condition.
+	 * @param {any} [thisArg] optional object to use for `this` in the callback
+	 * @return {Observable} an Observable of booleans that determines if all items of the source Observable meet the condition specified.
+	 * @method every
+	 * @owner Observable
+	 */
+	function every(predicate, thisArg) {
+	    return this.lift(new EveryOperator(predicate, thisArg, this));
+	}
+	exports.every = every;
+	var EveryOperator = (function () {
+	    function EveryOperator(predicate, thisArg, source) {
+	        this.predicate = predicate;
+	        this.thisArg = thisArg;
+	        this.source = source;
+	    }
+	    EveryOperator.prototype.call = function (observer, source) {
+	        return source._subscribe(new EverySubscriber(observer, this.predicate, this.thisArg, this.source));
+	    };
+	    return EveryOperator;
+	}());
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var EverySubscriber = (function (_super) {
+	    __extends(EverySubscriber, _super);
+	    function EverySubscriber(destination, predicate, thisArg, source) {
+	        _super.call(this, destination);
+	        this.predicate = predicate;
+	        this.thisArg = thisArg;
+	        this.source = source;
+	        this.index = 0;
+	        this.thisArg = thisArg || this;
+	    }
+	    EverySubscriber.prototype.notifyComplete = function (everyValueMatch) {
+	        this.destination.next(everyValueMatch);
+	        this.destination.complete();
+	    };
+	    EverySubscriber.prototype._next = function (value) {
+	        var result = false;
+	        try {
+	            result = this.predicate.call(this.thisArg, value, this.index++, this.source);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        if (!result) {
+	            this.notifyComplete(false);
+	        }
+	    };
+	    EverySubscriber.prototype._complete = function () {
+	        this.notifyComplete(true);
+	    };
+	    return EverySubscriber;
+	}(Subscriber_1.Subscriber));
+	//# sourceMappingURL=every.js.map
+
+/***/ },
+/* 360 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	/**
+	 * Applies a given `project` function to each value emitted by the source
+	 * Observable, and emits the resulting values as an Observable.
+	 *
+	 * <span class="informal">Like [Array.prototype.map()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map),
+	 * it passes each source value through a transformation function to get
+	 * corresponding output values.</span>
+	 *
+	 * <img src="./img/map.png" width="100%">
+	 *
+	 * Similar to the well known `Array.prototype.map` function, this operator
+	 * applies a projection to each value and emits that projection in the output
+	 * Observable.
+	 *
+	 * @example <caption>Map every every click to the clientX position of that click</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var positions = clicks.map(ev => ev.clientX);
+	 * positions.subscribe(x => console.log(x));
+	 *
+	 * @see {@link mapTo}
+	 * @see {@link pluck}
+	 *
+	 * @param {function(value: T, index: number): R} project The function to apply
+	 * to each `value` emitted by the source Observable. The `index` parameter is
+	 * the number `i` for the i-th emission that has happened since the
+	 * subscription, starting from the number `0`.
+	 * @param {any} [thisArg] An optional argument to define what `this` is in the
+	 * `project` function.
+	 * @return {Observable<R>} An Observable that emits the values from the source
+	 * Observable transformed by the given `project` function.
+	 * @method map
+	 * @owner Observable
+	 */
+	function map(project, thisArg) {
+	    if (typeof project !== 'function') {
+	        throw new TypeError('argument is not a function. Are you looking for `mapTo()`?');
+	    }
+	    return this.lift(new MapOperator(project, thisArg));
+	}
+	exports.map = map;
+	var MapOperator = (function () {
+	    function MapOperator(project, thisArg) {
+	        this.project = project;
+	        this.thisArg = thisArg;
+	    }
+	    MapOperator.prototype.call = function (subscriber, source) {
+	        return source._subscribe(new MapSubscriber(subscriber, this.project, this.thisArg));
+	    };
+	    return MapOperator;
+	}());
+	exports.MapOperator = MapOperator;
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var MapSubscriber = (function (_super) {
+	    __extends(MapSubscriber, _super);
+	    function MapSubscriber(destination, project, thisArg) {
+	        _super.call(this, destination);
+	        this.project = project;
+	        this.count = 0;
+	        this.thisArg = thisArg || this;
+	    }
+	    // NOTE: This looks unoptimized, but it's actually purposefully NOT
+	    // using try/catch optimizations.
+	    MapSubscriber.prototype._next = function (value) {
+	        var result;
+	        try {
+	            result = this.project.call(this.thisArg, value, this.count++);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        this.destination.next(result);
+	    };
+	    return MapSubscriber;
+	}(Subscriber_1.Subscriber));
+	//# sourceMappingURL=map.js.map
+
+/***/ },
+/* 361 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
+	/**
+	 * Converts a higher-order Observable into a first-order Observable which
+	 * concurrently delivers all values that are emitted on the inner Observables.
+	 *
+	 * <span class="informal">Flattens an Observable-of-Observables.</span>
+	 *
+	 * <img src="./img/mergeAll.png" width="100%">
+	 *
+	 * `mergeAll` subscribes to an Observable that emits Observables, also known as
+	 * a higher-order Observable. Each time it observes one of these emitted inner
+	 * Observables, it subscribes to that and delivers all the values from the
+	 * inner Observable on the output Observable. The output Observable only
+	 * completes once all inner Observables have completed. Any error delivered by
+	 * a inner Observable will be immediately emitted on the output Observable.
+	 *
+	 * @example <caption>Spawn a new interval Observable for each click event, and blend their outputs as one Observable</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var higherOrder = clicks.map((ev) => Rx.Observable.interval(1000));
+	 * var firstOrder = higherOrder.mergeAll();
+	 * firstOrder.subscribe(x => console.log(x));
+	 *
+	 * @example <caption>Count from 0 to 9 every second for each click, but only allow 2 concurrent timers</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var higherOrder = clicks.map((ev) => Rx.Observable.interval(1000).take(10));
+	 * var firstOrder = higherOrder.mergeAll(2);
+	 * firstOrder.subscribe(x => console.log(x));
+	 *
+	 * @see {@link combineAll}
+	 * @see {@link concatAll}
+	 * @see {@link exhaust}
+	 * @see {@link merge}
+	 * @see {@link mergeMap}
+	 * @see {@link mergeMapTo}
+	 * @see {@link mergeScan}
+	 * @see {@link switch}
+	 * @see {@link zipAll}
+	 *
+	 * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of inner
+	 * Observables being subscribed to concurrently.
+	 * @return {Observable} An Observable that emits values coming from all the
+	 * inner Observables emitted by the source Observable.
+	 * @method mergeAll
+	 * @owner Observable
+	 */
+	function mergeAll(concurrent) {
+	    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+	    return this.lift(new MergeAllOperator(concurrent));
+	}
+	exports.mergeAll = mergeAll;
+	var MergeAllOperator = (function () {
+	    function MergeAllOperator(concurrent) {
+	        this.concurrent = concurrent;
+	    }
+	    MergeAllOperator.prototype.call = function (observer, source) {
+	        return source._subscribe(new MergeAllSubscriber(observer, this.concurrent));
+	    };
+	    return MergeAllOperator;
+	}());
+	exports.MergeAllOperator = MergeAllOperator;
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var MergeAllSubscriber = (function (_super) {
+	    __extends(MergeAllSubscriber, _super);
+	    function MergeAllSubscriber(destination, concurrent) {
+	        _super.call(this, destination);
+	        this.concurrent = concurrent;
+	        this.hasCompleted = false;
+	        this.buffer = [];
+	        this.active = 0;
+	    }
+	    MergeAllSubscriber.prototype._next = function (observable) {
+	        if (this.active < this.concurrent) {
+	            this.active++;
+	            this.add(subscribeToResult_1.subscribeToResult(this, observable));
+	        }
+	        else {
+	            this.buffer.push(observable);
+	        }
+	    };
+	    MergeAllSubscriber.prototype._complete = function () {
+	        this.hasCompleted = true;
+	        if (this.active === 0 && this.buffer.length === 0) {
+	            this.destination.complete();
+	        }
+	    };
+	    MergeAllSubscriber.prototype.notifyComplete = function (innerSub) {
+	        var buffer = this.buffer;
+	        this.remove(innerSub);
+	        this.active--;
+	        if (buffer.length > 0) {
+	            this._next(buffer.shift());
+	        }
+	        else if (this.active === 0 && this.hasCompleted) {
+	            this.destination.complete();
+	        }
+	    };
+	    return MergeAllSubscriber;
+	}(OuterSubscriber_1.OuterSubscriber));
+	exports.MergeAllSubscriber = MergeAllSubscriber;
+	//# sourceMappingURL=mergeAll.js.map
+
+/***/ },
+/* 362 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	/**
+	 * Applies an accumulator function over the source Observable, and returns the
+	 * accumulated result when the source completes, given an optional seed value.
+	 *
+	 * <span class="informal">Combines together all values emitted on the source,
+	 * using an accumulator function that knows how to join a new source value into
+	 * the accumulation from the past.</span>
+	 *
+	 * <img src="./img/reduce.png" width="100%">
+	 *
+	 * Like
+	 * [Array.prototype.reduce()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce),
+	 * `reduce` applies an `accumulator` function against an accumulation and each
+	 * value of the source Observable (from the past) to reduce it to a single
+	 * value, emitted on the output Observable. Note that `reduce` will only emit
+	 * one value, only when the source Observable completes. It is equivalent to
+	 * applying operator {@link scan} followed by operator {@link last}.
+	 *
+	 * Returns an Observable that applies a specified `accumulator` function to each
+	 * item emitted by the source Observable. If a `seed` value is specified, then
+	 * that value will be used as the initial value for the accumulator. If no seed
+	 * value is specified, the first item of the source is used as the seed.
+	 *
+	 * @example <caption>Count the number of click events that happened in 5 seconds</caption>
+	 * var clicksInFiveSeconds = Rx.Observable.fromEvent(document, 'click')
+	 *   .takeUntil(Rx.Observable.interval(5000));
+	 * var ones = clicksInFiveSeconds.mapTo(1);
+	 * var seed = 0;
+	 * var count = ones.reduce((acc, one) => acc + one, seed);
+	 * count.subscribe(x => console.log(x));
+	 *
+	 * @see {@link count}
+	 * @see {@link expand}
+	 * @see {@link mergeScan}
+	 * @see {@link scan}
+	 *
+	 * @param {function(acc: R, value: T): R} accumulator The accumulator function
+	 * called on each source value.
+	 * @param {R} [seed] The initial accumulation value.
+	 * @return {Observable<R>} An observable of the accumulated values.
+	 * @return {Observable<R>} An Observable that emits a single value that is the
+	 * result of accumulating the values emitted by the source Observable.
+	 * @method reduce
+	 * @owner Observable
+	 */
+	function reduce(accumulator, seed) {
+	    return this.lift(new ReduceOperator(accumulator, seed));
+	}
+	exports.reduce = reduce;
+	var ReduceOperator = (function () {
+	    function ReduceOperator(accumulator, seed) {
+	        this.accumulator = accumulator;
+	        this.seed = seed;
+	    }
+	    ReduceOperator.prototype.call = function (subscriber, source) {
+	        return source._subscribe(new ReduceSubscriber(subscriber, this.accumulator, this.seed));
+	    };
+	    return ReduceOperator;
+	}());
+	exports.ReduceOperator = ReduceOperator;
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var ReduceSubscriber = (function (_super) {
+	    __extends(ReduceSubscriber, _super);
+	    function ReduceSubscriber(destination, accumulator, seed) {
+	        _super.call(this, destination);
+	        this.accumulator = accumulator;
+	        this.hasValue = false;
+	        this.acc = seed;
+	        this.accumulator = accumulator;
+	        this.hasSeed = typeof seed !== 'undefined';
+	    }
+	    ReduceSubscriber.prototype._next = function (value) {
+	        if (this.hasValue || (this.hasValue = this.hasSeed)) {
+	            this._tryReduce(value);
+	        }
+	        else {
+	            this.acc = value;
+	            this.hasValue = true;
+	        }
+	    };
+	    ReduceSubscriber.prototype._tryReduce = function (value) {
+	        var result;
+	        try {
+	            result = this.accumulator(this.acc, value);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        this.acc = result;
+	    };
+	    ReduceSubscriber.prototype._complete = function () {
+	        if (this.hasValue || this.hasSeed) {
+	            this.destination.next(this.acc);
+	        }
+	        this.destination.complete();
+	    };
+	    return ReduceSubscriber;
+	}(Subscriber_1.Subscriber));
+	exports.ReduceSubscriber = ReduceSubscriber;
+	//# sourceMappingURL=reduce.js.map
+
+/***/ },
+/* 363 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
+	/**
+	 * Catches errors on the observable to be handled by returning a new observable or throwing an error.
+	 * @param {function} selector a function that takes as arguments `err`, which is the error, and `caught`, which
+	 *  is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable
+	 *  is returned by the `selector` will be used to continue the observable chain.
+	 * @return {Observable} an observable that originates from either the source or the observable returned by the
+	 *  catch `selector` function.
+	 * @method catch
+	 * @owner Observable
+	 */
+	function _catch(selector) {
+	    var operator = new CatchOperator(selector);
+	    var caught = this.lift(operator);
+	    return (operator.caught = caught);
+	}
+	exports._catch = _catch;
+	var CatchOperator = (function () {
+	    function CatchOperator(selector) {
+	        this.selector = selector;
+	    }
+	    CatchOperator.prototype.call = function (subscriber, source) {
+	        return source._subscribe(new CatchSubscriber(subscriber, this.selector, this.caught));
+	    };
+	    return CatchOperator;
+	}());
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var CatchSubscriber = (function (_super) {
+	    __extends(CatchSubscriber, _super);
+	    function CatchSubscriber(destination, selector, caught) {
+	        _super.call(this, destination);
+	        this.selector = selector;
+	        this.caught = caught;
+	    }
+	    // NOTE: overriding `error` instead of `_error` because we don't want
+	    // to have this flag this subscriber as `isStopped`.
+	    CatchSubscriber.prototype.error = function (err) {
+	        if (!this.isStopped) {
+	            var result = void 0;
+	            try {
+	                result = this.selector(err, this.caught);
+	            }
+	            catch (err) {
+	                this.destination.error(err);
+	                return;
+	            }
+	            this.unsubscribe();
+	            this.destination.remove(this);
+	            subscribeToResult_1.subscribeToResult(this, result);
+	        }
+	    };
+	    return CatchSubscriber;
+	}(OuterSubscriber_1.OuterSubscriber));
+	//# sourceMappingURL=catch.js.map
+
+/***/ },
+/* 364 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var mergeAll_1 = __webpack_require__(361);
+	/**
+	 * Converts a higher-order Observable into a first-order Observable by
+	 * concatenating the inner Observables in order.
+	 *
+	 * <span class="informal">Flattens an Observable-of-Observables by putting one
+	 * inner Observable after the other.</span>
+	 *
+	 * <img src="./img/concatAll.png" width="100%">
+	 *
+	 * Joins every Observable emitted by the source (a higher-order Observable), in
+	 * a serial fashion. It subscribes to each inner Observable only after the
+	 * previous inner Observable has completed, and merges all of their values into
+	 * the returned observable.
+	 *
+	 * __Warning:__ If the source Observable emits Observables quickly and
+	 * endlessly, and the inner Observables it emits generally complete slower than
+	 * the source emits, you can run into memory issues as the incoming Observables
+	 * collect in an unbounded buffer.
+	 *
+	 * Note: `concatAll` is equivalent to `mergeAll` with concurrency parameter set
+	 * to `1`.
+	 *
+	 * @example <caption>For each click event, tick every second from 0 to 3, with no concurrency</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var higherOrder = clicks.map(ev => Rx.Observable.interval(1000).take(4));
+	 * var firstOrder = higherOrder.concatAll();
+	 * firstOrder.subscribe(x => console.log(x));
+	 *
+	 * @see {@link combineAll}
+	 * @see {@link concat}
+	 * @see {@link concatMap}
+	 * @see {@link concatMapTo}
+	 * @see {@link exhaust}
+	 * @see {@link mergeAll}
+	 * @see {@link switch}
+	 * @see {@link zipAll}
+	 *
+	 * @return {Observable} An Observable emitting values from all the inner
+	 * Observables concatenated.
+	 * @method concatAll
+	 * @owner Observable
+	 */
+	function concatAll() {
+	    return this.lift(new mergeAll_1.MergeAllOperator(1));
+	}
+	exports.concatAll = concatAll;
+	//# sourceMappingURL=concatAll.js.map
+
+/***/ },
+/* 365 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	var EmptyError_1 = __webpack_require__(366);
+	/**
+	 * Emits only the first value (or the first value that meets some condition)
+	 * emitted by the source Observable.
+	 *
+	 * <span class="informal">Emits only the first value. Or emits only the first
+	 * value that passes some test.</span>
+	 *
+	 * <img src="./img/first.png" width="100%">
+	 *
+	 * If called with no arguments, `first` emits the first value of the source
+	 * Observable, then completes. If called with a `predicate` function, `first`
+	 * emits the first value of the source that matches the specified condition. It
+	 * may also take a `resultSelector` function to produce the output value from
+	 * the input value, and a `defaultValue` to emit in case the source completes
+	 * before it is able to emit a valid value. Throws an error if `defaultValue`
+	 * was not provided and a matching element is not found.
+	 *
+	 * @example <caption>Emit only the first click that happens on the DOM</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var result = clicks.first();
+	 * result.subscribe(x => console.log(x));
+	 *
+	 * @example <caption>Emits the first click that happens on a DIV</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var result = clicks.first(ev => ev.target.tagName === 'DIV');
+	 * result.subscribe(x => console.log(x));
+	 *
+	 * @see {@link filter}
+	 * @see {@link find}
+	 * @see {@link take}
+	 *
+	 * @throws {EmptyError} Delivers an EmptyError to the Observer's `error`
+	 * callback if the Observable completes before any `next` notification was sent.
+	 *
+	 * @param {function(value: T, index: number, source: Observable<T>): boolean} [predicate]
+	 * An optional function called with each item to test for condition matching.
+	 * @param {function(value: T, index: number): R} [resultSelector] A function to
+	 * produce the value on the output Observable based on the values
+	 * and the indices of the source Observable. The arguments passed to this
+	 * function are:
+	 * - `value`: the value that was emitted on the source.
+	 * - `index`: the "index" of the value from the source.
+	 * @param {R} [defaultValue] The default value emitted in case no valid value
+	 * was found on the source.
+	 * @return {Observable<T|R>} an Observable of the first item that matches the
+	 * condition.
+	 * @method first
+	 * @owner Observable
+	 */
+	function first(predicate, resultSelector, defaultValue) {
+	    return this.lift(new FirstOperator(predicate, resultSelector, defaultValue, this));
+	}
+	exports.first = first;
+	var FirstOperator = (function () {
+	    function FirstOperator(predicate, resultSelector, defaultValue, source) {
+	        this.predicate = predicate;
+	        this.resultSelector = resultSelector;
+	        this.defaultValue = defaultValue;
+	        this.source = source;
+	    }
+	    FirstOperator.prototype.call = function (observer, source) {
+	        return source._subscribe(new FirstSubscriber(observer, this.predicate, this.resultSelector, this.defaultValue, this.source));
+	    };
+	    return FirstOperator;
+	}());
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var FirstSubscriber = (function (_super) {
+	    __extends(FirstSubscriber, _super);
+	    function FirstSubscriber(destination, predicate, resultSelector, defaultValue, source) {
+	        _super.call(this, destination);
+	        this.predicate = predicate;
+	        this.resultSelector = resultSelector;
+	        this.defaultValue = defaultValue;
+	        this.source = source;
+	        this.index = 0;
+	        this.hasCompleted = false;
+	    }
+	    FirstSubscriber.prototype._next = function (value) {
+	        var index = this.index++;
+	        if (this.predicate) {
+	            this._tryPredicate(value, index);
+	        }
+	        else {
+	            this._emit(value, index);
+	        }
+	    };
+	    FirstSubscriber.prototype._tryPredicate = function (value, index) {
+	        var result;
+	        try {
+	            result = this.predicate(value, index, this.source);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        if (result) {
+	            this._emit(value, index);
+	        }
+	    };
+	    FirstSubscriber.prototype._emit = function (value, index) {
+	        if (this.resultSelector) {
+	            this._tryResultSelector(value, index);
+	            return;
+	        }
+	        this._emitFinal(value);
+	    };
+	    FirstSubscriber.prototype._tryResultSelector = function (value, index) {
+	        var result;
+	        try {
+	            result = this.resultSelector(value, index);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        this._emitFinal(result);
+	    };
+	    FirstSubscriber.prototype._emitFinal = function (value) {
+	        var destination = this.destination;
+	        destination.next(value);
+	        destination.complete();
+	        this.hasCompleted = true;
+	    };
+	    FirstSubscriber.prototype._complete = function () {
+	        var destination = this.destination;
+	        if (!this.hasCompleted && typeof this.defaultValue !== 'undefined') {
+	            destination.next(this.defaultValue);
+	            destination.complete();
+	        }
+	        else if (!this.hasCompleted) {
+	            destination.error(new EmptyError_1.EmptyError);
+	        }
+	    };
+	    return FirstSubscriber;
+	}(Subscriber_1.Subscriber));
+	//# sourceMappingURL=first.js.map
+
+/***/ },
+/* 366 */
+/***/ function(module, exports) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	/**
+	 * An error thrown when an Observable or a sequence was queried but has no
+	 * elements.
+	 *
+	 * @see {@link first}
+	 * @see {@link last}
+	 * @see {@link single}
+	 *
+	 * @class EmptyError
+	 */
+	var EmptyError = (function (_super) {
+	    __extends(EmptyError, _super);
+	    function EmptyError() {
+	        var err = _super.call(this, 'no elements in sequence');
+	        this.name = err.name = 'EmptyError';
+	        this.stack = err.stack;
+	        this.message = err.message;
+	    }
+	    return EmptyError;
+	}(Error));
+	exports.EmptyError = EmptyError;
+	//# sourceMappingURL=EmptyError.js.map
+
+/***/ },
+/* 367 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	var EmptyError_1 = __webpack_require__(366);
+	/**
+	 * Returns an Observable that emits only the last item emitted by the source Observable.
+	 * It optionally takes a predicate function as a parameter, in which case, rather than emitting
+	 * the last item from the source Observable, the resulting Observable will emit the last item
+	 * from the source Observable that satisfies the predicate.
+	 *
+	 * <img src="./img/last.png" width="100%">
+	 *
+	 * @throws {EmptyError} Delivers an EmptyError to the Observer's `error`
+	 * callback if the Observable completes before any `next` notification was sent.
+	 * @param {function} predicate - the condition any source emitted item has to satisfy.
+	 * @return {Observable} an Observable that emits only the last item satisfying the given condition
+	 * from the source, or an NoSuchElementException if no such items are emitted.
+	 * @throws - Throws if no items that match the predicate are emitted by the source Observable.
+	 * @method last
+	 * @owner Observable
+	 */
+	function last(predicate, resultSelector, defaultValue) {
+	    return this.lift(new LastOperator(predicate, resultSelector, defaultValue, this));
+	}
+	exports.last = last;
+	var LastOperator = (function () {
+	    function LastOperator(predicate, resultSelector, defaultValue, source) {
+	        this.predicate = predicate;
+	        this.resultSelector = resultSelector;
+	        this.defaultValue = defaultValue;
+	        this.source = source;
+	    }
+	    LastOperator.prototype.call = function (observer, source) {
+	        return source._subscribe(new LastSubscriber(observer, this.predicate, this.resultSelector, this.defaultValue, this.source));
+	    };
+	    return LastOperator;
+	}());
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var LastSubscriber = (function (_super) {
+	    __extends(LastSubscriber, _super);
+	    function LastSubscriber(destination, predicate, resultSelector, defaultValue, source) {
+	        _super.call(this, destination);
+	        this.predicate = predicate;
+	        this.resultSelector = resultSelector;
+	        this.defaultValue = defaultValue;
+	        this.source = source;
+	        this.hasValue = false;
+	        this.index = 0;
+	        if (typeof defaultValue !== 'undefined') {
+	            this.lastValue = defaultValue;
+	            this.hasValue = true;
+	        }
+	    }
+	    LastSubscriber.prototype._next = function (value) {
+	        var index = this.index++;
+	        if (this.predicate) {
+	            this._tryPredicate(value, index);
+	        }
+	        else {
+	            if (this.resultSelector) {
+	                this._tryResultSelector(value, index);
+	                return;
+	            }
+	            this.lastValue = value;
+	            this.hasValue = true;
+	        }
+	    };
+	    LastSubscriber.prototype._tryPredicate = function (value, index) {
+	        var result;
+	        try {
+	            result = this.predicate(value, index, this.source);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        if (result) {
+	            if (this.resultSelector) {
+	                this._tryResultSelector(value, index);
+	                return;
+	            }
+	            this.lastValue = value;
+	            this.hasValue = true;
+	        }
+	    };
+	    LastSubscriber.prototype._tryResultSelector = function (value, index) {
+	        var result;
+	        try {
+	            result = this.resultSelector(value, index);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        this.lastValue = result;
+	        this.hasValue = true;
+	    };
+	    LastSubscriber.prototype._complete = function () {
+	        var destination = this.destination;
+	        if (this.hasValue) {
+	            destination.next(this.lastValue);
+	            destination.complete();
+	        }
+	        else {
+	            destination.error(new EmptyError_1.EmptyError);
+	        }
+	    };
+	    return LastSubscriber;
+	}(Subscriber_1.Subscriber));
+	//# sourceMappingURL=last.js.map
+
+/***/ },
+/* 368 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subject_1 = __webpack_require__(314);
+	var ObjectUnsubscribedError_1 = __webpack_require__(329);
+	/**
+	 * @class BehaviorSubject<T>
+	 */
+	var BehaviorSubject = (function (_super) {
+	    __extends(BehaviorSubject, _super);
+	    function BehaviorSubject(_value) {
+	        _super.call(this);
+	        this._value = _value;
+	    }
+	    Object.defineProperty(BehaviorSubject.prototype, "value", {
+	        get: function () {
+	            return this.getValue();
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    BehaviorSubject.prototype._subscribe = function (subscriber) {
+	        var subscription = _super.prototype._subscribe.call(this, subscriber);
+	        if (subscription && !subscription.closed) {
+	            subscriber.next(this._value);
+	        }
+	        return subscription;
+	    };
+	    BehaviorSubject.prototype.getValue = function () {
+	        if (this.hasError) {
+	            throw this.thrownError;
+	        }
+	        else if (this.closed) {
+	            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+	        }
+	        else {
+	            return this._value;
+	        }
+	    };
+	    BehaviorSubject.prototype.next = function (value) {
+	        _super.prototype.next.call(this, this._value = value);
+	    };
+	    return BehaviorSubject;
+	}(Subject_1.Subject));
+	exports.BehaviorSubject = BehaviorSubject;
+	//# sourceMappingURL=BehaviorSubject.js.map
+
+/***/ },
+/* 369 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var Subscriber_1 = __webpack_require__(318);
+	/**
+	 * Filter items emitted by the source Observable by only emitting those that
+	 * satisfy a specified predicate.
+	 *
+	 * <span class="informal">Like
+	 * [Array.prototype.filter()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter),
+	 * it only emits a value from the source if it passes a criterion function.</span>
+	 *
+	 * <img src="./img/filter.png" width="100%">
+	 *
+	 * Similar to the well-known `Array.prototype.filter` method, this operator
+	 * takes values from the source Observable, passes them through a `predicate`
+	 * function and only emits those values that yielded `true`.
+	 *
+	 * @example <caption>Emit only click events whose target was a DIV element</caption>
+	 * var clicks = Rx.Observable.fromEvent(document, 'click');
+	 * var clicksOnDivs = clicks.filter(ev => ev.target.tagName === 'DIV');
+	 * clicksOnDivs.subscribe(x => console.log(x));
+	 *
+	 * @see {@link distinct}
+	 * @see {@link distinctKey}
+	 * @see {@link distinctUntilChanged}
+	 * @see {@link distinctUntilKeyChanged}
+	 * @see {@link ignoreElements}
+	 * @see {@link partition}
+	 * @see {@link skip}
+	 *
+	 * @param {function(value: T, index: number): boolean} predicate A function that
+	 * evaluates each value emitted by the source Observable. If it returns `true`,
+	 * the value is emitted, if `false` the value is not passed to the output
+	 * Observable. The `index` parameter is the number `i` for the i-th source
+	 * emission that has happened since the subscription, starting from the number
+	 * `0`.
+	 * @param {any} [thisArg] An optional argument to determine the value of `this`
+	 * in the `predicate` function.
+	 * @return {Observable} An Observable of values from the source that were
+	 * allowed by the `predicate` function.
+	 * @method filter
+	 * @owner Observable
+	 */
+	function filter(predicate, thisArg) {
+	    return this.lift(new FilterOperator(predicate, thisArg));
+	}
+	exports.filter = filter;
+	var FilterOperator = (function () {
+	    function FilterOperator(predicate, thisArg) {
+	        this.predicate = predicate;
+	        this.thisArg = thisArg;
+	    }
+	    FilterOperator.prototype.call = function (subscriber, source) {
+	        return source._subscribe(new FilterSubscriber(subscriber, this.predicate, this.thisArg));
+	    };
+	    return FilterOperator;
+	}());
+	/**
+	 * We need this JSDoc comment for affecting ESDoc.
+	 * @ignore
+	 * @extends {Ignored}
+	 */
+	var FilterSubscriber = (function (_super) {
+	    __extends(FilterSubscriber, _super);
+	    function FilterSubscriber(destination, predicate, thisArg) {
+	        _super.call(this, destination);
+	        this.predicate = predicate;
+	        this.thisArg = thisArg;
+	        this.count = 0;
+	        this.predicate = predicate;
+	    }
+	    // the try catch block below is left specifically for
+	    // optimization and perf reasons. a tryCatcher is not necessary here.
+	    FilterSubscriber.prototype._next = function (value) {
+	        var result;
+	        try {
+	            result = this.predicate.call(this.thisArg, value, this.count++);
+	        }
+	        catch (err) {
+	            this.destination.error(err);
+	            return;
+	        }
+	        if (result) {
+	            this.destination.next(value);
+	        }
+	    };
+	    return FilterSubscriber;
+	}(Subscriber_1.Subscriber));
+	//# sourceMappingURL=filter.js.map
+
+/***/ },
+/* 370 */
+/***/ function(module, exports) {
+
+	module.exports = "<!-- Wrapper -->\n<div id=\"wrapper\">\n    <div id=\"main\">\n        <div class=\"inner\">\n            <!-- Header -->\n            <header *ngIf=\"this._auth.isConnected()\" id=\"header\">\n                <div>\n                    <strong> Eventail{{this._router.url}} </strong>\n                    <strong *ngIf=\"this._auth.getRank() == 2\"><br> You are a restricted user.</strong>\n                </div>\n                <button *ngIf=\"this._router.url === '/mapView'\"\n                    (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button active\" type=\"submit\">MapView</button>\n                <button *ngIf=\"this._router.url != '/mapView'\"\n                    (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button ref\" type=\"submit\">MapView</button>\n\n                <button *ngIf=\"this._router.url === '/friends'\"\n                    (click)=\"this._router.navigateByUrl('/friends')\" class=\"button active\" type=\"submit\">Friends</button>\n                <button *ngIf=\"this._router.url != '/friends'\"\n                    (click)=\"this._router.navigateByUrl('/friends')\" class=\"button ref\" type=\"submit\">Friends</button>\n\n                <button *ngIf=\"this._auth.getRank() == 0 && this._router.url === '/admin'\"\n                    (click)=\"this._router.navigateByUrl('/admin')\" class=\"button active\" type=\"submit\">User Administration</button>\n                <button *ngIf=\"this._auth.getRank() == 0 && this._router.url != '/admin'\"\n                    (click)=\"this._router.navigateByUrl('/admin')\" class=\"button ref\" type=\"submit\">User Administration</button>\n\n                <button (click)=\"onLogout()\" type=\"button\" class=\"button ref\">Logout</button>\n            </header>\n            <header *ngIf=\"!this._auth.isConnected()\" id=\"header\">   \n                 <button (click)=\"this._router.navigateByUrl('/login')\" class=\"button ref\" type=\"submit\">Login</button>\n            </header>\n            <router-outlet></router-outlet>\n        </div>\n    </div>\n</div>"
+
+/***/ },
+/* 371 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -51420,7 +57558,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 342 */
+/* 372 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51434,17 +57572,17 @@
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
 	// main modules
-	__export(__webpack_require__(343));
-	__export(__webpack_require__(356));
+	__export(__webpack_require__(373));
+	__export(__webpack_require__(386));
 	// Google Maps types
 	// core module
-	__export(__webpack_require__(360));
+	__export(__webpack_require__(390));
 
 	//# sourceMappingURL=index.js.map
 
 
 /***/ },
-/* 343 */
+/* 373 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51454,24 +57592,24 @@
 	 * @license MIT
 	 */
 	"use strict";
-	var google_map_1 = __webpack_require__(344);
+	var google_map_1 = __webpack_require__(374);
 	exports.SebmGoogleMap = google_map_1.SebmGoogleMap;
-	var google_map_circle_1 = __webpack_require__(351);
+	var google_map_circle_1 = __webpack_require__(381);
 	exports.SebmGoogleMapCircle = google_map_circle_1.SebmGoogleMapCircle;
-	var google_map_info_window_1 = __webpack_require__(352);
+	var google_map_info_window_1 = __webpack_require__(382);
 	exports.SebmGoogleMapInfoWindow = google_map_info_window_1.SebmGoogleMapInfoWindow;
-	var google_map_marker_1 = __webpack_require__(353);
+	var google_map_marker_1 = __webpack_require__(383);
 	exports.SebmGoogleMapMarker = google_map_marker_1.SebmGoogleMapMarker;
-	var google_map_polyline_1 = __webpack_require__(354);
+	var google_map_polyline_1 = __webpack_require__(384);
 	exports.SebmGoogleMapPolyline = google_map_polyline_1.SebmGoogleMapPolyline;
-	var google_map_polyline_point_1 = __webpack_require__(355);
+	var google_map_polyline_point_1 = __webpack_require__(385);
 	exports.SebmGoogleMapPolylinePoint = google_map_polyline_point_1.SebmGoogleMapPolylinePoint;
 
 	//# sourceMappingURL=directives.js.map
 
 
 /***/ },
-/* 344 */
+/* 374 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51491,11 +57629,11 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var google_maps_api_wrapper_1 = __webpack_require__(345);
-	var circle_manager_1 = __webpack_require__(347);
-	var info_window_manager_1 = __webpack_require__(348);
-	var marker_manager_1 = __webpack_require__(349);
-	var polyline_manager_1 = __webpack_require__(350);
+	var google_maps_api_wrapper_1 = __webpack_require__(375);
+	var circle_manager_1 = __webpack_require__(377);
+	var info_window_manager_1 = __webpack_require__(378);
+	var marker_manager_1 = __webpack_require__(379);
+	var polyline_manager_1 = __webpack_require__(380);
 	/**
 	 * SebMGoogleMap renders a Google Map.
 	 * **Important note**: To be able see a map in the browser, you have to define a height for the CSS
@@ -51796,7 +57934,7 @@
 
 
 /***/ },
-/* 345 */
+/* 375 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51817,7 +57955,7 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var Observable_1 = __webpack_require__(315);
-	var maps_api_loader_1 = __webpack_require__(346);
+	var maps_api_loader_1 = __webpack_require__(376);
 	/**
 	 * Wrapper class that handles the communication with the Google Maps Javascript
 	 * API v3
@@ -51922,7 +58060,7 @@
 
 
 /***/ },
-/* 346 */
+/* 376 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51957,7 +58095,7 @@
 
 
 /***/ },
-/* 347 */
+/* 377 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51978,7 +58116,7 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var Observable_1 = __webpack_require__(315);
-	var google_maps_api_wrapper_1 = __webpack_require__(345);
+	var google_maps_api_wrapper_1 = __webpack_require__(375);
 	var CircleManager = (function () {
 	    function CircleManager(_apiWrapper, _zone) {
 	        this._apiWrapper = _apiWrapper;
@@ -52074,7 +58212,7 @@
 
 
 /***/ },
-/* 348 */
+/* 378 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52094,8 +58232,8 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var google_maps_api_wrapper_1 = __webpack_require__(345);
-	var marker_manager_1 = __webpack_require__(349);
+	var google_maps_api_wrapper_1 = __webpack_require__(375);
+	var marker_manager_1 = __webpack_require__(379);
 	var InfoWindowManager = (function () {
 	    function InfoWindowManager(_mapsWrapper, _zone, _markerManager) {
 	        this._mapsWrapper = _mapsWrapper;
@@ -52168,7 +58306,7 @@
 
 
 /***/ },
-/* 349 */
+/* 379 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52189,7 +58327,7 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var Observable_1 = __webpack_require__(315);
-	var google_maps_api_wrapper_1 = __webpack_require__(345);
+	var google_maps_api_wrapper_1 = __webpack_require__(375);
 	var MarkerManager = (function () {
 	    function MarkerManager(_mapsWrapper, _zone) {
 	        this._mapsWrapper = _mapsWrapper;
@@ -52270,7 +58408,7 @@
 
 
 /***/ },
-/* 350 */
+/* 380 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52291,7 +58429,7 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var Observable_1 = __webpack_require__(315);
-	var google_maps_api_wrapper_1 = __webpack_require__(345);
+	var google_maps_api_wrapper_1 = __webpack_require__(375);
 	var PolylineManager = (function () {
 	    function PolylineManager(_mapsWrapper, _zone) {
 	        this._mapsWrapper = _mapsWrapper;
@@ -52365,7 +58503,7 @@
 
 
 /***/ },
-/* 351 */
+/* 381 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52385,7 +58523,7 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var circle_manager_1 = __webpack_require__(347);
+	var circle_manager_1 = __webpack_require__(377);
 	var SebmGoogleMapCircle = (function () {
 	    function SebmGoogleMapCircle(_manager) {
 	        this._manager = _manager;
@@ -52581,7 +58719,7 @@
 
 
 /***/ },
-/* 352 */
+/* 382 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52601,7 +58739,7 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var info_window_manager_1 = __webpack_require__(348);
+	var info_window_manager_1 = __webpack_require__(378);
 	var infoWindowId = 0;
 	/**
 	 * SebmGoogleMapInfoWindow renders a info window inside a {@link SebmGoogleMapMarker} or standalone.
@@ -52714,7 +58852,7 @@
 
 
 /***/ },
-/* 353 */
+/* 383 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52734,8 +58872,8 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var marker_manager_1 = __webpack_require__(349);
-	var google_map_info_window_1 = __webpack_require__(352);
+	var marker_manager_1 = __webpack_require__(379);
+	var google_map_info_window_1 = __webpack_require__(382);
 	var markerId = 0;
 	/**
 	 * SebmGoogleMapMarker renders a map marker inside a {@link SebmGoogleMap}.
@@ -52890,7 +59028,7 @@
 
 
 /***/ },
-/* 354 */
+/* 384 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52910,8 +59048,8 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var polyline_manager_1 = __webpack_require__(350);
-	var google_map_polyline_point_1 = __webpack_require__(355);
+	var polyline_manager_1 = __webpack_require__(380);
+	var google_map_polyline_point_1 = __webpack_require__(385);
 	var polylineId = 0;
 	/**
 	 * SebmGoogleMapPolyline renders a polyline on a {@link SebmGoogleMap}
@@ -53115,7 +59253,7 @@
 
 
 /***/ },
-/* 355 */
+/* 385 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -53179,7 +59317,7 @@
 
 
 /***/ },
-/* 356 */
+/* 386 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -53189,31 +59327,31 @@
 	 * @license MIT
 	 */
 	"use strict";
-	var google_maps_api_wrapper_1 = __webpack_require__(345);
+	var google_maps_api_wrapper_1 = __webpack_require__(375);
 	exports.GoogleMapsAPIWrapper = google_maps_api_wrapper_1.GoogleMapsAPIWrapper;
-	var circle_manager_1 = __webpack_require__(347);
+	var circle_manager_1 = __webpack_require__(377);
 	exports.CircleManager = circle_manager_1.CircleManager;
-	var info_window_manager_1 = __webpack_require__(348);
+	var info_window_manager_1 = __webpack_require__(378);
 	exports.InfoWindowManager = info_window_manager_1.InfoWindowManager;
-	var marker_manager_1 = __webpack_require__(349);
+	var marker_manager_1 = __webpack_require__(379);
 	exports.MarkerManager = marker_manager_1.MarkerManager;
-	var polyline_manager_1 = __webpack_require__(350);
+	var polyline_manager_1 = __webpack_require__(380);
 	exports.PolylineManager = polyline_manager_1.PolylineManager;
-	var lazy_maps_api_loader_1 = __webpack_require__(357);
+	var lazy_maps_api_loader_1 = __webpack_require__(387);
 	exports.GoogleMapsScriptProtocol = lazy_maps_api_loader_1.GoogleMapsScriptProtocol;
 	exports.LazyMapsAPILoader = lazy_maps_api_loader_1.LazyMapsAPILoader;
 	exports.LazyMapsAPILoaderConfig = lazy_maps_api_loader_1.LazyMapsAPILoaderConfig;
 	exports.provideLazyMapsAPILoaderConfig = lazy_maps_api_loader_1.provideLazyMapsAPILoaderConfig;
-	var maps_api_loader_1 = __webpack_require__(346);
+	var maps_api_loader_1 = __webpack_require__(376);
 	exports.MapsAPILoader = maps_api_loader_1.MapsAPILoader;
-	var noop_maps_api_loader_1 = __webpack_require__(359);
+	var noop_maps_api_loader_1 = __webpack_require__(389);
 	exports.NoOpMapsAPILoader = noop_maps_api_loader_1.NoOpMapsAPILoader;
 
 	//# sourceMappingURL=services.js.map
 
 
 /***/ },
-/* 357 */
+/* 387 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -53241,8 +59379,8 @@
 	    return function (target, key) { decorator(target, key, paramIndex); }
 	};
 	var core_1 = __webpack_require__(313);
-	var browser_globals_1 = __webpack_require__(358);
-	var maps_api_loader_1 = __webpack_require__(346);
+	var browser_globals_1 = __webpack_require__(388);
+	var maps_api_loader_1 = __webpack_require__(376);
 	(function (GoogleMapsScriptProtocol) {
 	    GoogleMapsScriptProtocol[GoogleMapsScriptProtocol["HTTP"] = 1] = "HTTP";
 	    GoogleMapsScriptProtocol[GoogleMapsScriptProtocol["HTTPS"] = 2] = "HTTPS";
@@ -53377,7 +59515,7 @@
 
 
 /***/ },
-/* 358 */
+/* 388 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -53396,7 +59534,7 @@
 
 
 /***/ },
-/* 359 */
+/* 389 */
 /***/ function(module, exports) {
 
 	/**
@@ -53429,7 +59567,7 @@
 
 
 /***/ },
-/* 360 */
+/* 390 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -53449,16 +59587,16 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var google_map_1 = __webpack_require__(344);
-	var google_map_circle_1 = __webpack_require__(351);
-	var google_map_info_window_1 = __webpack_require__(352);
-	var google_map_marker_1 = __webpack_require__(353);
-	var google_map_polyline_1 = __webpack_require__(354);
-	var google_map_polyline_point_1 = __webpack_require__(355);
-	var lazy_maps_api_loader_1 = __webpack_require__(357);
-	var lazy_maps_api_loader_2 = __webpack_require__(357);
-	var maps_api_loader_1 = __webpack_require__(346);
-	var browser_globals_1 = __webpack_require__(358);
+	var google_map_1 = __webpack_require__(374);
+	var google_map_circle_1 = __webpack_require__(381);
+	var google_map_info_window_1 = __webpack_require__(382);
+	var google_map_marker_1 = __webpack_require__(383);
+	var google_map_polyline_1 = __webpack_require__(384);
+	var google_map_polyline_point_1 = __webpack_require__(385);
+	var lazy_maps_api_loader_1 = __webpack_require__(387);
+	var lazy_maps_api_loader_2 = __webpack_require__(387);
+	var maps_api_loader_1 = __webpack_require__(376);
+	var browser_globals_1 = __webpack_require__(388);
 	var CORE_DIRECTIVES = [
 	    google_map_1.SebmGoogleMap, google_map_marker_1.SebmGoogleMapMarker, google_map_info_window_1.SebmGoogleMapInfoWindow, google_map_circle_1.SebmGoogleMapCircle,
 	    google_map_polyline_1.SebmGoogleMapPolyline, google_map_polyline_point_1.SebmGoogleMapPolylinePoint
@@ -53495,12 +59633,12 @@
 
 
 /***/ },
-/* 361 */
+/* 391 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
 		if(true)
-			module.exports = factory(__webpack_require__(362), __webpack_require__(364), __webpack_require__(366), __webpack_require__(315), __webpack_require__(332), __webpack_require__(313), __webpack_require__(334));
+			module.exports = factory(__webpack_require__(392), __webpack_require__(394), __webpack_require__(396), __webpack_require__(315), __webpack_require__(332), __webpack_require__(313), __webpack_require__(334));
 		else if(typeof define === 'function' && define.amd)
 			define(["rxjs/add/operator/do", "rxjs/add/operator/let", "rxjs/add/observable/fromEvent", "rxjs/Observable", "@angular/common", "@angular/core", "@angular/forms"], factory);
 		else if(typeof exports === 'object')
@@ -59009,18 +65147,18 @@
 	//# sourceMappingURL=ng-bootstrap.js.map
 
 /***/ },
-/* 362 */
+/* 392 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var do_1 = __webpack_require__(363);
+	var do_1 = __webpack_require__(393);
 	Observable_1.Observable.prototype.do = do_1._do;
 	Observable_1.Observable.prototype._do = do_1._do;
 	//# sourceMappingURL=do.js.map
 
 /***/ },
-/* 363 */
+/* 393 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -59137,18 +65275,18 @@
 	//# sourceMappingURL=do.js.map
 
 /***/ },
-/* 364 */
+/* 394 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var let_1 = __webpack_require__(365);
+	var let_1 = __webpack_require__(395);
 	Observable_1.Observable.prototype.let = let_1.letProto;
 	Observable_1.Observable.prototype.letBind = let_1.letProto;
 	//# sourceMappingURL=let.js.map
 
 /***/ },
-/* 365 */
+/* 395 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -59165,26 +65303,26 @@
 	//# sourceMappingURL=let.js.map
 
 /***/ },
-/* 366 */
+/* 396 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var fromEvent_1 = __webpack_require__(367);
+	var fromEvent_1 = __webpack_require__(397);
 	Observable_1.Observable.fromEvent = fromEvent_1.fromEvent;
 	//# sourceMappingURL=fromEvent.js.map
 
 /***/ },
-/* 367 */
+/* 397 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var FromEventObservable_1 = __webpack_require__(368);
+	var FromEventObservable_1 = __webpack_require__(398);
 	exports.fromEvent = FromEventObservable_1.FromEventObservable.create;
 	//# sourceMappingURL=fromEvent.js.map
 
 /***/ },
-/* 368 */
+/* 398 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -59321,7 +65459,7 @@
 	//# sourceMappingURL=FromEventObservable.js.map
 
 /***/ },
-/* 369 */
+/* 399 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -59335,10 +65473,12 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var login_component_1 = __webpack_require__(400);
 	var mapView_component_1 = __webpack_require__(406);
 	var friend_component_1 = __webpack_require__(701);
+	var register_component_1 = __webpack_require__(704);
+	var admin_component_1 = __webpack_require__(708);
 	var AppRoutingModule = (function () {
 	    function AppRoutingModule() {
 	    }
@@ -59351,6 +65491,8 @@
 	                { path: 'mapView', component: mapView_component_1.MapView },
 	                { path: 'login', component: login_component_1.LoginComponent },
 	                { path: 'friends', component: friend_component_1.FriendComponent },
+	                { path: 'register', component: register_component_1.RegisterComponent },
+	                { path: 'admin', component: admin_component_1.AdminComponent },
 	                { path: '', component: login_component_1.LoginComponent }
 	            ])
 	        ],
@@ -59362,6129 +65504,6 @@
 	], AppRoutingModule);
 	exports.AppRoutingModule = AppRoutingModule;
 
-
-/***/ },
-/* 370 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @license Angular v3.1.2
-	 * (c) 2010-2016 Google, Inc. https://angular.io/
-	 * License: MIT
-	 */
-	(function (global, factory) {
-	     true ? factory(exports, __webpack_require__(332), __webpack_require__(313), __webpack_require__(314), __webpack_require__(371), __webpack_require__(383), __webpack_require__(384), __webpack_require__(389), __webpack_require__(390), __webpack_require__(391), __webpack_require__(385), __webpack_require__(392), __webpack_require__(315), __webpack_require__(393), __webpack_require__(394), __webpack_require__(395), __webpack_require__(396), __webpack_require__(336), __webpack_require__(397), __webpack_require__(398), __webpack_require__(399)) :
-	    typeof define === 'function' && define.amd ? define(['exports', '@angular/common', '@angular/core', 'rxjs/Subject', 'rxjs/observable/from', 'rxjs/observable/of', 'rxjs/operator/concatMap', 'rxjs/operator/every', 'rxjs/operator/map', 'rxjs/operator/mergeAll', 'rxjs/operator/mergeMap', 'rxjs/operator/reduce', 'rxjs/Observable', 'rxjs/operator/catch', 'rxjs/operator/concatAll', 'rxjs/operator/first', 'rxjs/util/EmptyError', 'rxjs/observable/fromPromise', 'rxjs/operator/last', 'rxjs/BehaviorSubject', 'rxjs/operator/filter'], factory) :
-	    (factory((global.ng = global.ng || {}, global.ng.router = global.ng.router || {}),global.ng.common,global.ng.core,global.Rx,global.Rx.Observable,global.Rx.Observable,global.rxjs_operator_concatMap,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx,global.Rx.Observable,global.Rx.Observable.prototype,global.Rx,global.Rx.Observable.prototype));
-	}(this, function (exports,_angular_common,_angular_core,rxjs_Subject,rxjs_observable_from,rxjs_observable_of,rxjs_operator_concatMap,rxjs_operator_every,rxjs_operator_map,rxjs_operator_mergeAll,rxjs_operator_mergeMap,rxjs_operator_reduce,rxjs_Observable,rxjs_operator_catch,rxjs_operator_concatAll,rxjs_operator_first,rxjs_util_EmptyError,rxjs_observable_fromPromise,l,rxjs_BehaviorSubject,rxjs_operator_filter) { 'use strict';
-
-	    /**
-	     * @license
-	     * Copyright Google Inc. All Rights Reserved.
-	     *
-	     * Use of this source code is governed by an MIT-style license that can be
-	     * found in the LICENSE file at https://angular.io/license
-	     */
-	    var __extends = (this && this.__extends) || function (d, b) {
-	        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	    /**
-	     * @whatItDoes Name of the primary outlet.
-	     *
-	     * @stable
-	     */
-	    var PRIMARY_OUTLET = 'primary';
-	    var NavigationCancelingError = (function (_super) {
-	        __extends(NavigationCancelingError, _super);
-	        function NavigationCancelingError(message) {
-	            _super.call(this, message);
-	            this.message = message;
-	            this.stack = (new Error(message)).stack;
-	        }
-	        NavigationCancelingError.prototype.toString = function () { return this.message; };
-	        return NavigationCancelingError;
-	    }(Error));
-
-	    function shallowEqualArrays(a, b) {
-	        if (a.length !== b.length)
-	            return false;
-	        for (var i = 0; i < a.length; ++i) {
-	            if (!shallowEqual(a[i], b[i]))
-	                return false;
-	        }
-	        return true;
-	    }
-	    function shallowEqual(a, b) {
-	        var k1 = Object.keys(a);
-	        var k2 = Object.keys(b);
-	        if (k1.length != k2.length) {
-	            return false;
-	        }
-	        var key;
-	        for (var i = 0; i < k1.length; i++) {
-	            key = k1[i];
-	            if (a[key] !== b[key]) {
-	                return false;
-	            }
-	        }
-	        return true;
-	    }
-	    function flatten(a) {
-	        var target = [];
-	        for (var i = 0; i < a.length; ++i) {
-	            for (var j = 0; j < a[i].length; ++j) {
-	                target.push(a[i][j]);
-	            }
-	        }
-	        return target;
-	    }
-	    function last(a) {
-	        return a.length > 0 ? a[a.length - 1] : null;
-	    }
-	    function merge(m1, m2) {
-	        var m = {};
-	        for (var attr in m1) {
-	            if (m1.hasOwnProperty(attr)) {
-	                m[attr] = m1[attr];
-	            }
-	        }
-	        for (var attr in m2) {
-	            if (m2.hasOwnProperty(attr)) {
-	                m[attr] = m2[attr];
-	            }
-	        }
-	        return m;
-	    }
-	    function forEach(map, callback) {
-	        for (var prop in map) {
-	            if (map.hasOwnProperty(prop)) {
-	                callback(map[prop], prop);
-	            }
-	        }
-	    }
-	    function waitForMap(obj, fn) {
-	        var waitFor = [];
-	        var res = {};
-	        forEach(obj, function (a, k) {
-	            if (k === PRIMARY_OUTLET) {
-	                waitFor.push(rxjs_operator_map.map.call(fn(k, a), function (_) {
-	                    res[k] = _;
-	                    return _;
-	                }));
-	            }
-	        });
-	        forEach(obj, function (a, k) {
-	            if (k !== PRIMARY_OUTLET) {
-	                waitFor.push(rxjs_operator_map.map.call(fn(k, a), function (_) {
-	                    res[k] = _;
-	                    return _;
-	                }));
-	            }
-	        });
-	        if (waitFor.length > 0) {
-	            var concatted$ = rxjs_operator_concatAll.concatAll.call(rxjs_observable_of.of.apply(void 0, waitFor));
-	            var last$ = l.last.call(concatted$);
-	            return rxjs_operator_map.map.call(last$, function () { return res; });
-	        }
-	        else {
-	            return rxjs_observable_of.of(res);
-	        }
-	    }
-	    function andObservables(observables) {
-	        var merged$ = rxjs_operator_mergeAll.mergeAll.call(observables);
-	        return rxjs_operator_every.every.call(merged$, function (result) { return result === true; });
-	    }
-	    function wrapIntoObservable(value) {
-	        if (value instanceof rxjs_Observable.Observable) {
-	            return value;
-	        }
-	        else if (value instanceof Promise) {
-	            return rxjs_observable_fromPromise.fromPromise(value);
-	        }
-	        else {
-	            return rxjs_observable_of.of(value);
-	        }
-	    }
-
-	    /**
-	     * @experimental
-	     */
-	    var ROUTES = new _angular_core.OpaqueToken('ROUTES');
-	    var LoadedRouterConfig = (function () {
-	        function LoadedRouterConfig(routes, injector, factoryResolver) {
-	            this.routes = routes;
-	            this.injector = injector;
-	            this.factoryResolver = factoryResolver;
-	        }
-	        return LoadedRouterConfig;
-	    }());
-	    var RouterConfigLoader = (function () {
-	        function RouterConfigLoader(loader, compiler) {
-	            this.loader = loader;
-	            this.compiler = compiler;
-	        }
-	        RouterConfigLoader.prototype.load = function (parentInjector, loadChildren) {
-	            return rxjs_operator_map.map.call(this.loadModuleFactory(loadChildren), function (r) {
-	                var ref = r.create(parentInjector);
-	                return new LoadedRouterConfig(flatten(ref.injector.get(ROUTES)), ref.injector, ref.componentFactoryResolver);
-	            });
-	        };
-	        RouterConfigLoader.prototype.loadModuleFactory = function (loadChildren) {
-	            var _this = this;
-	            if (typeof loadChildren === 'string') {
-	                return rxjs_observable_fromPromise.fromPromise(this.loader.load(loadChildren));
-	            }
-	            else {
-	                var offlineMode_1 = this.compiler instanceof _angular_core.Compiler;
-	                return rxjs_operator_mergeMap.mergeMap.call(wrapIntoObservable(loadChildren()), function (t) { return offlineMode_1 ? rxjs_observable_of.of(t) : rxjs_observable_fromPromise.fromPromise(_this.compiler.compileModuleAsync(t)); });
-	            }
-	        };
-	        return RouterConfigLoader;
-	    }());
-
-	    function createEmptyUrlTree() {
-	        return new UrlTree(new UrlSegmentGroup([], {}), {}, null);
-	    }
-	    function containsTree(container, containee, exact) {
-	        if (exact) {
-	            return equalSegmentGroups(container.root, containee.root);
-	        }
-	        else {
-	            return containsSegmentGroup(container.root, containee.root);
-	        }
-	    }
-	    function equalSegmentGroups(container, containee) {
-	        if (!equalPath(container.segments, containee.segments))
-	            return false;
-	        if (container.numberOfChildren !== containee.numberOfChildren)
-	            return false;
-	        for (var c in containee.children) {
-	            if (!container.children[c])
-	                return false;
-	            if (!equalSegmentGroups(container.children[c], containee.children[c]))
-	                return false;
-	        }
-	        return true;
-	    }
-	    function containsSegmentGroup(container, containee) {
-	        return containsSegmentGroupHelper(container, containee, containee.segments);
-	    }
-	    function containsSegmentGroupHelper(container, containee, containeePaths) {
-	        if (container.segments.length > containeePaths.length) {
-	            var current = container.segments.slice(0, containeePaths.length);
-	            if (!equalPath(current, containeePaths))
-	                return false;
-	            if (containee.hasChildren())
-	                return false;
-	            return true;
-	        }
-	        else if (container.segments.length === containeePaths.length) {
-	            if (!equalPath(container.segments, containeePaths))
-	                return false;
-	            for (var c in containee.children) {
-	                if (!container.children[c])
-	                    return false;
-	                if (!containsSegmentGroup(container.children[c], containee.children[c]))
-	                    return false;
-	            }
-	            return true;
-	        }
-	        else {
-	            var current = containeePaths.slice(0, container.segments.length);
-	            var next = containeePaths.slice(container.segments.length);
-	            if (!equalPath(container.segments, current))
-	                return false;
-	            if (!container.children[PRIMARY_OUTLET])
-	                return false;
-	            return containsSegmentGroupHelper(container.children[PRIMARY_OUTLET], containee, next);
-	        }
-	    }
-	    /**
-	     * @whatItDoes Represents the parsed URL.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * @Component({templateUrl:'template.html'})
-	     * class MyComponent {
-	     *   constructor(router: Router) {
-	     *     const tree: UrlTree =
-	     * router.parseUrl('/team/33/(user/victor//support:help)?debug=true#fragment');
-	     *     const f = tree.fragment; // return 'fragment'
-	     *     const q = tree.queryParams; // returns {debug: 'true'}
-	     *     const g: UrlSegmentGroup = tree.root.children[PRIMARY_OUTLET];
-	     *     const s: UrlSegment[] = g.segments; // returns 2 segments 'team' and '33'
-	     *     g.children[PRIMARY_OUTLET].segments; // returns 2 segments 'user' and 'victor'
-	     *     g.children['support'].segments; // return 1 segment 'help'
-	     *   }
-	     * }
-	     * ```
-	     *
-	     * @description
-	     *
-	     * Since a router state is a tree, and the URL is nothing but a serialized state, the URL is a
-	     * serialized tree.
-	     * UrlTree is a data structure that provides a lot of affordances in dealing with URLs
-	     *
-	     * @stable
-	     */
-	    var UrlTree = (function () {
-	        /**
-	         * @internal
-	         */
-	        function UrlTree(
-	            /**
-	            * The root segment group of the URL tree.
-	             */
-	            root,
-	            /**
-	             * The query params of the URL.
-	             */
-	            queryParams,
-	            /**
-	             * The fragment of the URL.
-	             */
-	            fragment) {
-	            this.root = root;
-	            this.queryParams = queryParams;
-	            this.fragment = fragment;
-	        }
-	        /**
-	         * @docsNotRequired
-	         */
-	        UrlTree.prototype.toString = function () { return new DefaultUrlSerializer().serialize(this); };
-	        return UrlTree;
-	    }());
-	    /**
-	     * @whatItDoes Represents the parsed URL segment.
-	     *
-	     * See {@link UrlTree} for more information.
-	     *
-	     * @stable
-	     */
-	    var UrlSegmentGroup = (function () {
-	        function UrlSegmentGroup(
-	            /**
-	             * The URL segments of this group. See {@link UrlSegment} for more information.
-	             */
-	            segments,
-	            /**
-	             * The list of children of this group.
-	             */
-	            children) {
-	            var _this = this;
-	            this.segments = segments;
-	            this.children = children;
-	            /**
-	             * The parent node in the url tree.
-	             */
-	            this.parent = null;
-	            forEach(children, function (v, k) { return v.parent = _this; });
-	        }
-	        /**
-	         * Return true if the segment has child segments
-	         */
-	        UrlSegmentGroup.prototype.hasChildren = function () { return this.numberOfChildren > 0; };
-	        Object.defineProperty(UrlSegmentGroup.prototype, "numberOfChildren", {
-	            /**
-	             * Returns the number of child sements.
-	             */
-	            get: function () { return Object.keys(this.children).length; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        /**
-	         * @docsNotRequired
-	         */
-	        UrlSegmentGroup.prototype.toString = function () { return serializePaths(this); };
-	        return UrlSegmentGroup;
-	    }());
-	    /**
-	     * @whatItDoes Represents a single URL segment.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * @Component({templateUrl:'template.html'})
-	     * class MyComponent {
-	     *   constructor(router: Router) {
-	     *     const tree: UrlTree = router.parseUrl('/team;id=33');
-	     *     const g: UrlSegmentGroup = tree.root.children[PRIMARY_OUTLET];
-	     *     const s: UrlSegment[] = g.segments;
-	     *     s[0].path; // returns 'team'
-	     *     s[0].parameters; // returns {id: 33}
-	     *   }
-	     * }
-	     * ```
-	     *
-	     * @description
-	     *
-	     * A UrlSegment is a part of a URL between the two slashes. It contains a path and
-	     * the matrix parameters associated with the segment.
-	     *
-	     * @stable
-	     */
-	    var UrlSegment = (function () {
-	        function UrlSegment(
-	            /**
-	             * The part part of a URL segment.
-	             */
-	            path,
-	            /**
-	             * The matrix parameters associated with a segment.
-	             */
-	            parameters) {
-	            this.path = path;
-	            this.parameters = parameters;
-	        }
-	        /**
-	         * @docsNotRequired
-	         */
-	        UrlSegment.prototype.toString = function () { return serializePath(this); };
-	        return UrlSegment;
-	    }());
-	    function equalPath(a, b) {
-	        if (a.length !== b.length)
-	            return false;
-	        for (var i = 0; i < a.length; ++i) {
-	            if (a[i].path !== b[i].path)
-	                return false;
-	        }
-	        return true;
-	    }
-	    function mapChildrenIntoArray(segment, fn) {
-	        var res = [];
-	        forEach(segment.children, function (child, childOutlet) {
-	            if (childOutlet === PRIMARY_OUTLET) {
-	                res = res.concat(fn(child, childOutlet));
-	            }
-	        });
-	        forEach(segment.children, function (child, childOutlet) {
-	            if (childOutlet !== PRIMARY_OUTLET) {
-	                res = res.concat(fn(child, childOutlet));
-	            }
-	        });
-	        return res;
-	    }
-	    /**
-	     * @whatItDoes Serializes and deserializes a URL string into a URL tree.
-	     *
-	     * @description The url serialization strategy is customizable. You can
-	     * make all URLs case insensitive by providing a custom UrlSerializer.
-	     *
-	     * See {@link DefaultUrlSerializer} for an example of a URL serializer.
-	     *
-	     * @stable
-	     */
-	    var UrlSerializer = (function () {
-	        function UrlSerializer() {
-	        }
-	        return UrlSerializer;
-	    }());
-	    /**
-	     * @whatItDoes A default implementation of the {@link UrlSerializer}.
-	     *
-	     * @description
-	     *
-	     * Example URLs:
-	     *
-	     * ```
-	     * /inbox/33(popup:compose)
-	     * /inbox/33;open=true/messages/44
-	     * ```
-	     *
-	     * DefaultUrlSerializer uses parentheses to serialize secondary segments (e.g., popup:compose), the
-	     * colon syntax to specify the outlet, and the ';parameter=value' syntax (e.g., open=true) to
-	     * specify route specific parameters.
-	     *
-	     * @stable
-	     */
-	    var DefaultUrlSerializer = (function () {
-	        function DefaultUrlSerializer() {
-	        }
-	        /**
-	         * Parse a url into a {@link UrlTree}.
-	         */
-	        DefaultUrlSerializer.prototype.parse = function (url) {
-	            var p = new UrlParser(url);
-	            return new UrlTree(p.parseRootSegment(), p.parseQueryParams(), p.parseFragment());
-	        };
-	        /**
-	         * Converts a {@link UrlTree} into a url.
-	         */
-	        DefaultUrlSerializer.prototype.serialize = function (tree) {
-	            var segment = "/" + serializeSegment(tree.root, true);
-	            var query = serializeQueryParams(tree.queryParams);
-	            var fragment = tree.fragment !== null && tree.fragment !== undefined ? "#" + encodeURI(tree.fragment) : '';
-	            return "" + segment + query + fragment;
-	        };
-	        return DefaultUrlSerializer;
-	    }());
-	    function serializePaths(segment) {
-	        return segment.segments.map(function (p) { return serializePath(p); }).join('/');
-	    }
-	    function serializeSegment(segment, root) {
-	        if (segment.hasChildren() && root) {
-	            var primary = segment.children[PRIMARY_OUTLET] ?
-	                serializeSegment(segment.children[PRIMARY_OUTLET], false) :
-	                '';
-	            var children_1 = [];
-	            forEach(segment.children, function (v, k) {
-	                if (k !== PRIMARY_OUTLET) {
-	                    children_1.push(k + ":" + serializeSegment(v, false));
-	                }
-	            });
-	            if (children_1.length > 0) {
-	                return primary + "(" + children_1.join('//') + ")";
-	            }
-	            else {
-	                return "" + primary;
-	            }
-	        }
-	        else if (segment.hasChildren() && !root) {
-	            var children = mapChildrenIntoArray(segment, function (v, k) {
-	                if (k === PRIMARY_OUTLET) {
-	                    return [serializeSegment(segment.children[PRIMARY_OUTLET], false)];
-	                }
-	                else {
-	                    return [(k + ":" + serializeSegment(v, false))];
-	                }
-	            });
-	            return serializePaths(segment) + "/(" + children.join('//') + ")";
-	        }
-	        else {
-	            return serializePaths(segment);
-	        }
-	    }
-	    function encode(s) {
-	        return encodeURIComponent(s);
-	    }
-	    function decode(s) {
-	        return decodeURIComponent(s);
-	    }
-	    function serializePath(path) {
-	        return "" + encode(path.path) + serializeParams(path.parameters);
-	    }
-	    function serializeParams(params) {
-	        return pairs(params).map(function (p) { return (";" + encode(p.first) + "=" + encode(p.second)); }).join('');
-	    }
-	    function serializeQueryParams(params) {
-	        var strs = pairs(params).map(function (p) { return (encode(p.first) + "=" + encode(p.second)); });
-	        return strs.length > 0 ? "?" + strs.join("&") : '';
-	    }
-	    var Pair = (function () {
-	        function Pair(first, second) {
-	            this.first = first;
-	            this.second = second;
-	        }
-	        return Pair;
-	    }());
-	    function pairs(obj) {
-	        var res = [];
-	        for (var prop in obj) {
-	            if (obj.hasOwnProperty(prop)) {
-	                res.push(new Pair(prop, obj[prop]));
-	            }
-	        }
-	        return res;
-	    }
-	    var SEGMENT_RE = /^[^\/\(\)\?;=&#]+/;
-	    function matchSegments(str) {
-	        SEGMENT_RE.lastIndex = 0;
-	        var match = str.match(SEGMENT_RE);
-	        return match ? match[0] : '';
-	    }
-	    var QUERY_PARAM_RE = /^[^=\?&#]+/;
-	    function matchQueryParams(str) {
-	        QUERY_PARAM_RE.lastIndex = 0;
-	        var match = str.match(SEGMENT_RE);
-	        return match ? match[0] : '';
-	    }
-	    var QUERY_PARAM_VALUE_RE = /^[^\?&#]+/;
-	    function matchUrlQueryParamValue(str) {
-	        QUERY_PARAM_VALUE_RE.lastIndex = 0;
-	        var match = str.match(QUERY_PARAM_VALUE_RE);
-	        return match ? match[0] : '';
-	    }
-	    var UrlParser = (function () {
-	        function UrlParser(url) {
-	            this.url = url;
-	            this.remaining = url;
-	        }
-	        UrlParser.prototype.peekStartsWith = function (str) { return this.remaining.startsWith(str); };
-	        UrlParser.prototype.capture = function (str) {
-	            if (!this.remaining.startsWith(str)) {
-	                throw new Error("Expected \"" + str + "\".");
-	            }
-	            this.remaining = this.remaining.substring(str.length);
-	        };
-	        UrlParser.prototype.parseRootSegment = function () {
-	            if (this.remaining.startsWith('/')) {
-	                this.capture('/');
-	            }
-	            if (this.remaining === '' || this.remaining.startsWith('?') || this.remaining.startsWith('#')) {
-	                return new UrlSegmentGroup([], {});
-	            }
-	            else {
-	                return new UrlSegmentGroup([], this.parseChildren());
-	            }
-	        };
-	        UrlParser.prototype.parseChildren = function () {
-	            if (this.remaining.length == 0) {
-	                return {};
-	            }
-	            if (this.peekStartsWith('/')) {
-	                this.capture('/');
-	            }
-	            var paths = [];
-	            if (!this.peekStartsWith('(')) {
-	                paths.push(this.parseSegments());
-	            }
-	            while (this.peekStartsWith('/') && !this.peekStartsWith('//') && !this.peekStartsWith('/(')) {
-	                this.capture('/');
-	                paths.push(this.parseSegments());
-	            }
-	            var children = {};
-	            if (this.peekStartsWith('/(')) {
-	                this.capture('/');
-	                children = this.parseParens(true);
-	            }
-	            var res = {};
-	            if (this.peekStartsWith('(')) {
-	                res = this.parseParens(false);
-	            }
-	            if (paths.length > 0 || Object.keys(children).length > 0) {
-	                res[PRIMARY_OUTLET] = new UrlSegmentGroup(paths, children);
-	            }
-	            return res;
-	        };
-	        UrlParser.prototype.parseSegments = function () {
-	            var path = matchSegments(this.remaining);
-	            if (path === '' && this.peekStartsWith(';')) {
-	                throw new Error("Empty path url segment cannot have parameters: '" + this.remaining + "'.");
-	            }
-	            this.capture(path);
-	            var matrixParams = {};
-	            if (this.peekStartsWith(';')) {
-	                matrixParams = this.parseMatrixParams();
-	            }
-	            return new UrlSegment(decode(path), matrixParams);
-	        };
-	        UrlParser.prototype.parseQueryParams = function () {
-	            var params = {};
-	            if (this.peekStartsWith('?')) {
-	                this.capture('?');
-	                this.parseQueryParam(params);
-	                while (this.remaining.length > 0 && this.peekStartsWith('&')) {
-	                    this.capture('&');
-	                    this.parseQueryParam(params);
-	                }
-	            }
-	            return params;
-	        };
-	        UrlParser.prototype.parseFragment = function () {
-	            if (this.peekStartsWith('#')) {
-	                return decodeURI(this.remaining.substring(1));
-	            }
-	            else {
-	                return null;
-	            }
-	        };
-	        UrlParser.prototype.parseMatrixParams = function () {
-	            var params = {};
-	            while (this.remaining.length > 0 && this.peekStartsWith(';')) {
-	                this.capture(';');
-	                this.parseParam(params);
-	            }
-	            return params;
-	        };
-	        UrlParser.prototype.parseParam = function (params) {
-	            var key = matchSegments(this.remaining);
-	            if (!key) {
-	                return;
-	            }
-	            this.capture(key);
-	            var value = '';
-	            if (this.peekStartsWith('=')) {
-	                this.capture('=');
-	                var valueMatch = matchSegments(this.remaining);
-	                if (valueMatch) {
-	                    value = valueMatch;
-	                    this.capture(value);
-	                }
-	            }
-	            params[decode(key)] = decode(value);
-	        };
-	        UrlParser.prototype.parseQueryParam = function (params) {
-	            var key = matchQueryParams(this.remaining);
-	            if (!key) {
-	                return;
-	            }
-	            this.capture(key);
-	            var value = '';
-	            if (this.peekStartsWith('=')) {
-	                this.capture('=');
-	                var valueMatch = matchUrlQueryParamValue(this.remaining);
-	                if (valueMatch) {
-	                    value = valueMatch;
-	                    this.capture(value);
-	                }
-	            }
-	            params[decode(key)] = decode(value);
-	        };
-	        UrlParser.prototype.parseParens = function (allowPrimary) {
-	            var segments = {};
-	            this.capture('(');
-	            while (!this.peekStartsWith(')') && this.remaining.length > 0) {
-	                var path = matchSegments(this.remaining);
-	                var next = this.remaining[path.length];
-	                // if is is not one of these characters, then the segment was unescaped
-	                // or the group was not closed
-	                if (next !== '/' && next !== ')' && next !== ';') {
-	                    throw new Error("Cannot parse url '" + this.url + "'");
-	                }
-	                var outletName = void 0;
-	                if (path.indexOf(':') > -1) {
-	                    outletName = path.substr(0, path.indexOf(':'));
-	                    this.capture(outletName);
-	                    this.capture(':');
-	                }
-	                else if (allowPrimary) {
-	                    outletName = PRIMARY_OUTLET;
-	                }
-	                var children = this.parseChildren();
-	                segments[outletName] = Object.keys(children).length === 1 ? children[PRIMARY_OUTLET] :
-	                    new UrlSegmentGroup([], children);
-	                if (this.peekStartsWith('//')) {
-	                    this.capture('//');
-	                }
-	            }
-	            this.capture(')');
-	            return segments;
-	        };
-	        return UrlParser;
-	    }());
-
-	    var NoMatch = (function () {
-	        function NoMatch(segmentGroup) {
-	            if (segmentGroup === void 0) { segmentGroup = null; }
-	            this.segmentGroup = segmentGroup;
-	        }
-	        return NoMatch;
-	    }());
-	    var AbsoluteRedirect = (function () {
-	        function AbsoluteRedirect(segments) {
-	            this.segments = segments;
-	        }
-	        return AbsoluteRedirect;
-	    }());
-	    function noMatch(segmentGroup) {
-	        return new rxjs_Observable.Observable(function (obs) { return obs.error(new NoMatch(segmentGroup)); });
-	    }
-	    function absoluteRedirect(segments) {
-	        return new rxjs_Observable.Observable(function (obs) { return obs.error(new AbsoluteRedirect(segments)); });
-	    }
-	    function canLoadFails(route) {
-	        return new rxjs_Observable.Observable(function (obs) { return obs.error(new NavigationCancelingError("Cannot load children because the guard of the route \"path: '" + route.path + "'\" returned false")); });
-	    }
-	    function applyRedirects(injector, configLoader, urlTree, config) {
-	        return new ApplyRedirects(injector, configLoader, urlTree, config).apply();
-	    }
-	    var ApplyRedirects = (function () {
-	        function ApplyRedirects(injector, configLoader, urlTree, config) {
-	            this.injector = injector;
-	            this.configLoader = configLoader;
-	            this.urlTree = urlTree;
-	            this.config = config;
-	            this.allowRedirects = true;
-	        }
-	        ApplyRedirects.prototype.apply = function () {
-	            var _this = this;
-	            var expanded$ = this.expandSegmentGroup(this.injector, this.config, this.urlTree.root, PRIMARY_OUTLET);
-	            var urlTrees$ = rxjs_operator_map.map.call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup); });
-	            return rxjs_operator_catch._catch.call(urlTrees$, function (e) {
-	                if (e instanceof AbsoluteRedirect) {
-	                    // after an absolute redirect we do not apply any more redirects!
-	                    _this.allowRedirects = false;
-	                    var group = new UrlSegmentGroup([], (_a = {}, _a[PRIMARY_OUTLET] = new UrlSegmentGroup(e.segments, {}), _a));
-	                    // we need to run matching, so we can fetch all lazy-loaded modules
-	                    return _this.match(group);
-	                }
-	                else if (e instanceof NoMatch) {
-	                    throw _this.noMatchError(e);
-	                }
-	                else {
-	                    throw e;
-	                }
-	                var _a;
-	            });
-	        };
-	        ApplyRedirects.prototype.match = function (segmentGroup) {
-	            var _this = this;
-	            var expanded$ = this.expandSegmentGroup(this.injector, this.config, segmentGroup, PRIMARY_OUTLET);
-	            var mapped$ = rxjs_operator_map.map.call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup); });
-	            return rxjs_operator_catch._catch.call(mapped$, function (e) {
-	                if (e instanceof NoMatch) {
-	                    throw _this.noMatchError(e);
-	                }
-	                else {
-	                    throw e;
-	                }
-	            });
-	        };
-	        ApplyRedirects.prototype.noMatchError = function (e) {
-	            return new Error("Cannot match any routes. URL Segment: '" + e.segmentGroup + "'");
-	        };
-	        ApplyRedirects.prototype.createUrlTree = function (rootCandidate) {
-	            var root = rootCandidate.segments.length > 0 ?
-	                new UrlSegmentGroup([], (_a = {}, _a[PRIMARY_OUTLET] = rootCandidate, _a)) :
-	                rootCandidate;
-	            return new UrlTree(root, this.urlTree.queryParams, this.urlTree.fragment);
-	            var _a;
-	        };
-	        ApplyRedirects.prototype.expandSegmentGroup = function (injector, routes, segmentGroup, outlet) {
-	            if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
-	                return rxjs_operator_map.map.call(this.expandChildren(injector, routes, segmentGroup), function (children) { return new UrlSegmentGroup([], children); });
-	            }
-	            else {
-	                return this.expandSegment(injector, segmentGroup, routes, segmentGroup.segments, outlet, true);
-	            }
-	        };
-	        ApplyRedirects.prototype.expandChildren = function (injector, routes, segmentGroup) {
-	            var _this = this;
-	            return waitForMap(segmentGroup.children, function (childOutlet, child) { return _this.expandSegmentGroup(injector, routes, child, childOutlet); });
-	        };
-	        ApplyRedirects.prototype.expandSegment = function (injector, segmentGroup, routes, segments, outlet, allowRedirects) {
-	            var _this = this;
-	            var routes$ = rxjs_observable_of.of.apply(void 0, routes);
-	            var processedRoutes$ = rxjs_operator_map.map.call(routes$, function (r) {
-	                var expanded$ = _this.expandSegmentAgainstRoute(injector, segmentGroup, routes, r, segments, outlet, allowRedirects);
-	                return rxjs_operator_catch._catch.call(expanded$, function (e) {
-	                    if (e instanceof NoMatch)
-	                        return rxjs_observable_of.of(null);
-	                    else
-	                        throw e;
-	                });
-	            });
-	            var concattedProcessedRoutes$ = rxjs_operator_concatAll.concatAll.call(processedRoutes$);
-	            var first$ = rxjs_operator_first.first.call(concattedProcessedRoutes$, function (s) { return !!s; });
-	            return rxjs_operator_catch._catch.call(first$, function (e, _) {
-	                if (e instanceof rxjs_util_EmptyError.EmptyError) {
-	                    throw new NoMatch(segmentGroup);
-	                }
-	                else {
-	                    throw e;
-	                }
-	            });
-	        };
-	        ApplyRedirects.prototype.expandSegmentAgainstRoute = function (injector, segmentGroup, routes, route, paths, outlet, allowRedirects) {
-	            if (getOutlet$1(route) !== outlet)
-	                return noMatch(segmentGroup);
-	            if (route.redirectTo !== undefined && !(allowRedirects && this.allowRedirects))
-	                return noMatch(segmentGroup);
-	            if (route.redirectTo === undefined) {
-	                return this.matchSegmentAgainstRoute(injector, segmentGroup, route, paths);
-	            }
-	            else {
-	                return this.expandSegmentAgainstRouteUsingRedirect(injector, segmentGroup, routes, route, paths, outlet);
-	            }
-	        };
-	        ApplyRedirects.prototype.expandSegmentAgainstRouteUsingRedirect = function (injector, segmentGroup, routes, route, segments, outlet) {
-	            if (route.path === '**') {
-	                return this.expandWildCardWithParamsAgainstRouteUsingRedirect(injector, routes, route, outlet);
-	            }
-	            else {
-	                return this.expandRegularSegmentAgainstRouteUsingRedirect(injector, segmentGroup, routes, route, segments, outlet);
-	            }
-	        };
-	        ApplyRedirects.prototype.expandWildCardWithParamsAgainstRouteUsingRedirect = function (injector, routes, route, outlet) {
-	            var newSegments = applyRedirectCommands([], route.redirectTo, {});
-	            if (route.redirectTo.startsWith('/')) {
-	                return absoluteRedirect(newSegments);
-	            }
-	            else {
-	                var group = new UrlSegmentGroup(newSegments, {});
-	                return this.expandSegment(injector, group, routes, newSegments, outlet, false);
-	            }
-	        };
-	        ApplyRedirects.prototype.expandRegularSegmentAgainstRouteUsingRedirect = function (injector, segmentGroup, routes, route, segments, outlet) {
-	            var _a = match(segmentGroup, route, segments), matched = _a.matched, consumedSegments = _a.consumedSegments, lastChild = _a.lastChild, positionalParamSegments = _a.positionalParamSegments;
-	            if (!matched)
-	                return noMatch(segmentGroup);
-	            var newSegments = applyRedirectCommands(consumedSegments, route.redirectTo, positionalParamSegments);
-	            if (route.redirectTo.startsWith('/')) {
-	                return absoluteRedirect(newSegments);
-	            }
-	            else {
-	                return this.expandSegment(injector, segmentGroup, routes, newSegments.concat(segments.slice(lastChild)), outlet, false);
-	            }
-	        };
-	        ApplyRedirects.prototype.matchSegmentAgainstRoute = function (injector, rawSegmentGroup, route, segments) {
-	            var _this = this;
-	            if (route.path === '**') {
-	                if (route.loadChildren) {
-	                    return rxjs_operator_map.map.call(this.configLoader.load(injector, route.loadChildren), function (r) {
-	                        route._loadedConfig = r;
-	                        return rxjs_observable_of.of(new UrlSegmentGroup(segments, {}));
-	                    });
-	                }
-	                else {
-	                    return rxjs_observable_of.of(new UrlSegmentGroup(segments, {}));
-	                }
-	            }
-	            else {
-	                var _a = match(rawSegmentGroup, route, segments), matched = _a.matched, consumedSegments_1 = _a.consumedSegments, lastChild = _a.lastChild;
-	                if (!matched)
-	                    return noMatch(rawSegmentGroup);
-	                var rawSlicedSegments_1 = segments.slice(lastChild);
-	                var childConfig$ = this.getChildConfig(injector, route);
-	                return rxjs_operator_mergeMap.mergeMap.call(childConfig$, function (routerConfig) {
-	                    var childInjector = routerConfig.injector;
-	                    var childConfig = routerConfig.routes;
-	                    var _a = split(rawSegmentGroup, consumedSegments_1, rawSlicedSegments_1, childConfig), segmentGroup = _a.segmentGroup, slicedSegments = _a.slicedSegments;
-	                    if (slicedSegments.length === 0 && segmentGroup.hasChildren()) {
-	                        var expanded$ = _this.expandChildren(childInjector, childConfig, segmentGroup);
-	                        return rxjs_operator_map.map.call(expanded$, function (children) { return new UrlSegmentGroup(consumedSegments_1, children); });
-	                    }
-	                    else if (childConfig.length === 0 && slicedSegments.length === 0) {
-	                        return rxjs_observable_of.of(new UrlSegmentGroup(consumedSegments_1, {}));
-	                    }
-	                    else {
-	                        var expanded$ = _this.expandSegment(childInjector, segmentGroup, childConfig, slicedSegments, PRIMARY_OUTLET, true);
-	                        return rxjs_operator_map.map.call(expanded$, function (cs) { return new UrlSegmentGroup(consumedSegments_1.concat(cs.segments), cs.children); });
-	                    }
-	                });
-	            }
-	        };
-	        ApplyRedirects.prototype.getChildConfig = function (injector, route) {
-	            var _this = this;
-	            if (route.children) {
-	                return rxjs_observable_of.of(new LoadedRouterConfig(route.children, injector, null));
-	            }
-	            else if (route.loadChildren) {
-	                return rxjs_operator_mergeMap.mergeMap.call(runGuards(injector, route), function (shouldLoad) {
-	                    if (shouldLoad) {
-	                        if (route._loadedConfig) {
-	                            return rxjs_observable_of.of(route._loadedConfig);
-	                        }
-	                        else {
-	                            return rxjs_operator_map.map.call(_this.configLoader.load(injector, route.loadChildren), function (r) {
-	                                route._loadedConfig = r;
-	                                return r;
-	                            });
-	                        }
-	                    }
-	                    else {
-	                        return canLoadFails(route);
-	                    }
-	                });
-	            }
-	            else {
-	                return rxjs_observable_of.of(new LoadedRouterConfig([], injector, null));
-	            }
-	        };
-	        return ApplyRedirects;
-	    }());
-	    function runGuards(injector, route) {
-	        var canLoad = route.canLoad;
-	        if (!canLoad || canLoad.length === 0)
-	            return rxjs_observable_of.of(true);
-	        var obs = rxjs_operator_map.map.call(rxjs_observable_from.from(canLoad), function (c) {
-	            var guard = injector.get(c);
-	            if (guard.canLoad) {
-	                return wrapIntoObservable(guard.canLoad(route));
-	            }
-	            else {
-	                return wrapIntoObservable(guard(route));
-	            }
-	        });
-	        return andObservables(obs);
-	    }
-	    function match(segmentGroup, route, segments) {
-	        var noMatch = { matched: false, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
-	        if (route.path === '') {
-	            if ((route.pathMatch === 'full') && (segmentGroup.hasChildren() || segments.length > 0)) {
-	                return { matched: false, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
-	            }
-	            else {
-	                return { matched: true, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
-	            }
-	        }
-	        var path = route.path;
-	        var parts = path.split('/');
-	        var positionalParamSegments = {};
-	        var consumedSegments = [];
-	        var currentIndex = 0;
-	        for (var i = 0; i < parts.length; ++i) {
-	            if (currentIndex >= segments.length)
-	                return noMatch;
-	            var current = segments[currentIndex];
-	            var p = parts[i];
-	            var isPosParam = p.startsWith(':');
-	            if (!isPosParam && p !== current.path)
-	                return noMatch;
-	            if (isPosParam) {
-	                positionalParamSegments[p.substring(1)] = current;
-	            }
-	            consumedSegments.push(current);
-	            currentIndex++;
-	        }
-	        if (route.pathMatch === 'full' &&
-	            (segmentGroup.hasChildren() || currentIndex < segments.length)) {
-	            return { matched: false, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
-	        }
-	        return { matched: true, consumedSegments: consumedSegments, lastChild: currentIndex, positionalParamSegments: positionalParamSegments };
-	    }
-	    function applyRedirectCommands(segments, redirectTo, posParams) {
-	        var r = redirectTo.startsWith('/') ? redirectTo.substring(1) : redirectTo;
-	        if (r === '') {
-	            return [];
-	        }
-	        else {
-	            return createSegments(redirectTo, r.split('/'), segments, posParams);
-	        }
-	    }
-	    function createSegments(redirectTo, parts, segments, posParams) {
-	        return parts.map(function (p) { return p.startsWith(':') ? findPosParam(p, posParams, redirectTo) :
-	            findOrCreateSegment(p, segments); });
-	    }
-	    function findPosParam(part, posParams, redirectTo) {
-	        var paramName = part.substring(1);
-	        var pos = posParams[paramName];
-	        if (!pos)
-	            throw new Error("Cannot redirect to '" + redirectTo + "'. Cannot find '" + part + "'.");
-	        return pos;
-	    }
-	    function findOrCreateSegment(part, segments) {
-	        var idx = 0;
-	        for (var _i = 0, segments_1 = segments; _i < segments_1.length; _i++) {
-	            var s = segments_1[_i];
-	            if (s.path === part) {
-	                segments.splice(idx);
-	                return s;
-	            }
-	            idx++;
-	        }
-	        return new UrlSegment(part, {});
-	    }
-	    function split(segmentGroup, consumedSegments, slicedSegments, config) {
-	        if (slicedSegments.length > 0 &&
-	            containsEmptyPathRedirectsWithNamedOutlets(segmentGroup, slicedSegments, config)) {
-	            var s = new UrlSegmentGroup(consumedSegments, createChildrenForEmptySegments(config, new UrlSegmentGroup(slicedSegments, segmentGroup.children)));
-	            return { segmentGroup: mergeTrivialChildren(s), slicedSegments: [] };
-	        }
-	        else if (slicedSegments.length === 0 &&
-	            containsEmptyPathRedirects(segmentGroup, slicedSegments, config)) {
-	            var s = new UrlSegmentGroup(segmentGroup.segments, addEmptySegmentsToChildrenIfNeeded(segmentGroup, slicedSegments, config, segmentGroup.children));
-	            return { segmentGroup: mergeTrivialChildren(s), slicedSegments: slicedSegments };
-	        }
-	        else {
-	            return { segmentGroup: segmentGroup, slicedSegments: slicedSegments };
-	        }
-	    }
-	    function mergeTrivialChildren(s) {
-	        if (s.numberOfChildren === 1 && s.children[PRIMARY_OUTLET]) {
-	            var c = s.children[PRIMARY_OUTLET];
-	            return new UrlSegmentGroup(s.segments.concat(c.segments), c.children);
-	        }
-	        else {
-	            return s;
-	        }
-	    }
-	    function addEmptySegmentsToChildrenIfNeeded(segmentGroup, slicedSegments, routes, children) {
-	        var res = {};
-	        for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
-	            var r = routes_1[_i];
-	            if (emptyPathRedirect(segmentGroup, slicedSegments, r) && !children[getOutlet$1(r)]) {
-	                res[getOutlet$1(r)] = new UrlSegmentGroup([], {});
-	            }
-	        }
-	        return merge(children, res);
-	    }
-	    function createChildrenForEmptySegments(routes, primarySegmentGroup) {
-	        var res = {};
-	        res[PRIMARY_OUTLET] = primarySegmentGroup;
-	        for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
-	            var r = routes_2[_i];
-	            if (r.path === '' && getOutlet$1(r) !== PRIMARY_OUTLET) {
-	                res[getOutlet$1(r)] = new UrlSegmentGroup([], {});
-	            }
-	        }
-	        return res;
-	    }
-	    function containsEmptyPathRedirectsWithNamedOutlets(segmentGroup, slicedSegments, routes) {
-	        return routes
-	            .filter(function (r) { return emptyPathRedirect(segmentGroup, slicedSegments, r) &&
-	            getOutlet$1(r) !== PRIMARY_OUTLET; })
-	            .length > 0;
-	    }
-	    function containsEmptyPathRedirects(segmentGroup, slicedSegments, routes) {
-	        return routes.filter(function (r) { return emptyPathRedirect(segmentGroup, slicedSegments, r); }).length > 0;
-	    }
-	    function emptyPathRedirect(segmentGroup, slicedSegments, r) {
-	        if ((segmentGroup.hasChildren() || slicedSegments.length > 0) && r.pathMatch === 'full')
-	            return false;
-	        return r.path === '' && r.redirectTo !== undefined;
-	    }
-	    function getOutlet$1(route) {
-	        return route.outlet ? route.outlet : PRIMARY_OUTLET;
-	    }
-
-	    function validateConfig(config) {
-	        config.forEach(validateNode);
-	    }
-	    function validateNode(route) {
-	        if (Array.isArray(route)) {
-	            throw new Error("Invalid route configuration: Array cannot be specified");
-	        }
-	        if (route.component === undefined && (route.outlet && route.outlet !== PRIMARY_OUTLET)) {
-	            throw new Error("Invalid route configuration of route '" + route.path + "': a componentless route cannot have a named outlet set");
-	        }
-	        if (!!route.redirectTo && !!route.children) {
-	            throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and children cannot be used together");
-	        }
-	        if (!!route.redirectTo && !!route.loadChildren) {
-	            throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and loadChildren cannot be used together");
-	        }
-	        if (!!route.children && !!route.loadChildren) {
-	            throw new Error("Invalid configuration of route '" + route.path + "': children and loadChildren cannot be used together");
-	        }
-	        if (!!route.redirectTo && !!route.component) {
-	            throw new Error("Invalid configuration of route '" + route.path + "': redirectTo and component cannot be used together");
-	        }
-	        if (route.redirectTo === undefined && !route.component && !route.children &&
-	            !route.loadChildren) {
-	            throw new Error("Invalid configuration of route '" + route.path + "': one of the following must be provided (component or redirectTo or children or loadChildren)");
-	        }
-	        if (route.path === undefined) {
-	            throw new Error("Invalid route configuration: routes must have path specified");
-	        }
-	        if (route.path.startsWith('/')) {
-	            throw new Error("Invalid route configuration of route '" + route.path + "': path cannot start with a slash");
-	        }
-	        if (route.path === '' && route.redirectTo !== undefined && route.pathMatch === undefined) {
-	            var exp = "The default value of 'pathMatch' is 'prefix', but often the intent is to use 'full'.";
-	            throw new Error("Invalid route configuration of route '{path: \"" + route.path + "\", redirectTo: \"" + route.redirectTo + "\"}': please provide 'pathMatch'. " + exp);
-	        }
-	        if (route.pathMatch !== undefined && route.pathMatch !== 'full' && route.pathMatch !== 'prefix') {
-	            throw new Error("Invalid configuration of route '" + route.path + "': pathMatch can only be set to 'prefix' or 'full'");
-	        }
-	    }
-
-	    /**
-	     * @license
-	     * Copyright Google Inc. All Rights Reserved.
-	     *
-	     * Use of this source code is governed by an MIT-style license that can be
-	     * found in the LICENSE file at https://angular.io/license
-	     */
-	    var Tree = (function () {
-	        function Tree(root) {
-	            this._root = root;
-	        }
-	        Object.defineProperty(Tree.prototype, "root", {
-	            get: function () { return this._root.value; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        /**
-	         * @internal
-	         */
-	        Tree.prototype.parent = function (t) {
-	            var p = this.pathFromRoot(t);
-	            return p.length > 1 ? p[p.length - 2] : null;
-	        };
-	        /**
-	         * @internal
-	         */
-	        Tree.prototype.children = function (t) {
-	            var n = findNode(t, this._root);
-	            return n ? n.children.map(function (t) { return t.value; }) : [];
-	        };
-	        /**
-	         * @internal
-	         */
-	        Tree.prototype.firstChild = function (t) {
-	            var n = findNode(t, this._root);
-	            return n && n.children.length > 0 ? n.children[0].value : null;
-	        };
-	        /**
-	         * @internal
-	         */
-	        Tree.prototype.siblings = function (t) {
-	            var p = findPath(t, this._root, []);
-	            if (p.length < 2)
-	                return [];
-	            var c = p[p.length - 2].children.map(function (c) { return c.value; });
-	            return c.filter(function (cc) { return cc !== t; });
-	        };
-	        /**
-	         * @internal
-	         */
-	        Tree.prototype.pathFromRoot = function (t) { return findPath(t, this._root, []).map(function (s) { return s.value; }); };
-	        return Tree;
-	    }());
-	    function findNode(expected, c) {
-	        if (expected === c.value)
-	            return c;
-	        for (var _i = 0, _a = c.children; _i < _a.length; _i++) {
-	            var cc = _a[_i];
-	            var r = findNode(expected, cc);
-	            if (r)
-	                return r;
-	        }
-	        return null;
-	    }
-	    function findPath(expected, c, collected) {
-	        collected.push(c);
-	        if (expected === c.value)
-	            return collected;
-	        for (var _i = 0, _a = c.children; _i < _a.length; _i++) {
-	            var cc = _a[_i];
-	            var cloned = collected.slice(0);
-	            var r = findPath(expected, cc, cloned);
-	            if (r.length > 0)
-	                return r;
-	        }
-	        return [];
-	    }
-	    var TreeNode = (function () {
-	        function TreeNode(value, children) {
-	            this.value = value;
-	            this.children = children;
-	        }
-	        TreeNode.prototype.toString = function () { return "TreeNode(" + this.value + ")"; };
-	        return TreeNode;
-	    }());
-
-	    /**
-	     * @license
-	     * Copyright Google Inc. All Rights Reserved.
-	     *
-	     * Use of this source code is governed by an MIT-style license that can be
-	     * found in the LICENSE file at https://angular.io/license
-	     */
-	    var __extends$1 = (this && this.__extends) || function (d, b) {
-	        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	        function __() { this.constructor = d; }
-	        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	    };
-	    /**
-	     * @whatItDoes Represents the state of the router.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * @Component({templateUrl:'template.html'})
-	     * class MyComponent {
-	     *   constructor(router: Router) {
-	     *     const state: RouterState = router.routerState;
-	     *     const root: ActivatedRoute = state.root;
-	     *     const child = root.firstChild;
-	     *     const id: Observable<string> = child.params.map(p => p.id);
-	     *     //...
-	     *   }
-	     * }
-	     * ```
-	     *
-	     * @description
-	     * RouterState is a tree of activated routes. Every node in this tree knows about the "consumed" URL
-	     * segments,
-	     * the extracted parameters, and the resolved data.
-	     *
-	     * See {@link ActivatedRoute} for more information.
-	     *
-	     * @stable
-	     */
-	    var RouterState = (function (_super) {
-	        __extends$1(RouterState, _super);
-	        /**
-	         * @internal
-	         */
-	        function RouterState(root,
-	            /**
-	             * The current snapshot of the router state.
-	             */
-	            snapshot) {
-	            _super.call(this, root);
-	            this.snapshot = snapshot;
-	            setRouterStateSnapshot(this, root);
-	        }
-	        RouterState.prototype.toString = function () { return this.snapshot.toString(); };
-	        return RouterState;
-	    }(Tree));
-	    function createEmptyState(urlTree, rootComponent) {
-	        var snapshot = createEmptyStateSnapshot(urlTree, rootComponent);
-	        var emptyUrl = new rxjs_BehaviorSubject.BehaviorSubject([new UrlSegment('', {})]);
-	        var emptyParams = new rxjs_BehaviorSubject.BehaviorSubject({});
-	        var emptyData = new rxjs_BehaviorSubject.BehaviorSubject({});
-	        var emptyQueryParams = new rxjs_BehaviorSubject.BehaviorSubject({});
-	        var fragment = new rxjs_BehaviorSubject.BehaviorSubject('');
-	        var activated = new ActivatedRoute(emptyUrl, emptyParams, emptyQueryParams, fragment, emptyData, PRIMARY_OUTLET, rootComponent, snapshot.root);
-	        activated.snapshot = snapshot.root;
-	        return new RouterState(new TreeNode(activated, []), snapshot);
-	    }
-	    function createEmptyStateSnapshot(urlTree, rootComponent) {
-	        var emptyParams = {};
-	        var emptyData = {};
-	        var emptyQueryParams = {};
-	        var fragment = '';
-	        var activated = new ActivatedRouteSnapshot([], emptyParams, emptyQueryParams, fragment, emptyData, PRIMARY_OUTLET, rootComponent, null, urlTree.root, -1, {});
-	        return new RouterStateSnapshot('', new TreeNode(activated, []));
-	    }
-	    /**
-	     * @whatItDoes Contains the information about a route associated with a component loaded in an
-	     * outlet.
-	     * ActivatedRoute can also be used to traverse the router state tree.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * @Component({templateUrl:'./my-component.html'})
-	     * class MyComponent {
-	     *   constructor(route: ActivatedRoute) {
-	     *     const id: Observable<string> = route.params.map(p => p.id);
-	     *     const url: Observable<string> = route.url.map(s => s.join(''));
-	     *     const user = route.data.map(d => d.user); //includes `data` and `resolve`
-	     *   }
-	     * }
-	     * ```
-	     *
-	     * @stable
-	     */
-	    var ActivatedRoute = (function () {
-	        /**
-	         * @internal
-	         */
-	        function ActivatedRoute(
-	            /**
-	             *  The URL segments matched by this route. The observable will emit a new value when
-	             *  the array of segments changes.
-	             */
-	            url,
-	            /**
-	             * The matrix parameters scoped to this route. The observable will emit a new value when
-	             * the set of the parameters changes.
-	             */
-	            params,
-	            /**
-	             * The query parameters shared by all the routes. The observable will emit a new value when
-	             * the set of the parameters changes.
-	             */
-	            queryParams,
-	            /**
-	             * The URL fragment shared by all the routes. The observable will emit a new value when
-	             * the URL fragment changes.
-	             */
-	            fragment,
-	            /**
-	             * The static and resolved data of this route. The observable will emit a new value when
-	             * any of the resolvers returns a new object.
-	             */
-	            data,
-	            /**
-	             * The outlet name of the route. It's a constant.
-	             */
-	            outlet,
-	            /**
-	             * The component of the route. It's a constant.
-	             */
-	            component, // TODO: vsavkin: remove |string
-	            futureSnapshot) {
-	            this.url = url;
-	            this.params = params;
-	            this.queryParams = queryParams;
-	            this.fragment = fragment;
-	            this.data = data;
-	            this.outlet = outlet;
-	            this.component = component;
-	            this._futureSnapshot = futureSnapshot;
-	        }
-	        Object.defineProperty(ActivatedRoute.prototype, "routeConfig", {
-	            /**
-	             * The configuration used to match this route.
-	             */
-	            get: function () { return this._futureSnapshot.routeConfig; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRoute.prototype, "root", {
-	            /**
-	             * The root of the router state.
-	             */
-	            get: function () { return this._routerState.root; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRoute.prototype, "parent", {
-	            /**
-	             * The parent of this route in the router state tree.
-	             */
-	            get: function () { return this._routerState.parent(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRoute.prototype, "firstChild", {
-	            /**
-	             * The first child of this route in the router state tree.
-	             */
-	            get: function () { return this._routerState.firstChild(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRoute.prototype, "children", {
-	            /**
-	             * The children of this route in the router state tree.
-	             */
-	            get: function () { return this._routerState.children(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRoute.prototype, "pathFromRoot", {
-	            /**
-	             * The path from the root of the router state tree to this route.
-	             */
-	            get: function () { return this._routerState.pathFromRoot(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        /**
-	         * @docsNotRequired
-	         */
-	        ActivatedRoute.prototype.toString = function () {
-	            return this.snapshot ? this.snapshot.toString() : "Future(" + this._futureSnapshot + ")";
-	        };
-	        return ActivatedRoute;
-	    }());
-	    /**
-	     * @internal
-	     */
-	    function inheritedParamsDataResolve(route) {
-	        var pathToRoot = route.pathFromRoot;
-	        var inhertingStartingFrom = pathToRoot.length - 1;
-	        while (inhertingStartingFrom >= 1) {
-	            var current = pathToRoot[inhertingStartingFrom];
-	            var parent_1 = pathToRoot[inhertingStartingFrom - 1];
-	            // current route is an empty path => inherits its parent's params and data
-	            if (current.routeConfig && current.routeConfig.path === '') {
-	                inhertingStartingFrom--;
-	            }
-	            else if (!parent_1.component) {
-	                inhertingStartingFrom--;
-	            }
-	            else {
-	                break;
-	            }
-	        }
-	        return pathToRoot.slice(inhertingStartingFrom).reduce(function (res, curr) {
-	            var params = merge(res.params, curr.params);
-	            var data = merge(res.data, curr.data);
-	            var resolve = merge(res.resolve, curr._resolvedData);
-	            return { params: params, data: data, resolve: resolve };
-	        }, { params: {}, data: {}, resolve: {} });
-	    }
-	    /**
-	     * @whatItDoes Contains the information about a route associated with a component loaded in an
-	     * outlet
-	     * at a particular moment in time. ActivatedRouteSnapshot can also be used to traverse the router
-	     * state tree.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * @Component({templateUrl:'./my-component.html'})
-	     * class MyComponent {
-	     *   constructor(route: ActivatedRoute) {
-	     *     const id: string = route.snapshot.params.id;
-	     *     const url: string = route.snapshot.url.join('');
-	     *     const user = route.snapshot.data.user;
-	     *   }
-	     * }
-	     * ```
-	     *
-	     * @stable
-	     */
-	    var ActivatedRouteSnapshot = (function () {
-	        /**
-	         * @internal
-	         */
-	        function ActivatedRouteSnapshot(
-	            /**
-	             *  The URL segments matched by this route.
-	             */
-	            url,
-	            /**
-	             * The matrix parameters scoped to this route.
-	             */
-	            params,
-	            /**
-	             * The query parameters shared by all the routes.
-	             */
-	            queryParams,
-	            /**
-	             * The URL fragment shared by all the routes.
-	             */
-	            fragment,
-	            /**
-	             * The static and resolved data of this route.
-	             */
-	            data,
-	            /**
-	             * The outlet name of the route.
-	             */
-	            outlet,
-	            /**
-	             * The component of the route.
-	             */
-	            component, routeConfig, urlSegment, lastPathIndex, resolve) {
-	            this.url = url;
-	            this.params = params;
-	            this.queryParams = queryParams;
-	            this.fragment = fragment;
-	            this.data = data;
-	            this.outlet = outlet;
-	            this.component = component;
-	            this._routeConfig = routeConfig;
-	            this._urlSegment = urlSegment;
-	            this._lastPathIndex = lastPathIndex;
-	            this._resolve = resolve;
-	        }
-	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "routeConfig", {
-	            /**
-	             * The configuration used to match this route.
-	             */
-	            get: function () { return this._routeConfig; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "root", {
-	            /**
-	             * The root of the router state.
-	             */
-	            get: function () { return this._routerState.root; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "parent", {
-	            /**
-	             * The parent of this route in the router state tree.
-	             */
-	            get: function () { return this._routerState.parent(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "firstChild", {
-	            /**
-	             * The first child of this route in the router state tree.
-	             */
-	            get: function () { return this._routerState.firstChild(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "children", {
-	            /**
-	             * The children of this route in the router state tree.
-	             */
-	            get: function () { return this._routerState.children(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(ActivatedRouteSnapshot.prototype, "pathFromRoot", {
-	            /**
-	             * The path from the root of the router state tree to this route.
-	             */
-	            get: function () { return this._routerState.pathFromRoot(this); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        /**
-	         * @docsNotRequired
-	         */
-	        ActivatedRouteSnapshot.prototype.toString = function () {
-	            var url = this.url.map(function (s) { return s.toString(); }).join('/');
-	            var matched = this._routeConfig ? this._routeConfig.path : '';
-	            return "Route(url:'" + url + "', path:'" + matched + "')";
-	        };
-	        return ActivatedRouteSnapshot;
-	    }());
-	    /**
-	     * @whatItDoes Represents the state of the router at a moment in time.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * @Component({templateUrl:'template.html'})
-	     * class MyComponent {
-	     *   constructor(router: Router) {
-	     *     const state: RouterState = router.routerState;
-	     *     const snapshot: RouterStateSnapshot = state.snapshot;
-	     *     const root: ActivatedRouteSnapshot = snapshot.root;
-	     *     const child = root.firstChild;
-	     *     const id: Observable<string> = child.params.map(p => p.id);
-	     *     //...
-	     *   }
-	     * }
-	     * ```
-	     *
-	     * @description
-	     * RouterStateSnapshot is a tree of activated route snapshots. Every node in this tree knows about
-	     * the "consumed" URL segments, the extracted parameters, and the resolved data.
-	     *
-	     * @stable
-	     */
-	    var RouterStateSnapshot = (function (_super) {
-	        __extends$1(RouterStateSnapshot, _super);
-	        /**
-	         * @internal
-	         */
-	        function RouterStateSnapshot(
-	            /** The url from which this snapshot was created */
-	            url, root) {
-	            _super.call(this, root);
-	            this.url = url;
-	            setRouterStateSnapshot(this, root);
-	        }
-	        RouterStateSnapshot.prototype.toString = function () { return serializeNode(this._root); };
-	        return RouterStateSnapshot;
-	    }(Tree));
-	    function setRouterStateSnapshot(state, node) {
-	        node.value._routerState = state;
-	        node.children.forEach(function (c) { return setRouterStateSnapshot(state, c); });
-	    }
-	    function serializeNode(node) {
-	        var c = node.children.length > 0 ? " { " + node.children.map(serializeNode).join(", ") + " } " : '';
-	        return "" + node.value + c;
-	    }
-	    /**
-	     * The expectation is that the activate route is created with the right set of parameters.
-	     * So we push new values into the observables only when they are not the initial values.
-	     * And we detect that by checking if the snapshot field is set.
-	     */
-	    function advanceActivatedRoute(route) {
-	        if (route.snapshot) {
-	            if (!shallowEqual(route.snapshot.queryParams, route._futureSnapshot.queryParams)) {
-	                route.queryParams.next(route._futureSnapshot.queryParams);
-	            }
-	            if (route.snapshot.fragment !== route._futureSnapshot.fragment) {
-	                route.fragment.next(route._futureSnapshot.fragment);
-	            }
-	            if (!shallowEqual(route.snapshot.params, route._futureSnapshot.params)) {
-	                route.params.next(route._futureSnapshot.params);
-	                route.data.next(route._futureSnapshot.data);
-	            }
-	            if (!shallowEqualArrays(route.snapshot.url, route._futureSnapshot.url)) {
-	                route.url.next(route._futureSnapshot.url);
-	            }
-	            route.snapshot = route._futureSnapshot;
-	        }
-	        else {
-	            route.snapshot = route._futureSnapshot;
-	            // this is for resolved data
-	            route.data.next(route._futureSnapshot.data);
-	        }
-	    }
-
-	    function createRouterState(curr, prevState) {
-	        var root = createNode(curr._root, prevState ? prevState._root : undefined);
-	        return new RouterState(root, curr);
-	    }
-	    function createNode(curr, prevState) {
-	        if (prevState && equalRouteSnapshots(prevState.value.snapshot, curr.value)) {
-	            var value = prevState.value;
-	            value._futureSnapshot = curr.value;
-	            var children = createOrReuseChildren(curr, prevState);
-	            return new TreeNode(value, children);
-	        }
-	        else {
-	            var value = createActivatedRoute(curr.value);
-	            var children = curr.children.map(function (c) { return createNode(c); });
-	            return new TreeNode(value, children);
-	        }
-	    }
-	    function createOrReuseChildren(curr, prevState) {
-	        return curr.children.map(function (child) {
-	            for (var _i = 0, _a = prevState.children; _i < _a.length; _i++) {
-	                var p = _a[_i];
-	                if (equalRouteSnapshots(p.value.snapshot, child.value)) {
-	                    return createNode(child, p);
-	                }
-	            }
-	            return createNode(child);
-	        });
-	    }
-	    function createActivatedRoute(c) {
-	        return new ActivatedRoute(new rxjs_BehaviorSubject.BehaviorSubject(c.url), new rxjs_BehaviorSubject.BehaviorSubject(c.params), new rxjs_BehaviorSubject.BehaviorSubject(c.queryParams), new rxjs_BehaviorSubject.BehaviorSubject(c.fragment), new rxjs_BehaviorSubject.BehaviorSubject(c.data), c.outlet, c.component, c);
-	    }
-	    function equalRouteSnapshots(a, b) {
-	        return a._routeConfig === b._routeConfig;
-	    }
-
-	    function createUrlTree(route, urlTree, commands, queryParams, fragment) {
-	        if (commands.length === 0) {
-	            return tree(urlTree.root, urlTree.root, urlTree, queryParams, fragment);
-	        }
-	        var normalizedCommands = normalizeCommands(commands);
-	        validateCommands(normalizedCommands);
-	        if (navigateToRoot(normalizedCommands)) {
-	            return tree(urlTree.root, new UrlSegmentGroup([], {}), urlTree, queryParams, fragment);
-	        }
-	        var startingPosition = findStartingPosition(normalizedCommands, urlTree, route);
-	        var segmentGroup = startingPosition.processChildren ?
-	            updateSegmentGroupChildren(startingPosition.segmentGroup, startingPosition.index, normalizedCommands.commands) :
-	            updateSegmentGroup(startingPosition.segmentGroup, startingPosition.index, normalizedCommands.commands);
-	        return tree(startingPosition.segmentGroup, segmentGroup, urlTree, queryParams, fragment);
-	    }
-	    function validateCommands(n) {
-	        if (n.isAbsolute && n.commands.length > 0 && isMatrixParams(n.commands[0])) {
-	            throw new Error('Root segment cannot have matrix parameters');
-	        }
-	        var c = n.commands.filter(function (c) { return typeof c === 'object' && c.outlets !== undefined; });
-	        if (c.length > 0 && c[0] !== n.commands[n.commands.length - 1]) {
-	            throw new Error('{outlets:{}} has to be the last command');
-	        }
-	    }
-	    function isMatrixParams(command) {
-	        return typeof command === 'object' && command.outlets === undefined &&
-	            command.segmentPath === undefined;
-	    }
-	    function tree(oldSegmentGroup, newSegmentGroup, urlTree, queryParams, fragment) {
-	        if (urlTree.root === oldSegmentGroup) {
-	            return new UrlTree(newSegmentGroup, stringify(queryParams), fragment);
-	        }
-	        else {
-	            return new UrlTree(replaceSegment(urlTree.root, oldSegmentGroup, newSegmentGroup), stringify(queryParams), fragment);
-	        }
-	    }
-	    function replaceSegment(current, oldSegment, newSegment) {
-	        var children = {};
-	        forEach(current.children, function (c, outletName) {
-	            if (c === oldSegment) {
-	                children[outletName] = newSegment;
-	            }
-	            else {
-	                children[outletName] = replaceSegment(c, oldSegment, newSegment);
-	            }
-	        });
-	        return new UrlSegmentGroup(current.segments, children);
-	    }
-	    function navigateToRoot(normalizedChange) {
-	        return normalizedChange.isAbsolute && normalizedChange.commands.length === 1 &&
-	            normalizedChange.commands[0] == '/';
-	    }
-	    var NormalizedNavigationCommands = (function () {
-	        function NormalizedNavigationCommands(isAbsolute, numberOfDoubleDots, commands) {
-	            this.isAbsolute = isAbsolute;
-	            this.numberOfDoubleDots = numberOfDoubleDots;
-	            this.commands = commands;
-	        }
-	        return NormalizedNavigationCommands;
-	    }());
-	    function normalizeCommands(commands) {
-	        if ((typeof commands[0] === 'string') && commands.length === 1 && commands[0] == '/') {
-	            return new NormalizedNavigationCommands(true, 0, commands);
-	        }
-	        var numberOfDoubleDots = 0;
-	        var isAbsolute = false;
-	        var res = [];
-	        var _loop_1 = function(i) {
-	            var c = commands[i];
-	            if (typeof c === 'object' && c.outlets !== undefined) {
-	                var r_1 = {};
-	                forEach(c.outlets, function (commands, name) {
-	                    if (typeof commands === 'string') {
-	                        r_1[name] = commands.split('/');
-	                    }
-	                    else {
-	                        r_1[name] = commands;
-	                    }
-	                });
-	                res.push({ outlets: r_1 });
-	                return "continue";
-	            }
-	            if (typeof c === 'object' && c.segmentPath !== undefined) {
-	                res.push(c.segmentPath);
-	                return "continue";
-	            }
-	            if (!(typeof c === 'string')) {
-	                res.push(c);
-	                return "continue";
-	            }
-	            if (i === 0) {
-	                var parts = c.split('/');
-	                for (var j = 0; j < parts.length; ++j) {
-	                    var cc = parts[j];
-	                    if (j == 0 && cc == '.') {
-	                    }
-	                    else if (j == 0 && cc == '') {
-	                        isAbsolute = true;
-	                    }
-	                    else if (cc == '..') {
-	                        numberOfDoubleDots++;
-	                    }
-	                    else if (cc != '') {
-	                        res.push(cc);
-	                    }
-	                }
-	            }
-	            else {
-	                res.push(c);
-	            }
-	        };
-	        for (var i = 0; i < commands.length; ++i) {
-	            _loop_1(i);
-	        }
-	        return new NormalizedNavigationCommands(isAbsolute, numberOfDoubleDots, res);
-	    }
-	    var Position = (function () {
-	        function Position(segmentGroup, processChildren, index) {
-	            this.segmentGroup = segmentGroup;
-	            this.processChildren = processChildren;
-	            this.index = index;
-	        }
-	        return Position;
-	    }());
-	    function findStartingPosition(normalizedChange, urlTree, route) {
-	        if (normalizedChange.isAbsolute) {
-	            return new Position(urlTree.root, true, 0);
-	        }
-	        else if (route.snapshot._lastPathIndex === -1) {
-	            return new Position(route.snapshot._urlSegment, true, 0);
-	        }
-	        else {
-	            var modifier = isMatrixParams(normalizedChange.commands[0]) ? 0 : 1;
-	            var index = route.snapshot._lastPathIndex + modifier;
-	            return createPositionApplyingDoubleDots(route.snapshot._urlSegment, index, normalizedChange.numberOfDoubleDots);
-	        }
-	    }
-	    function createPositionApplyingDoubleDots(group, index, numberOfDoubleDots) {
-	        var g = group;
-	        var ci = index;
-	        var dd = numberOfDoubleDots;
-	        while (dd > ci) {
-	            dd -= ci;
-	            g = g.parent;
-	            if (!g) {
-	                throw new Error('Invalid number of \'../\'');
-	            }
-	            ci = g.segments.length;
-	        }
-	        return new Position(g, false, ci - dd);
-	    }
-	    function getPath(command) {
-	        if (typeof command === 'object' && command.outlets)
-	            return command.outlets[PRIMARY_OUTLET];
-	        return "" + command;
-	    }
-	    function getOutlets(commands) {
-	        if (!(typeof commands[0] === 'object'))
-	            return (_a = {}, _a[PRIMARY_OUTLET] = commands, _a);
-	        if (commands[0].outlets === undefined)
-	            return (_b = {}, _b[PRIMARY_OUTLET] = commands, _b);
-	        return commands[0].outlets;
-	        var _a, _b;
-	    }
-	    function updateSegmentGroup(segmentGroup, startIndex, commands) {
-	        if (!segmentGroup) {
-	            segmentGroup = new UrlSegmentGroup([], {});
-	        }
-	        if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
-	            return updateSegmentGroupChildren(segmentGroup, startIndex, commands);
-	        }
-	        var m = prefixedWith(segmentGroup, startIndex, commands);
-	        var slicedCommands = commands.slice(m.commandIndex);
-	        if (m.match && m.pathIndex < segmentGroup.segments.length) {
-	            var g = new UrlSegmentGroup(segmentGroup.segments.slice(0, m.pathIndex), {});
-	            g.children[PRIMARY_OUTLET] =
-	                new UrlSegmentGroup(segmentGroup.segments.slice(m.pathIndex), segmentGroup.children);
-	            return updateSegmentGroupChildren(g, 0, slicedCommands);
-	        }
-	        else if (m.match && slicedCommands.length === 0) {
-	            return new UrlSegmentGroup(segmentGroup.segments, {});
-	        }
-	        else if (m.match && !segmentGroup.hasChildren()) {
-	            return createNewSegmentGroup(segmentGroup, startIndex, commands);
-	        }
-	        else if (m.match) {
-	            return updateSegmentGroupChildren(segmentGroup, 0, slicedCommands);
-	        }
-	        else {
-	            return createNewSegmentGroup(segmentGroup, startIndex, commands);
-	        }
-	    }
-	    function updateSegmentGroupChildren(segmentGroup, startIndex, commands) {
-	        if (commands.length === 0) {
-	            return new UrlSegmentGroup(segmentGroup.segments, {});
-	        }
-	        else {
-	            var outlets_1 = getOutlets(commands);
-	            var children_1 = {};
-	            forEach(outlets_1, function (commands, outlet) {
-	                if (commands !== null) {
-	                    children_1[outlet] = updateSegmentGroup(segmentGroup.children[outlet], startIndex, commands);
-	                }
-	            });
-	            forEach(segmentGroup.children, function (child, childOutlet) {
-	                if (outlets_1[childOutlet] === undefined) {
-	                    children_1[childOutlet] = child;
-	                }
-	            });
-	            return new UrlSegmentGroup(segmentGroup.segments, children_1);
-	        }
-	    }
-	    function prefixedWith(segmentGroup, startIndex, commands) {
-	        var currentCommandIndex = 0;
-	        var currentPathIndex = startIndex;
-	        var noMatch = { match: false, pathIndex: 0, commandIndex: 0 };
-	        while (currentPathIndex < segmentGroup.segments.length) {
-	            if (currentCommandIndex >= commands.length)
-	                return noMatch;
-	            var path = segmentGroup.segments[currentPathIndex];
-	            var curr = getPath(commands[currentCommandIndex]);
-	            var next = currentCommandIndex < commands.length - 1 ? commands[currentCommandIndex + 1] : null;
-	            if (currentPathIndex > 0 && curr === undefined)
-	                break;
-	            if (curr && next && (typeof next === 'object') && next.outlets === undefined) {
-	                if (!compare(curr, next, path))
-	                    return noMatch;
-	                currentCommandIndex += 2;
-	            }
-	            else {
-	                if (!compare(curr, {}, path))
-	                    return noMatch;
-	                currentCommandIndex++;
-	            }
-	            currentPathIndex++;
-	        }
-	        return { match: true, pathIndex: currentPathIndex, commandIndex: currentCommandIndex };
-	    }
-	    function createNewSegmentGroup(segmentGroup, startIndex, commands) {
-	        var paths = segmentGroup.segments.slice(0, startIndex);
-	        var i = 0;
-	        while (i < commands.length) {
-	            if (typeof commands[i] === 'object' && commands[i].outlets !== undefined) {
-	                var children = createNewSegmentChldren(commands[i].outlets);
-	                return new UrlSegmentGroup(paths, children);
-	            }
-	            // if we start with an object literal, we need to reuse the path part from the segment
-	            if (i === 0 && isMatrixParams(commands[0])) {
-	                var p = segmentGroup.segments[startIndex];
-	                paths.push(new UrlSegment(p.path, commands[0]));
-	                i++;
-	                continue;
-	            }
-	            var curr = getPath(commands[i]);
-	            var next = (i < commands.length - 1) ? commands[i + 1] : null;
-	            if (curr && next && isMatrixParams(next)) {
-	                paths.push(new UrlSegment(curr, stringify(next)));
-	                i += 2;
-	            }
-	            else {
-	                paths.push(new UrlSegment(curr, {}));
-	                i++;
-	            }
-	        }
-	        return new UrlSegmentGroup(paths, {});
-	    }
-	    function createNewSegmentChldren(outlets) {
-	        var children = {};
-	        forEach(outlets, function (commands, outlet) {
-	            if (commands !== null) {
-	                children[outlet] = createNewSegmentGroup(new UrlSegmentGroup([], {}), 0, commands);
-	            }
-	        });
-	        return children;
-	    }
-	    function stringify(params) {
-	        var res = {};
-	        forEach(params, function (v, k) { return res[k] = "" + v; });
-	        return res;
-	    }
-	    function compare(path, params, segment) {
-	        return path == segment.path && shallowEqual(params, segment.parameters);
-	    }
-
-	    var NoMatch$1 = (function () {
-	        function NoMatch() {
-	        }
-	        return NoMatch;
-	    }());
-	    function recognize(rootComponentType, config, urlTree, url) {
-	        return new Recognizer(rootComponentType, config, urlTree, url).recognize();
-	    }
-	    var Recognizer = (function () {
-	        function Recognizer(rootComponentType, config, urlTree, url) {
-	            this.rootComponentType = rootComponentType;
-	            this.config = config;
-	            this.urlTree = urlTree;
-	            this.url = url;
-	        }
-	        Recognizer.prototype.recognize = function () {
-	            try {
-	                var rootSegmentGroup = split$1(this.urlTree.root, [], [], this.config).segmentGroup;
-	                var children = this.processSegmentGroup(this.config, rootSegmentGroup, PRIMARY_OUTLET);
-	                var root = new ActivatedRouteSnapshot([], Object.freeze({}), Object.freeze(this.urlTree.queryParams), this.urlTree.fragment, {}, PRIMARY_OUTLET, this.rootComponentType, null, this.urlTree.root, -1, {});
-	                var rootNode = new TreeNode(root, children);
-	                var routeState = new RouterStateSnapshot(this.url, rootNode);
-	                this.inheriteParamsAndData(routeState._root);
-	                return rxjs_observable_of.of(routeState);
-	            }
-	            catch (e) {
-	                return new rxjs_Observable.Observable(function (obs) { return obs.error(e); });
-	            }
-	        };
-	        Recognizer.prototype.inheriteParamsAndData = function (routeNode) {
-	            var _this = this;
-	            var route = routeNode.value;
-	            var i = inheritedParamsDataResolve(route);
-	            route.params = Object.freeze(i.params);
-	            route.data = Object.freeze(i.data);
-	            routeNode.children.forEach(function (n) { return _this.inheriteParamsAndData(n); });
-	        };
-	        Recognizer.prototype.processSegmentGroup = function (config, segmentGroup, outlet) {
-	            if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
-	                return this.processChildren(config, segmentGroup);
-	            }
-	            else {
-	                return this.processSegment(config, segmentGroup, 0, segmentGroup.segments, outlet);
-	            }
-	        };
-	        Recognizer.prototype.processChildren = function (config, segmentGroup) {
-	            var _this = this;
-	            var children = mapChildrenIntoArray(segmentGroup, function (child, childOutlet) { return _this.processSegmentGroup(config, child, childOutlet); });
-	            checkOutletNameUniqueness(children);
-	            sortActivatedRouteSnapshots(children);
-	            return children;
-	        };
-	        Recognizer.prototype.processSegment = function (config, segmentGroup, pathIndex, segments, outlet) {
-	            for (var _i = 0, config_1 = config; _i < config_1.length; _i++) {
-	                var r = config_1[_i];
-	                try {
-	                    return this.processSegmentAgainstRoute(r, segmentGroup, pathIndex, segments, outlet);
-	                }
-	                catch (e) {
-	                    if (!(e instanceof NoMatch$1))
-	                        throw e;
-	                }
-	            }
-	            throw new NoMatch$1();
-	        };
-	        Recognizer.prototype.processSegmentAgainstRoute = function (route, rawSegment, pathIndex, segments, outlet) {
-	            if (route.redirectTo)
-	                throw new NoMatch$1();
-	            if ((route.outlet ? route.outlet : PRIMARY_OUTLET) !== outlet)
-	                throw new NoMatch$1();
-	            if (route.path === '**') {
-	                var params = segments.length > 0 ? last(segments).parameters : {};
-	                var snapshot_1 = new ActivatedRouteSnapshot(segments, params, Object.freeze(this.urlTree.queryParams), this.urlTree.fragment, getData(route), outlet, route.component, route, getSourceSegmentGroup(rawSegment), getPathIndexShift(rawSegment) + segments.length, getResolve(route));
-	                return [new TreeNode(snapshot_1, [])];
-	            }
-	            var _a = match$1(rawSegment, route, segments), consumedSegments = _a.consumedSegments, parameters = _a.parameters, lastChild = _a.lastChild;
-	            var rawSlicedSegments = segments.slice(lastChild);
-	            var childConfig = getChildConfig(route);
-	            var _b = split$1(rawSegment, consumedSegments, rawSlicedSegments, childConfig), segmentGroup = _b.segmentGroup, slicedSegments = _b.slicedSegments;
-	            var snapshot = new ActivatedRouteSnapshot(consumedSegments, parameters, Object.freeze(this.urlTree.queryParams), this.urlTree.fragment, getData(route), outlet, route.component, route, getSourceSegmentGroup(rawSegment), getPathIndexShift(rawSegment) + consumedSegments.length, getResolve(route));
-	            if (slicedSegments.length === 0 && segmentGroup.hasChildren()) {
-	                var children = this.processChildren(childConfig, segmentGroup);
-	                return [new TreeNode(snapshot, children)];
-	            }
-	            else if (childConfig.length === 0 && slicedSegments.length === 0) {
-	                return [new TreeNode(snapshot, [])];
-	            }
-	            else {
-	                var children = this.processSegment(childConfig, segmentGroup, pathIndex + lastChild, slicedSegments, PRIMARY_OUTLET);
-	                return [new TreeNode(snapshot, children)];
-	            }
-	        };
-	        return Recognizer;
-	    }());
-	    function sortActivatedRouteSnapshots(nodes) {
-	        nodes.sort(function (a, b) {
-	            if (a.value.outlet === PRIMARY_OUTLET)
-	                return -1;
-	            if (b.value.outlet === PRIMARY_OUTLET)
-	                return 1;
-	            return a.value.outlet.localeCompare(b.value.outlet);
-	        });
-	    }
-	    function getChildConfig(route) {
-	        if (route.children) {
-	            return route.children;
-	        }
-	        else if (route.loadChildren) {
-	            return route._loadedConfig.routes;
-	        }
-	        else {
-	            return [];
-	        }
-	    }
-	    function match$1(segmentGroup, route, segments) {
-	        if (route.path === '') {
-	            if (route.pathMatch === 'full' && (segmentGroup.hasChildren() || segments.length > 0)) {
-	                throw new NoMatch$1();
-	            }
-	            else {
-	                return { consumedSegments: [], lastChild: 0, parameters: {} };
-	            }
-	        }
-	        var path = route.path;
-	        var parts = path.split('/');
-	        var posParameters = {};
-	        var consumedSegments = [];
-	        var currentIndex = 0;
-	        for (var i = 0; i < parts.length; ++i) {
-	            if (currentIndex >= segments.length)
-	                throw new NoMatch$1();
-	            var current = segments[currentIndex];
-	            var p = parts[i];
-	            var isPosParam = p.startsWith(':');
-	            if (!isPosParam && p !== current.path)
-	                throw new NoMatch$1();
-	            if (isPosParam) {
-	                posParameters[p.substring(1)] = current.path;
-	            }
-	            consumedSegments.push(current);
-	            currentIndex++;
-	        }
-	        if (route.pathMatch === 'full' &&
-	            (segmentGroup.hasChildren() || currentIndex < segments.length)) {
-	            throw new NoMatch$1();
-	        }
-	        var parameters = merge(posParameters, consumedSegments[consumedSegments.length - 1].parameters);
-	        return { consumedSegments: consumedSegments, lastChild: currentIndex, parameters: parameters };
-	    }
-	    function checkOutletNameUniqueness(nodes) {
-	        var names = {};
-	        nodes.forEach(function (n) {
-	            var routeWithSameOutletName = names[n.value.outlet];
-	            if (routeWithSameOutletName) {
-	                var p = routeWithSameOutletName.url.map(function (s) { return s.toString(); }).join('/');
-	                var c = n.value.url.map(function (s) { return s.toString(); }).join('/');
-	                throw new Error("Two segments cannot have the same outlet name: '" + p + "' and '" + c + "'.");
-	            }
-	            names[n.value.outlet] = n.value;
-	        });
-	    }
-	    function getSourceSegmentGroup(segmentGroup) {
-	        var s = segmentGroup;
-	        while (s._sourceSegment) {
-	            s = s._sourceSegment;
-	        }
-	        return s;
-	    }
-	    function getPathIndexShift(segmentGroup) {
-	        var s = segmentGroup;
-	        var res = (s._segmentIndexShift ? s._segmentIndexShift : 0);
-	        while (s._sourceSegment) {
-	            s = s._sourceSegment;
-	            res += (s._segmentIndexShift ? s._segmentIndexShift : 0);
-	        }
-	        return res - 1;
-	    }
-	    function split$1(segmentGroup, consumedSegments, slicedSegments, config) {
-	        if (slicedSegments.length > 0 &&
-	            containsEmptyPathMatchesWithNamedOutlets(segmentGroup, slicedSegments, config)) {
-	            var s = new UrlSegmentGroup(consumedSegments, createChildrenForEmptyPaths(segmentGroup, consumedSegments, config, new UrlSegmentGroup(slicedSegments, segmentGroup.children)));
-	            s._sourceSegment = segmentGroup;
-	            s._segmentIndexShift = consumedSegments.length;
-	            return { segmentGroup: s, slicedSegments: [] };
-	        }
-	        else if (slicedSegments.length === 0 &&
-	            containsEmptyPathMatches(segmentGroup, slicedSegments, config)) {
-	            var s = new UrlSegmentGroup(segmentGroup.segments, addEmptyPathsToChildrenIfNeeded(segmentGroup, slicedSegments, config, segmentGroup.children));
-	            s._sourceSegment = segmentGroup;
-	            s._segmentIndexShift = consumedSegments.length;
-	            return { segmentGroup: s, slicedSegments: slicedSegments };
-	        }
-	        else {
-	            var s = new UrlSegmentGroup(segmentGroup.segments, segmentGroup.children);
-	            s._sourceSegment = segmentGroup;
-	            s._segmentIndexShift = consumedSegments.length;
-	            return { segmentGroup: s, slicedSegments: slicedSegments };
-	        }
-	    }
-	    function addEmptyPathsToChildrenIfNeeded(segmentGroup, slicedSegments, routes, children) {
-	        var res = {};
-	        for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
-	            var r = routes_1[_i];
-	            if (emptyPathMatch(segmentGroup, slicedSegments, r) && !children[getOutlet$2(r)]) {
-	                var s = new UrlSegmentGroup([], {});
-	                s._sourceSegment = segmentGroup;
-	                s._segmentIndexShift = segmentGroup.segments.length;
-	                res[getOutlet$2(r)] = s;
-	            }
-	        }
-	        return merge(children, res);
-	    }
-	    function createChildrenForEmptyPaths(segmentGroup, consumedSegments, routes, primarySegment) {
-	        var res = {};
-	        res[PRIMARY_OUTLET] = primarySegment;
-	        primarySegment._sourceSegment = segmentGroup;
-	        primarySegment._segmentIndexShift = consumedSegments.length;
-	        for (var _i = 0, routes_2 = routes; _i < routes_2.length; _i++) {
-	            var r = routes_2[_i];
-	            if (r.path === '' && getOutlet$2(r) !== PRIMARY_OUTLET) {
-	                var s = new UrlSegmentGroup([], {});
-	                s._sourceSegment = segmentGroup;
-	                s._segmentIndexShift = consumedSegments.length;
-	                res[getOutlet$2(r)] = s;
-	            }
-	        }
-	        return res;
-	    }
-	    function containsEmptyPathMatchesWithNamedOutlets(segmentGroup, slicedSegments, routes) {
-	        return routes
-	            .filter(function (r) { return emptyPathMatch(segmentGroup, slicedSegments, r) &&
-	            getOutlet$2(r) !== PRIMARY_OUTLET; })
-	            .length > 0;
-	    }
-	    function containsEmptyPathMatches(segmentGroup, slicedSegments, routes) {
-	        return routes.filter(function (r) { return emptyPathMatch(segmentGroup, slicedSegments, r); }).length > 0;
-	    }
-	    function emptyPathMatch(segmentGroup, slicedSegments, r) {
-	        if ((segmentGroup.hasChildren() || slicedSegments.length > 0) && r.pathMatch === 'full')
-	            return false;
-	        return r.path === '' && r.redirectTo === undefined;
-	    }
-	    function getOutlet$2(route) {
-	        return route.outlet ? route.outlet : PRIMARY_OUTLET;
-	    }
-	    function getData(route) {
-	        return route.data ? route.data : {};
-	    }
-	    function getResolve(route) {
-	        return route.resolve ? route.resolve : {};
-	    }
-
-	    /**
-	     * @license
-	     * Copyright Google Inc. All Rights Reserved.
-	     *
-	     * Use of this source code is governed by an MIT-style license that can be
-	     * found in the LICENSE file at https://angular.io/license
-	     */
-	    /**
-	     * @whatItDoes Contains all the router outlets created in a component.
-	     *
-	     * @stable
-	     */
-	    var RouterOutletMap = (function () {
-	        function RouterOutletMap() {
-	            /** @internal */
-	            this._outlets = {};
-	        }
-	        /**
-	         * Adds an outlet to this map.
-	         */
-	        RouterOutletMap.prototype.registerOutlet = function (name, outlet) { this._outlets[name] = outlet; };
-	        /**
-	         * Removes an outlet from this map.
-	         */
-	        RouterOutletMap.prototype.removeOutlet = function (name) { this._outlets[name] = undefined; };
-	        return RouterOutletMap;
-	    }());
-
-	    /**
-	     * @whatItDoes Represents an event triggered when a navigation starts.
-	     *
-	     * @stable
-	     */
-	    var NavigationStart = (function () {
-	        // TODO: vsavkin: make internal
-	        function NavigationStart(
-	            /** @docsNotRequired */
-	            id,
-	            /** @docsNotRequired */
-	            url) {
-	            this.id = id;
-	            this.url = url;
-	        }
-	        /** @docsNotRequired */
-	        NavigationStart.prototype.toString = function () { return "NavigationStart(id: " + this.id + ", url: '" + this.url + "')"; };
-	        return NavigationStart;
-	    }());
-	    /**
-	     * @whatItDoes Represents an event triggered when a navigation ends successfully.
-	     *
-	     * @stable
-	     */
-	    var NavigationEnd = (function () {
-	        // TODO: vsavkin: make internal
-	        function NavigationEnd(
-	            /** @docsNotRequired */
-	            id,
-	            /** @docsNotRequired */
-	            url,
-	            /** @docsNotRequired */
-	            urlAfterRedirects) {
-	            this.id = id;
-	            this.url = url;
-	            this.urlAfterRedirects = urlAfterRedirects;
-	        }
-	        /** @docsNotRequired */
-	        NavigationEnd.prototype.toString = function () {
-	            return "NavigationEnd(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "')";
-	        };
-	        return NavigationEnd;
-	    }());
-	    /**
-	     * @whatItDoes Represents an event triggered when a navigation is canceled.
-	     *
-	     * @stable
-	     */
-	    var NavigationCancel = (function () {
-	        // TODO: vsavkin: make internal
-	        function NavigationCancel(
-	            /** @docsNotRequired */
-	            id,
-	            /** @docsNotRequired */
-	            url,
-	            /** @docsNotRequired */
-	            reason) {
-	            this.id = id;
-	            this.url = url;
-	            this.reason = reason;
-	        }
-	        /** @docsNotRequired */
-	        NavigationCancel.prototype.toString = function () { return "NavigationCancel(id: " + this.id + ", url: '" + this.url + "')"; };
-	        return NavigationCancel;
-	    }());
-	    /**
-	     * @whatItDoes Represents an event triggered when a navigation fails due to an unexpected error.
-	     *
-	     * @stable
-	     */
-	    var NavigationError = (function () {
-	        // TODO: vsavkin: make internal
-	        function NavigationError(
-	            /** @docsNotRequired */
-	            id,
-	            /** @docsNotRequired */
-	            url,
-	            /** @docsNotRequired */
-	            error) {
-	            this.id = id;
-	            this.url = url;
-	            this.error = error;
-	        }
-	        /** @docsNotRequired */
-	        NavigationError.prototype.toString = function () {
-	            return "NavigationError(id: " + this.id + ", url: '" + this.url + "', error: " + this.error + ")";
-	        };
-	        return NavigationError;
-	    }());
-	    /**
-	     * @whatItDoes Represents an event triggered when routes are recognized.
-	     *
-	     * @stable
-	     */
-	    var RoutesRecognized = (function () {
-	        // TODO: vsavkin: make internal
-	        function RoutesRecognized(
-	            /** @docsNotRequired */
-	            id,
-	            /** @docsNotRequired */
-	            url,
-	            /** @docsNotRequired */
-	            urlAfterRedirects,
-	            /** @docsNotRequired */
-	            state) {
-	            this.id = id;
-	            this.url = url;
-	            this.urlAfterRedirects = urlAfterRedirects;
-	            this.state = state;
-	        }
-	        /** @docsNotRequired */
-	        RoutesRecognized.prototype.toString = function () {
-	            return "RoutesRecognized(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "', state: " + this.state + ")";
-	        };
-	        return RoutesRecognized;
-	    }());
-	    function defaultErrorHandler(error) {
-	        throw error;
-	    }
-	    /**
-	     * @whatItDoes Provides the navigation and url manipulation capabilities.
-	     *
-	     * See {@link Routes} for more details and examples.
-	     *
-	     * @ngModule RouterModule
-	     *
-	     * @stable
-	     */
-	    var Router = (function () {
-	        /**
-	         * Creates the router service.
-	         */
-	        // TODO: vsavkin make internal after the final is out.
-	        function Router(rootComponentType, urlSerializer, outletMap, location, injector, loader, compiler, config) {
-	            this.rootComponentType = rootComponentType;
-	            this.urlSerializer = urlSerializer;
-	            this.outletMap = outletMap;
-	            this.location = location;
-	            this.injector = injector;
-	            this.config = config;
-	            this.navigationId = 0;
-	            /**
-	             * Error handler that is invoked when a navigation errors.
-	             *
-	             * See {@link ErrorHandler} for more information.
-	             */
-	            this.errorHandler = defaultErrorHandler;
-	            /**
-	             * Indicates if at least one navigation happened.
-	             */
-	            this.navigated = false;
-	            this.resetConfig(config);
-	            this.routerEvents = new rxjs_Subject.Subject();
-	            this.currentUrlTree = createEmptyUrlTree();
-	            this.configLoader = new RouterConfigLoader(loader, compiler);
-	            this.currentRouterState = createEmptyState(this.currentUrlTree, this.rootComponentType);
-	        }
-	        /**
-	         * @internal
-	         * TODO: this should be removed once the constructor of the router made internal
-	         */
-	        Router.prototype.resetRootComponentType = function (rootComponentType) {
-	            this.rootComponentType = rootComponentType;
-	            // TODO: vsavkin router 4.0 should make the root component set to null
-	            // this will simplify the lifecycle of the router.
-	            this.currentRouterState.root.component = this.rootComponentType;
-	        };
-	        /**
-	         * Sets up the location change listener and performs the initial navigation.
-	         */
-	        Router.prototype.initialNavigation = function () {
-	            this.setUpLocationChangeListener();
-	            this.navigateByUrl(this.location.path(true), { replaceUrl: true });
-	        };
-	        /**
-	         * Sets up the location change listener.
-	         */
-	        Router.prototype.setUpLocationChangeListener = function () {
-	            var _this = this;
-	            // Zone.current.wrap is needed because of the issue with RxJS scheduler,
-	            // which does not work properly with zone.js in IE and Safari
-	            this.locationSubscription = this.location.subscribe(Zone.current.wrap(function (change) {
-	                var tree = _this.urlSerializer.parse(change['url']);
-	                // we fire multiple events for a single URL change
-	                // we should navigate only once
-	                return _this.currentUrlTree.toString() !== tree.toString() ?
-	                    _this.scheduleNavigation(tree, { skipLocationChange: change['pop'], replaceUrl: true }) :
-	                    null;
-	            }));
-	        };
-	        Object.defineProperty(Router.prototype, "routerState", {
-	            /**
-	             * Returns the current route state.
-	             */
-	            get: function () { return this.currentRouterState; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(Router.prototype, "url", {
-	            /**
-	             * Returns the current url.
-	             */
-	            get: function () { return this.serializeUrl(this.currentUrlTree); },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(Router.prototype, "events", {
-	            /**
-	             * Returns an observable of route events
-	             */
-	            get: function () { return this.routerEvents; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        /**
-	         * Resets the configuration used for navigation and generating links.
-	         *
-	         * ### Usage
-	         *
-	         * ```
-	         * router.resetConfig([
-	         *  { path: 'team/:id', component: TeamCmp, children: [
-	         *    { path: 'simple', component: SimpleCmp },
-	         *    { path: 'user/:name', component: UserCmp }
-	         *  ] }
-	         * ]);
-	         * ```
-	         */
-	        Router.prototype.resetConfig = function (config) {
-	            validateConfig(config);
-	            this.config = config;
-	        };
-	        /**
-	         * @docsNotRequired
-	         */
-	        Router.prototype.ngOnDestroy = function () { this.dispose(); };
-	        /**
-	         * Disposes of the router.
-	         */
-	        Router.prototype.dispose = function () { this.locationSubscription.unsubscribe(); };
-	        /**
-	         * Applies an array of commands to the current url tree and creates a new url tree.
-	         *
-	         * When given an activate route, applies the given commands starting from the route.
-	         * When not given a route, applies the given command starting from the root.
-	         *
-	         * ### Usage
-	         *
-	         * ```
-	         * // create /team/33/user/11
-	         * router.createUrlTree(['/team', 33, 'user', 11]);
-	         *
-	         * // create /team/33;expand=true/user/11
-	         * router.createUrlTree(['/team', 33, {expand: true}, 'user', 11]);
-	         *
-	         * // you can collapse static segments like this (this works only with the first passed-in value):
-	         * router.createUrlTree(['/team/33/user', userId]);
-	         *
-	         * // If the first segment can contain slashes, and you do not want the router to split it, you
-	         * // can do the following:
-	         *
-	         * router.createUrlTree([{segmentPath: '/one/two'}]);
-	         *
-	         * // create /team/33/(user/11//right:chat)
-	         * router.createUrlTree(['/team', 33, {outlets: {primary: 'user/11', right: 'chat'}}]);
-	         *
-	         * // remove the right secondary node
-	         * router.createUrlTree(['/team', 33, {outlets: {primary: 'user/11', right: null}}]);
-	         *
-	         * // assuming the current url is `/team/33/user/11` and the route points to `user/11`
-	         *
-	         * // navigate to /team/33/user/11/details
-	         * router.createUrlTree(['details'], {relativeTo: route});
-	         *
-	         * // navigate to /team/33/user/22
-	         * router.createUrlTree(['../22'], {relativeTo: route});
-	         *
-	         * // navigate to /team/44/user/22
-	         * router.createUrlTree(['../../team/44/user/22'], {relativeTo: route});
-	         * ```
-	         */
-	        Router.prototype.createUrlTree = function (commands, _a) {
-	            var _b = _a === void 0 ? {} : _a, relativeTo = _b.relativeTo, queryParams = _b.queryParams, fragment = _b.fragment, preserveQueryParams = _b.preserveQueryParams, preserveFragment = _b.preserveFragment;
-	            var a = relativeTo ? relativeTo : this.routerState.root;
-	            var q = preserveQueryParams ? this.currentUrlTree.queryParams : queryParams;
-	            var f = preserveFragment ? this.currentUrlTree.fragment : fragment;
-	            return createUrlTree(a, this.currentUrlTree, commands, q, f);
-	        };
-	        /**
-	         * Navigate based on the provided url. This navigation is always absolute.
-	         *
-	         * Returns a promise that:
-	         * - is resolved with 'true' when navigation succeeds
-	         * - is resolved with 'false' when navigation fails
-	         * - is rejected when an error happens
-	         *
-	         * ### Usage
-	         *
-	         * ```
-	         * router.navigateByUrl("/team/33/user/11");
-	         *
-	         * // Navigate without updating the URL
-	         * router.navigateByUrl("/team/33/user/11", { skipLocationChange: true });
-	         * ```
-	         *
-	         * In opposite to `navigate`, `navigateByUrl` takes a whole URL
-	         * and does not apply any delta to the current one.
-	         */
-	        Router.prototype.navigateByUrl = function (url, extras) {
-	            if (extras === void 0) { extras = { skipLocationChange: false }; }
-	            if (url instanceof UrlTree) {
-	                return this.scheduleNavigation(url, extras);
-	            }
-	            else {
-	                var urlTree = this.urlSerializer.parse(url);
-	                return this.scheduleNavigation(urlTree, extras);
-	            }
-	        };
-	        /**
-	         * Navigate based on the provided array of commands and a starting point.
-	         * If no starting route is provided, the navigation is absolute.
-	         *
-	         * Returns a promise that:
-	         * - is resolved with 'true' when navigation succeeds
-	         * - is resolved with 'false' when navigation fails
-	         * - is rejected when an error happens
-	         *
-	         * ### Usage
-	         *
-	         * ```
-	         * router.navigate(['team', 33, 'user', 11], {relativeTo: route});
-	         *
-	         * // Navigate without updating the URL
-	         * router.navigate(['team', 33, 'user', 11], {relativeTo: route, skipLocationChange: true });
-	         * ```
-	         *
-	         * In opposite to `navigateByUrl`, `navigate` always takes a delta
-	         * that is applied to the current URL.
-	         */
-	        Router.prototype.navigate = function (commands, extras) {
-	            if (extras === void 0) { extras = { skipLocationChange: false }; }
-	            return this.scheduleNavigation(this.createUrlTree(commands, extras), extras);
-	        };
-	        /**
-	         * Serializes a {@link UrlTree} into a string.
-	         */
-	        Router.prototype.serializeUrl = function (url) { return this.urlSerializer.serialize(url); };
-	        /**
-	         * Parses a string into a {@link UrlTree}.
-	         */
-	        Router.prototype.parseUrl = function (url) { return this.urlSerializer.parse(url); };
-	        /**
-	         * Returns if the url is activated or not.
-	         */
-	        Router.prototype.isActive = function (url, exact) {
-	            if (url instanceof UrlTree) {
-	                return containsTree(this.currentUrlTree, url, exact);
-	            }
-	            else {
-	                var urlTree = this.urlSerializer.parse(url);
-	                return containsTree(this.currentUrlTree, urlTree, exact);
-	            }
-	        };
-	        Router.prototype.scheduleNavigation = function (url, extras) {
-	            var _this = this;
-	            var id = ++this.navigationId;
-	            this.routerEvents.next(new NavigationStart(id, this.serializeUrl(url)));
-	            return Promise.resolve().then(function (_) { return _this.runNavigate(url, extras.skipLocationChange, extras.replaceUrl, id); });
-	        };
-	        Router.prototype.runNavigate = function (url, shouldPreventPushState, shouldReplaceUrl, id) {
-	            var _this = this;
-	            if (id !== this.navigationId) {
-	                this.location.go(this.urlSerializer.serialize(this.currentUrlTree));
-	                this.routerEvents.next(new NavigationCancel(id, this.serializeUrl(url), "Navigation ID " + id + " is not equal to the current navigation id " + this.navigationId));
-	                return Promise.resolve(false);
-	            }
-	            return new Promise(function (resolvePromise, rejectPromise) {
-	                var state;
-	                var navigationIsSuccessful;
-	                var preActivation;
-	                var appliedUrl;
-	                var storedState = _this.currentRouterState;
-	                var storedUrl = _this.currentUrlTree;
-	                var redirectsApplied$ = applyRedirects(_this.injector, _this.configLoader, url, _this.config);
-	                var snapshot$ = rxjs_operator_mergeMap.mergeMap.call(redirectsApplied$, function (u) {
-	                    appliedUrl = u;
-	                    return recognize(_this.rootComponentType, _this.config, appliedUrl, _this.serializeUrl(appliedUrl));
-	                });
-	                var emitRecognzied$ = rxjs_operator_map.map.call(snapshot$, function (newRouterStateSnapshot) {
-	                    _this.routerEvents.next(new RoutesRecognized(id, _this.serializeUrl(url), _this.serializeUrl(appliedUrl), newRouterStateSnapshot));
-	                    return newRouterStateSnapshot;
-	                });
-	                var routerState$ = rxjs_operator_map.map.call(emitRecognzied$, function (routerStateSnapshot) {
-	                    return createRouterState(routerStateSnapshot, _this.currentRouterState);
-	                });
-	                var preactivation$ = rxjs_operator_map.map.call(routerState$, function (newState) {
-	                    state = newState;
-	                    preActivation =
-	                        new PreActivation(state.snapshot, _this.currentRouterState.snapshot, _this.injector);
-	                    preActivation.traverse(_this.outletMap);
-	                });
-	                var preactivation2$ = rxjs_operator_mergeMap.mergeMap.call(preactivation$, function () { return preActivation.checkGuards(); });
-	                var resolveData$ = rxjs_operator_mergeMap.mergeMap.call(preactivation2$, function (shouldActivate) {
-	                    if (shouldActivate) {
-	                        return rxjs_operator_map.map.call(preActivation.resolveData(), function () { return shouldActivate; });
-	                    }
-	                    else {
-	                        return rxjs_observable_of.of(shouldActivate);
-	                    }
-	                });
-	                resolveData$
-	                    .forEach(function (shouldActivate) {
-	                    if (!shouldActivate || id !== _this.navigationId) {
-	                        navigationIsSuccessful = false;
-	                        return;
-	                    }
-	                    _this.currentUrlTree = appliedUrl;
-	                    _this.currentRouterState = state;
-	                    if (!shouldPreventPushState) {
-	                        var path = _this.urlSerializer.serialize(appliedUrl);
-	                        if (_this.location.isCurrentPathEqualTo(path) || shouldReplaceUrl) {
-	                            _this.location.replaceState(path);
-	                        }
-	                        else {
-	                            _this.location.go(path);
-	                        }
-	                    }
-	                    new ActivateRoutes(state, storedState).activate(_this.outletMap);
-	                    navigationIsSuccessful = true;
-	                })
-	                    .then(function () {
-	                    _this.navigated = true;
-	                    if (navigationIsSuccessful) {
-	                        _this.routerEvents.next(new NavigationEnd(id, _this.serializeUrl(url), _this.serializeUrl(appliedUrl)));
-	                        resolvePromise(true);
-	                    }
-	                    else {
-	                        _this.routerEvents.next(new NavigationCancel(id, _this.serializeUrl(url), ''));
-	                        resolvePromise(false);
-	                    }
-	                }, function (e) {
-	                    if (e instanceof NavigationCancelingError) {
-	                        _this.navigated = true;
-	                        _this.routerEvents.next(new NavigationCancel(id, _this.serializeUrl(url), e.message));
-	                        resolvePromise(false);
-	                    }
-	                    else {
-	                        _this.routerEvents.next(new NavigationError(id, _this.serializeUrl(url), e));
-	                        try {
-	                            resolvePromise(_this.errorHandler(e));
-	                        }
-	                        catch (ee) {
-	                            rejectPromise(ee);
-	                        }
-	                    }
-	                    if (id === _this.navigationId) {
-	                        _this.currentRouterState = storedState;
-	                        _this.currentUrlTree = storedUrl;
-	                        _this.location.replaceState(_this.serializeUrl(storedUrl));
-	                    }
-	                });
-	            });
-	        };
-	        return Router;
-	    }());
-	    var CanActivate = (function () {
-	        function CanActivate(path) {
-	            this.path = path;
-	        }
-	        Object.defineProperty(CanActivate.prototype, "route", {
-	            get: function () { return this.path[this.path.length - 1]; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        return CanActivate;
-	    }());
-	    var CanDeactivate = (function () {
-	        function CanDeactivate(component, route) {
-	            this.component = component;
-	            this.route = route;
-	        }
-	        return CanDeactivate;
-	    }());
-	    var PreActivation = (function () {
-	        function PreActivation(future, curr, injector) {
-	            this.future = future;
-	            this.curr = curr;
-	            this.injector = injector;
-	            this.checks = [];
-	        }
-	        PreActivation.prototype.traverse = function (parentOutletMap) {
-	            var futureRoot = this.future._root;
-	            var currRoot = this.curr ? this.curr._root : null;
-	            this.traverseChildRoutes(futureRoot, currRoot, parentOutletMap, [futureRoot.value]);
-	        };
-	        PreActivation.prototype.checkGuards = function () {
-	            var _this = this;
-	            if (this.checks.length === 0)
-	                return rxjs_observable_of.of(true);
-	            var checks$ = rxjs_observable_from.from(this.checks);
-	            var runningChecks$ = rxjs_operator_map.map.call(checks$, function (s) {
-	                if (s instanceof CanActivate) {
-	                    return andObservables(rxjs_observable_from.from([_this.runCanActivateChild(s.path), _this.runCanActivate(s.route)]));
-	                }
-	                else if (s instanceof CanDeactivate) {
-	                    // workaround https://github.com/Microsoft/TypeScript/issues/7271
-	                    var s2 = s;
-	                    return _this.runCanDeactivate(s2.component, s2.route);
-	                }
-	                else {
-	                    throw new Error('Cannot be reached');
-	                }
-	            });
-	            var mergedChecks$ = rxjs_operator_mergeAll.mergeAll.call(runningChecks$);
-	            return rxjs_operator_every.every.call(mergedChecks$, function (result) { return result === true; });
-	        };
-	        PreActivation.prototype.resolveData = function () {
-	            var _this = this;
-	            if (this.checks.length === 0)
-	                return rxjs_observable_of.of(null);
-	            var checks$ = rxjs_observable_from.from(this.checks);
-	            var runningChecks$ = rxjs_operator_concatMap.concatMap.call(checks$, function (s) {
-	                if (s instanceof CanActivate) {
-	                    return _this.runResolve(s.route);
-	                }
-	                else {
-	                    return rxjs_observable_of.of(null);
-	                }
-	            });
-	            return rxjs_operator_reduce.reduce.call(runningChecks$, function (_, __) { return _; });
-	        };
-	        PreActivation.prototype.traverseChildRoutes = function (futureNode, currNode, outletMap, futurePath) {
-	            var _this = this;
-	            var prevChildren = nodeChildrenAsMap(currNode);
-	            futureNode.children.forEach(function (c) {
-	                _this.traverseRoutes(c, prevChildren[c.value.outlet], outletMap, futurePath.concat([c.value]));
-	                delete prevChildren[c.value.outlet];
-	            });
-	            forEach(prevChildren, function (v, k) { return _this.deactiveRouteAndItsChildren(v, outletMap._outlets[k]); });
-	        };
-	        PreActivation.prototype.traverseRoutes = function (futureNode, currNode, parentOutletMap, futurePath) {
-	            var future = futureNode.value;
-	            var curr = currNode ? currNode.value : null;
-	            var outlet = parentOutletMap ? parentOutletMap._outlets[futureNode.value.outlet] : null;
-	            // reusing the node
-	            if (curr && future._routeConfig === curr._routeConfig) {
-	                if (!shallowEqual(future.params, curr.params)) {
-	                    this.checks.push(new CanDeactivate(outlet.component, curr), new CanActivate(futurePath));
-	                }
-	                else {
-	                    // we need to set the data
-	                    future.data = curr.data;
-	                    future._resolvedData = curr._resolvedData;
-	                }
-	                // If we have a component, we need to go through an outlet.
-	                if (future.component) {
-	                    this.traverseChildRoutes(futureNode, currNode, outlet ? outlet.outletMap : null, futurePath);
-	                }
-	                else {
-	                    this.traverseChildRoutes(futureNode, currNode, parentOutletMap, futurePath);
-	                }
-	            }
-	            else {
-	                if (curr) {
-	                    this.deactiveRouteAndItsChildren(currNode, outlet);
-	                }
-	                this.checks.push(new CanActivate(futurePath));
-	                // If we have a component, we need to go through an outlet.
-	                if (future.component) {
-	                    this.traverseChildRoutes(futureNode, null, outlet ? outlet.outletMap : null, futurePath);
-	                }
-	                else {
-	                    this.traverseChildRoutes(futureNode, null, parentOutletMap, futurePath);
-	                }
-	            }
-	        };
-	        PreActivation.prototype.deactiveRouteAndItsChildren = function (route, outlet) {
-	            var _this = this;
-	            var prevChildren = nodeChildrenAsMap(route);
-	            forEach(prevChildren, function (v, k) {
-	                var childOutlet = outlet ? outlet.outletMap._outlets[k] : null;
-	                _this.deactiveRouteAndItsChildren(v, childOutlet);
-	            });
-	            var component = outlet && outlet.isActivated ? outlet.component : null;
-	            this.checks.push(new CanDeactivate(component, route.value));
-	        };
-	        PreActivation.prototype.runCanActivate = function (future) {
-	            var _this = this;
-	            var canActivate = future._routeConfig ? future._routeConfig.canActivate : null;
-	            if (!canActivate || canActivate.length === 0)
-	                return rxjs_observable_of.of(true);
-	            var obs = rxjs_operator_map.map.call(rxjs_observable_from.from(canActivate), function (c) {
-	                var guard = _this.getToken(c, future);
-	                if (guard.canActivate) {
-	                    return wrapIntoObservable(guard.canActivate(future, _this.future));
-	                }
-	                else {
-	                    return wrapIntoObservable(guard(future, _this.future));
-	                }
-	            });
-	            return andObservables(obs);
-	        };
-	        PreActivation.prototype.runCanActivateChild = function (path) {
-	            var _this = this;
-	            var future = path[path.length - 1];
-	            var canActivateChildGuards = path.slice(0, path.length - 1)
-	                .reverse()
-	                .map(function (p) { return _this.extractCanActivateChild(p); })
-	                .filter(function (_) { return _ !== null; });
-	            return andObservables(rxjs_operator_map.map.call(rxjs_observable_from.from(canActivateChildGuards), function (d) {
-	                var obs = rxjs_operator_map.map.call(rxjs_observable_from.from(d.guards), function (c) {
-	                    var guard = _this.getToken(c, c.node);
-	                    if (guard.canActivateChild) {
-	                        return wrapIntoObservable(guard.canActivateChild(future, _this.future));
-	                    }
-	                    else {
-	                        return wrapIntoObservable(guard(future, _this.future));
-	                    }
-	                });
-	                return andObservables(obs);
-	            }));
-	        };
-	        PreActivation.prototype.extractCanActivateChild = function (p) {
-	            var canActivateChild = p._routeConfig ? p._routeConfig.canActivateChild : null;
-	            if (!canActivateChild || canActivateChild.length === 0)
-	                return null;
-	            return { node: p, guards: canActivateChild };
-	        };
-	        PreActivation.prototype.runCanDeactivate = function (component, curr) {
-	            var _this = this;
-	            var canDeactivate = curr && curr._routeConfig ? curr._routeConfig.canDeactivate : null;
-	            if (!canDeactivate || canDeactivate.length === 0)
-	                return rxjs_observable_of.of(true);
-	            var canDeactivate$ = rxjs_operator_map.map.call(rxjs_observable_from.from(canDeactivate), function (c) {
-	                var guard = _this.getToken(c, curr);
-	                if (guard.canDeactivate) {
-	                    return wrapIntoObservable(guard.canDeactivate(component, curr, _this.curr));
-	                }
-	                else {
-	                    return wrapIntoObservable(guard(component, curr, _this.curr));
-	                }
-	            });
-	            var merged$ = rxjs_operator_mergeAll.mergeAll.call(canDeactivate$);
-	            return rxjs_operator_every.every.call(merged$, function (result) { return result === true; });
-	        };
-	        PreActivation.prototype.runResolve = function (future) {
-	            var resolve = future._resolve;
-	            return rxjs_operator_map.map.call(this.resolveNode(resolve, future), function (resolvedData) {
-	                future._resolvedData = resolvedData;
-	                future.data = merge(future.data, inheritedParamsDataResolve(future).resolve);
-	                return null;
-	            });
-	        };
-	        PreActivation.prototype.resolveNode = function (resolve, future) {
-	            var _this = this;
-	            return waitForMap(resolve, function (k, v) {
-	                var resolver = _this.getToken(v, future);
-	                return resolver.resolve ? wrapIntoObservable(resolver.resolve(future, _this.future)) :
-	                    wrapIntoObservable(resolver(future, _this.future));
-	            });
-	        };
-	        PreActivation.prototype.getToken = function (token, snapshot) {
-	            var config = closestLoadedConfig(snapshot);
-	            var injector = config ? config.injector : this.injector;
-	            return injector.get(token);
-	        };
-	        return PreActivation;
-	    }());
-	    var ActivateRoutes = (function () {
-	        function ActivateRoutes(futureState, currState) {
-	            this.futureState = futureState;
-	            this.currState = currState;
-	        }
-	        ActivateRoutes.prototype.activate = function (parentOutletMap) {
-	            var futureRoot = this.futureState._root;
-	            var currRoot = this.currState ? this.currState._root : null;
-	            advanceActivatedRoute(this.futureState.root);
-	            this.activateChildRoutes(futureRoot, currRoot, parentOutletMap);
-	        };
-	        ActivateRoutes.prototype.activateChildRoutes = function (futureNode, currNode, outletMap) {
-	            var _this = this;
-	            var prevChildren = nodeChildrenAsMap(currNode);
-	            futureNode.children.forEach(function (c) {
-	                _this.activateRoutes(c, prevChildren[c.value.outlet], outletMap);
-	                delete prevChildren[c.value.outlet];
-	            });
-	            forEach(prevChildren, function (v, k) { return _this.deactiveRouteAndItsChildren(v, outletMap); });
-	        };
-	        ActivateRoutes.prototype.activateRoutes = function (futureNode, currNode, parentOutletMap) {
-	            var future = futureNode.value;
-	            var curr = currNode ? currNode.value : null;
-	            // reusing the node
-	            if (future === curr) {
-	                // advance the route to push the parameters
-	                advanceActivatedRoute(future);
-	                // If we have a normal route, we need to go through an outlet.
-	                if (future.component) {
-	                    var outlet = getOutlet(parentOutletMap, future);
-	                    this.activateChildRoutes(futureNode, currNode, outlet.outletMap);
-	                }
-	                else {
-	                    this.activateChildRoutes(futureNode, currNode, parentOutletMap);
-	                }
-	            }
-	            else {
-	                if (curr) {
-	                    this.deactiveRouteAndItsChildren(currNode, parentOutletMap);
-	                }
-	                // if we have a normal route, we need to advance the route
-	                // and place the component into the outlet. After that recurse.
-	                if (future.component) {
-	                    advanceActivatedRoute(future);
-	                    var outlet = getOutlet(parentOutletMap, futureNode.value);
-	                    var outletMap = new RouterOutletMap();
-	                    this.placeComponentIntoOutlet(outletMap, future, outlet);
-	                    this.activateChildRoutes(futureNode, null, outletMap);
-	                }
-	                else {
-	                    advanceActivatedRoute(future);
-	                    this.activateChildRoutes(futureNode, null, parentOutletMap);
-	                }
-	            }
-	        };
-	        ActivateRoutes.prototype.placeComponentIntoOutlet = function (outletMap, future, outlet) {
-	            var resolved = [{ provide: ActivatedRoute, useValue: future }, {
-	                    provide: RouterOutletMap,
-	                    useValue: outletMap
-	                }];
-	            var config = parentLoadedConfig(future.snapshot);
-	            var loadedFactoryResolver = null;
-	            var loadedInjector = null;
-	            if (config) {
-	                loadedFactoryResolver = config.factoryResolver;
-	                loadedInjector = config.injector;
-	                resolved.push({ provide: _angular_core.ComponentFactoryResolver, useValue: loadedFactoryResolver });
-	            }
-	            outlet.activate(future, loadedFactoryResolver, loadedInjector, _angular_core.ReflectiveInjector.resolve(resolved), outletMap);
-	        };
-	        ActivateRoutes.prototype.deactiveRouteAndItsChildren = function (route, parentOutletMap) {
-	            var _this = this;
-	            var prevChildren = nodeChildrenAsMap(route);
-	            var outlet = null;
-	            // getOutlet throws when cannot find the right outlet,
-	            // which can happen if an outlet was in an NgIf and was removed
-	            try {
-	                outlet = getOutlet(parentOutletMap, route.value);
-	            }
-	            catch (e) {
-	                return;
-	            }
-	            var childOutletMap = outlet.outletMap;
-	            forEach(prevChildren, function (v, k) {
-	                if (route.value.component) {
-	                    _this.deactiveRouteAndItsChildren(v, childOutletMap);
-	                }
-	                else {
-	                    _this.deactiveRouteAndItsChildren(v, parentOutletMap);
-	                }
-	            });
-	            if (outlet && outlet.isActivated) {
-	                outlet.deactivate();
-	            }
-	        };
-	        return ActivateRoutes;
-	    }());
-	    function parentLoadedConfig(snapshot) {
-	        var s = snapshot.parent;
-	        while (s) {
-	            var c = s._routeConfig;
-	            if (c && c._loadedConfig)
-	                return c._loadedConfig;
-	            if (c && c.component)
-	                return null;
-	            s = s.parent;
-	        }
-	        return null;
-	    }
-	    function closestLoadedConfig(snapshot) {
-	        if (!snapshot)
-	            return null;
-	        var s = snapshot.parent;
-	        while (s) {
-	            var c = s._routeConfig;
-	            if (c && c._loadedConfig)
-	                return c._loadedConfig;
-	            s = s.parent;
-	        }
-	        return null;
-	    }
-	    function nodeChildrenAsMap(node) {
-	        return node ? node.children.reduce(function (m, c) {
-	            m[c.value.outlet] = c;
-	            return m;
-	        }, {}) : {};
-	    }
-	    function getOutlet(outletMap, route) {
-	        var outlet = outletMap._outlets[route.outlet];
-	        if (!outlet) {
-	            var componentName = route.component.name;
-	            if (route.outlet === PRIMARY_OUTLET) {
-	                throw new Error("Cannot find primary outlet to load '" + componentName + "'");
-	            }
-	            else {
-	                throw new Error("Cannot find the outlet " + route.outlet + " to load '" + componentName + "'");
-	            }
-	        }
-	        return outlet;
-	    }
-
-	    /**
-	     * @whatItDoes Lets you link to specific parts of your app.
-	     *
-	     * @howToUse
-	     *
-	     * Consider the following route configuration:
-
-	     * ```
-	     * [{ path: 'user/:name', component: UserCmp }]
-	     * ```
-	     *
-	     * When linking to this `user/:name` route, you can write:
-	     *
-	     * ```
-	     * <a routerLink='/user/bob'>link to user component</a>
-	     * ```
-	     *
-	     * @description
-	     *
-	     * The RouterLink directives let you link to specific parts of your app.
-	     *
-	     * Whe the link is static, you can use the directive as follows:
-	     *
-	     * ```
-	     * <a routerLink="/user/bob">link to user component</a>
-	     * ```
-	     *
-	     * If you use dynamic values to generate the link, you can pass an array of path
-	     * segments, followed by the params for each segment.
-	     *
-	     * For instance `['/team', teamId, 'user', userName, {details: true}]`
-	     * means that we want to generate a link to `/team/11/user/bob;details=true`.
-	     *
-	     * Multiple static segments can be merged into one (e.g., `['/team/11/user', userName, {details:
-	     true}]`).
-	     *
-	     * The first segment name can be prepended with `/`, `./`, or `../`:
-	     * * If the first segment begins with `/`, the router will look up the route from the root of the
-	     app.
-	     * * If the first segment begins with `./`, or doesn't begin with a slash, the router will
-	     * instead look in the children of the current activated route.
-	     * * And if the first segment begins with `../`, the router will go up one level.
-	     *
-	     * You can set query params and fragment as follows:
-	     *
-	     * ```
-	     * <a [routerLink]="['/user/bob']" [queryParams]="{debug: true}" fragment="education">link to user
-	     component</a>
-	     * ```
-	     * RouterLink will use these to generate this link: `/user/bob#education?debug=true`.
-	     *
-	     * You can also tell the directive to preserve the current query params and fragment:
-	     *
-	     * ```
-	     * <a [routerLink]="['/user/bob']" preserveQueryParams preserveFragment>link to user
-	     component</a>
-	     * ```
-	     *
-	     * The router link directive always treats the provided input as a delta to the current url.
-	     *
-	     * For instance, if the current url is `/user/(box//aux:team)`.
-	     *
-	     * Then the following link `<a [routerLink]="['/user/jim']">Jim</a>` will generate the link
-	     * `/user/(jim//aux:team)`.
-	     *
-	     * @selector ':not(a)[routerLink]'
-	     * @ngModule RouterModule
-	     *
-	     * See {@link Router.createUrlTree} for more information.
-	     *
-	     * @stable
-	     */
-	    var RouterLink = (function () {
-	        function RouterLink(router, route, locationStrategy) {
-	            this.router = router;
-	            this.route = route;
-	            this.locationStrategy = locationStrategy;
-	            this.commands = [];
-	        }
-	        Object.defineProperty(RouterLink.prototype, "routerLink", {
-	            set: function (data) {
-	                if (Array.isArray(data)) {
-	                    this.commands = data;
-	                }
-	                else {
-	                    this.commands = [data];
-	                }
-	            },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        RouterLink.prototype.onClick = function (button, ctrlKey, metaKey) {
-	            if (button !== 0 || ctrlKey || metaKey) {
-	                return true;
-	            }
-	            this.router.navigateByUrl(this.urlTree);
-	            return false;
-	        };
-	        Object.defineProperty(RouterLink.prototype, "urlTree", {
-	            get: function () {
-	                return this.router.createUrlTree(this.commands, {
-	                    relativeTo: this.route,
-	                    queryParams: this.queryParams,
-	                    fragment: this.fragment,
-	                    preserveQueryParams: toBool(this.preserveQueryParams),
-	                    preserveFragment: toBool(this.preserveFragment)
-	                });
-	            },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        RouterLink.decorators = [
-	            { type: _angular_core.Directive, args: [{ selector: ':not(a)[routerLink]' },] },
-	        ];
-	        /** @nocollapse */
-	        RouterLink.ctorParameters = [
-	            { type: Router, },
-	            { type: ActivatedRoute, },
-	            { type: _angular_common.LocationStrategy, },
-	        ];
-	        RouterLink.propDecorators = {
-	            'queryParams': [{ type: _angular_core.Input },],
-	            'fragment': [{ type: _angular_core.Input },],
-	            'preserveQueryParams': [{ type: _angular_core.Input },],
-	            'preserveFragment': [{ type: _angular_core.Input },],
-	            'routerLink': [{ type: _angular_core.Input },],
-	            'onClick': [{ type: _angular_core.HostListener, args: ['click', ['$event.button', '$event.ctrlKey', '$event.metaKey'],] },],
-	        };
-	        return RouterLink;
-	    }());
-	    /**
-	     * @whatItDoes Lets you link to specific parts of your app.
-	     *
-	     * See {@link RouterLink} for more information.
-	     *
-	     * @selector 'a[routerLink]'
-	     * @ngModule RouterModule
-	     *
-	     * @stable
-	     */
-	    var RouterLinkWithHref = (function () {
-	        function RouterLinkWithHref(router, route, locationStrategy) {
-	            var _this = this;
-	            this.router = router;
-	            this.route = route;
-	            this.locationStrategy = locationStrategy;
-	            this.commands = [];
-	            this.subscription = router.events.subscribe(function (s) {
-	                if (s instanceof NavigationEnd) {
-	                    _this.updateTargetUrlAndHref();
-	                }
-	            });
-	        }
-	        Object.defineProperty(RouterLinkWithHref.prototype, "routerLink", {
-	            set: function (data) {
-	                if (Array.isArray(data)) {
-	                    this.commands = data;
-	                }
-	                else {
-	                    this.commands = [data];
-	                }
-	            },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        RouterLinkWithHref.prototype.ngOnChanges = function (changes) { this.updateTargetUrlAndHref(); };
-	        RouterLinkWithHref.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
-	        RouterLinkWithHref.prototype.onClick = function (button, ctrlKey, metaKey) {
-	            if (button !== 0 || ctrlKey || metaKey) {
-	                return true;
-	            }
-	            if (typeof this.target === 'string' && this.target != '_self') {
-	                return true;
-	            }
-	            this.router.navigateByUrl(this.urlTree);
-	            return false;
-	        };
-	        RouterLinkWithHref.prototype.updateTargetUrlAndHref = function () {
-	            this.href = this.locationStrategy.prepareExternalUrl(this.router.serializeUrl(this.urlTree));
-	        };
-	        Object.defineProperty(RouterLinkWithHref.prototype, "urlTree", {
-	            get: function () {
-	                return this.router.createUrlTree(this.commands, {
-	                    relativeTo: this.route,
-	                    queryParams: this.queryParams,
-	                    fragment: this.fragment,
-	                    preserveQueryParams: toBool(this.preserveQueryParams),
-	                    preserveFragment: toBool(this.preserveFragment)
-	                });
-	            },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        RouterLinkWithHref.decorators = [
-	            { type: _angular_core.Directive, args: [{ selector: 'a[routerLink]' },] },
-	        ];
-	        /** @nocollapse */
-	        RouterLinkWithHref.ctorParameters = [
-	            { type: Router, },
-	            { type: ActivatedRoute, },
-	            { type: _angular_common.LocationStrategy, },
-	        ];
-	        RouterLinkWithHref.propDecorators = {
-	            'target': [{ type: _angular_core.Input },],
-	            'queryParams': [{ type: _angular_core.Input },],
-	            'fragment': [{ type: _angular_core.Input },],
-	            'routerLinkOptions': [{ type: _angular_core.Input },],
-	            'preserveQueryParams': [{ type: _angular_core.Input },],
-	            'preserveFragment': [{ type: _angular_core.Input },],
-	            'href': [{ type: _angular_core.HostBinding },],
-	            'routerLink': [{ type: _angular_core.Input },],
-	            'onClick': [{ type: _angular_core.HostListener, args: ['click', ['$event.button', '$event.ctrlKey', '$event.metaKey'],] },],
-	        };
-	        return RouterLinkWithHref;
-	    }());
-	    function toBool(s) {
-	        if (s === '')
-	            return true;
-	        return !!s;
-	    }
-
-	    /**
-	     * @whatItDoes Lets you add a CSS class to an element when the link's route becomes active.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * <a routerLink="/user/bob" routerLinkActive="active-link">Bob</a>
-	     * ```
-	     *
-	     * @description
-	     *
-	     * The RouterLinkActive directive lets you add a CSS class to an element when the link's route
-	     * becomes active.
-	     *
-	     * Consider the following example:
-	     *
-	     * ```
-	     * <a routerLink="/user/bob" routerLinkActive="active-link">Bob</a>
-	     * ```
-	     *
-	     * When the url is either '/user' or '/user/bob', the active-link class will
-	     * be added to the `a` tag. If the url changes, the class will be removed.
-	     *
-	     * You can set more than one class, as follows:
-	     *
-	     * ```
-	     * <a routerLink="/user/bob" routerLinkActive="class1 class2">Bob</a>
-	     * <a routerLink="/user/bob" [routerLinkActive]="['class1', 'class2']">Bob</a>
-	     * ```
-	     *
-	     * You can configure RouterLinkActive by passing `exact: true`. This will add the classes
-	     * only when the url matches the link exactly.
-	     *
-	     * ```
-	     * <a routerLink="/user/bob" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:
-	     * true}">Bob</a>
-	     * ```
-	     *
-	     * Finally, you can apply the RouterLinkActive directive to an ancestor of a RouterLink.
-	     *
-	     * ```
-	     * <div routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
-	     *   <a routerLink="/user/jim">Jim</a>
-	     *   <a routerLink="/user/bob">Bob</a>
-	     * </div>
-	     * ```
-	     *
-	     * This will set the active-link class on the div tag if the url is either '/user/jim' or
-	     * '/user/bob'.
-	     *
-	     * @selector ':not(a)[routerLink]'
-	     * @ngModule RouterModule
-	     *
-	     * @stable
-	     */
-	    var RouterLinkActive = (function () {
-	        function RouterLinkActive(router, element, renderer) {
-	            var _this = this;
-	            this.router = router;
-	            this.element = element;
-	            this.renderer = renderer;
-	            this.classes = [];
-	            this.routerLinkActiveOptions = { exact: false };
-	            this.subscription = router.events.subscribe(function (s) {
-	                if (s instanceof NavigationEnd) {
-	                    _this.update();
-	                }
-	            });
-	        }
-	        RouterLinkActive.prototype.ngAfterContentInit = function () {
-	            var _this = this;
-	            this.links.changes.subscribe(function (s) { return _this.update(); });
-	            this.linksWithHrefs.changes.subscribe(function (s) { return _this.update(); });
-	            this.update();
-	        };
-	        Object.defineProperty(RouterLinkActive.prototype, "routerLinkActive", {
-	            set: function (data) {
-	                if (Array.isArray(data)) {
-	                    this.classes = data;
-	                }
-	                else {
-	                    this.classes = data.split(' ');
-	                }
-	            },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        RouterLinkActive.prototype.ngOnChanges = function (changes) { this.update(); };
-	        RouterLinkActive.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
-	        RouterLinkActive.prototype.update = function () {
-	            var _this = this;
-	            if (!this.links || !this.linksWithHrefs || !this.router.navigated)
-	                return;
-	            var isActive = this.hasActiveLink();
-	            this.classes.forEach(function (c) { return _this.renderer.setElementClass(_this.element.nativeElement, c, isActive); });
-	        };
-	        RouterLinkActive.prototype.isLinkActive = function (router) {
-	            var _this = this;
-	            return function (link) {
-	                return router.isActive(link.urlTree, _this.routerLinkActiveOptions.exact);
-	            };
-	        };
-	        RouterLinkActive.prototype.hasActiveLink = function () {
-	            return this.links.some(this.isLinkActive(this.router)) ||
-	                this.linksWithHrefs.some(this.isLinkActive(this.router));
-	        };
-	        RouterLinkActive.decorators = [
-	            { type: _angular_core.Directive, args: [{ selector: '[routerLinkActive]' },] },
-	        ];
-	        /** @nocollapse */
-	        RouterLinkActive.ctorParameters = [
-	            { type: Router, },
-	            { type: _angular_core.ElementRef, },
-	            { type: _angular_core.Renderer, },
-	        ];
-	        RouterLinkActive.propDecorators = {
-	            'links': [{ type: _angular_core.ContentChildren, args: [RouterLink, { descendants: true },] },],
-	            'linksWithHrefs': [{ type: _angular_core.ContentChildren, args: [RouterLinkWithHref, { descendants: true },] },],
-	            'routerLinkActiveOptions': [{ type: _angular_core.Input },],
-	            'routerLinkActive': [{ type: _angular_core.Input },],
-	        };
-	        return RouterLinkActive;
-	    }());
-
-	    /**
-	     * @whatItDoes Acts as a placeholder that Angular dynamically fills based on the current router
-	     * state.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * <router-outlet></router-outlet>
-	     * <router-outlet name='left'></router-outlet>
-	     * <router-outlet name='right'></router-outlet>
-	     * ```
-	     *
-	     * A router outlet will emit an activate event any time a new component is being instantiated,
-	     * and a deactivate event when it is being destroyed.
-	     *
-	     * ```
-	     * <router-outlet
-	     *   (activate)='onActivate($event)'
-	     *   (deactivate)='onDeactivate($event)'></router-outlet>
-	     * ```
-	     * @selector 'a[routerLink]'
-	     * @ngModule RouterModule
-	     *
-	     * @stable
-	     */
-	    var RouterOutlet = (function () {
-	        function RouterOutlet(parentOutletMap, location, resolver, name) {
-	            this.parentOutletMap = parentOutletMap;
-	            this.location = location;
-	            this.resolver = resolver;
-	            this.name = name;
-	            this.activateEvents = new _angular_core.EventEmitter();
-	            this.deactivateEvents = new _angular_core.EventEmitter();
-	            parentOutletMap.registerOutlet(name ? name : PRIMARY_OUTLET, this);
-	        }
-	        RouterOutlet.prototype.ngOnDestroy = function () { this.parentOutletMap.removeOutlet(this.name ? this.name : PRIMARY_OUTLET); };
-	        Object.defineProperty(RouterOutlet.prototype, "isActivated", {
-	            get: function () { return !!this.activated; },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(RouterOutlet.prototype, "component", {
-	            get: function () {
-	                if (!this.activated)
-	                    throw new Error('Outlet is not activated');
-	                return this.activated.instance;
-	            },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        Object.defineProperty(RouterOutlet.prototype, "activatedRoute", {
-	            get: function () {
-	                if (!this.activated)
-	                    throw new Error('Outlet is not activated');
-	                return this._activatedRoute;
-	            },
-	            enumerable: true,
-	            configurable: true
-	        });
-	        RouterOutlet.prototype.deactivate = function () {
-	            if (this.activated) {
-	                var c = this.component;
-	                this.activated.destroy();
-	                this.activated = null;
-	                this.deactivateEvents.emit(c);
-	            }
-	        };
-	        RouterOutlet.prototype.activate = function (activatedRoute, loadedResolver, loadedInjector, providers, outletMap) {
-	            if (this.isActivated) {
-	                throw new Error('Cannot activate an already activated outlet');
-	            }
-	            this.outletMap = outletMap;
-	            this._activatedRoute = activatedRoute;
-	            var snapshot = activatedRoute._futureSnapshot;
-	            var component = snapshot._routeConfig.component;
-	            var factory;
-	            if (loadedResolver) {
-	                factory = loadedResolver.resolveComponentFactory(component);
-	            }
-	            else {
-	                factory = this.resolver.resolveComponentFactory(component);
-	            }
-	            var injector = loadedInjector ? loadedInjector : this.location.parentInjector;
-	            var inj = _angular_core.ReflectiveInjector.fromResolvedProviders(providers, injector);
-	            this.activated = this.location.createComponent(factory, this.location.length, inj, []);
-	            this.activated.changeDetectorRef.detectChanges();
-	            this.activateEvents.emit(this.activated.instance);
-	        };
-	        RouterOutlet.decorators = [
-	            { type: _angular_core.Directive, args: [{ selector: 'router-outlet' },] },
-	        ];
-	        /** @nocollapse */
-	        RouterOutlet.ctorParameters = [
-	            { type: RouterOutletMap, },
-	            { type: _angular_core.ViewContainerRef, },
-	            { type: _angular_core.ComponentFactoryResolver, },
-	            { type: undefined, decorators: [{ type: _angular_core.Attribute, args: ['name',] },] },
-	        ];
-	        RouterOutlet.propDecorators = {
-	            'activateEvents': [{ type: _angular_core.Output, args: ['activate',] },],
-	            'deactivateEvents': [{ type: _angular_core.Output, args: ['deactivate',] },],
-	        };
-	        return RouterOutlet;
-	    }());
-
-	    /**
-	     * @whatItDoes Provides a preloading strategy.
-	     *
-	     * @experimental
-	     */
-	    var PreloadingStrategy = (function () {
-	        function PreloadingStrategy() {
-	        }
-	        return PreloadingStrategy;
-	    }());
-	    /**
-	     * @whatItDoes Provides a preloading strategy that preloads all modules as quicky as possible.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * RouteModule.forRoot(ROUTES, {preloadingStrategy: PreloadAllModules})
-	     * ```
-	     *
-	     * @experimental
-	     */
-	    var PreloadAllModules = (function () {
-	        function PreloadAllModules() {
-	        }
-	        PreloadAllModules.prototype.preload = function (route, fn) {
-	            return rxjs_operator_catch._catch.call(fn(), function () { return rxjs_observable_of.of(null); });
-	        };
-	        return PreloadAllModules;
-	    }());
-	    /**
-	     * @whatItDoes Provides a preloading strategy that does not preload any modules.
-	     *
-	     * @description
-	     *
-	     * This strategy is enabled by default.
-	     *
-	     * @experimental
-	     */
-	    var NoPreloading = (function () {
-	        function NoPreloading() {
-	        }
-	        NoPreloading.prototype.preload = function (route, fn) { return rxjs_observable_of.of(null); };
-	        return NoPreloading;
-	    }());
-	    /**
-	     * The preloader optimistically loads all router configurations to
-	     * make navigations into lazily-loaded sections of the application faster.
-	     *
-	     * The preloader runs in the background. When the router bootstraps, the preloader
-	     * starts listening to all navigation events. After every such event, the preloader
-	     * will check if any configurations can be loaded lazily.
-	     *
-	     * If a route is protected by `canLoad` guards, the preloaded will not load it.
-	     */
-	    var RouterPreloader = (function () {
-	        function RouterPreloader(router, moduleLoader, compiler, injector, preloadingStrategy) {
-	            this.router = router;
-	            this.injector = injector;
-	            this.preloadingStrategy = preloadingStrategy;
-	            this.loader = new RouterConfigLoader(moduleLoader, compiler);
-	        }
-	        ;
-	        RouterPreloader.prototype.setUpPreloading = function () {
-	            var _this = this;
-	            var navigations = rxjs_operator_filter.filter.call(this.router.events, function (e) { return e instanceof NavigationEnd; });
-	            this.subscription = rxjs_operator_concatMap.concatMap.call(navigations, function () { return _this.preload(); }).subscribe(function (v) { });
-	        };
-	        RouterPreloader.prototype.preload = function () { return this.processRoutes(this.injector, this.router.config); };
-	        RouterPreloader.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
-	        RouterPreloader.prototype.processRoutes = function (injector, routes) {
-	            var res = [];
-	            for (var _i = 0, routes_1 = routes; _i < routes_1.length; _i++) {
-	                var c = routes_1[_i];
-	                // we already have the config loaded, just recurce
-	                if (c.loadChildren && !c.canLoad && c._loadedConfig) {
-	                    var childConfig = c._loadedConfig;
-	                    res.push(this.processRoutes(childConfig.injector, childConfig.routes));
-	                }
-	                else if (c.loadChildren && !c.canLoad) {
-	                    res.push(this.preloadConfig(injector, c));
-	                }
-	                else if (c.children) {
-	                    res.push(this.processRoutes(injector, c.children));
-	                }
-	            }
-	            return rxjs_operator_mergeAll.mergeAll.call(rxjs_observable_from.from(res));
-	        };
-	        RouterPreloader.prototype.preloadConfig = function (injector, route) {
-	            var _this = this;
-	            return this.preloadingStrategy.preload(route, function () {
-	                var loaded = _this.loader.load(injector, route.loadChildren);
-	                return rxjs_operator_mergeMap.mergeMap.call(loaded, function (config) {
-	                    var c = route;
-	                    c._loadedConfig = config;
-	                    return _this.processRoutes(config.injector, config.routes);
-	                });
-	            });
-	        };
-	        RouterPreloader.decorators = [
-	            { type: _angular_core.Injectable },
-	        ];
-	        /** @nocollapse */
-	        RouterPreloader.ctorParameters = [
-	            { type: Router, },
-	            { type: _angular_core.NgModuleFactoryLoader, },
-	            { type: _angular_core.Compiler, },
-	            { type: _angular_core.Injector, },
-	            { type: PreloadingStrategy, },
-	        ];
-	        return RouterPreloader;
-	    }());
-
-	    /**
-	     * @whatItDoes Contains a list of directives
-	     * @stable
-	     */
-	    var ROUTER_DIRECTIVES = [RouterOutlet, RouterLink, RouterLinkWithHref, RouterLinkActive];
-	    /**
-	     * @whatItDoes Is used in DI to configure the router.
-	     * @stable
-	     */
-	    var ROUTER_CONFIGURATION = new _angular_core.OpaqueToken('ROUTER_CONFIGURATION');
-	    /**
-	     * @docsNotRequired
-	     */
-	    var ROUTER_FORROOT_GUARD = new _angular_core.OpaqueToken('ROUTER_FORROOT_GUARD');
-	    var ROUTER_PROVIDERS = [
-	        _angular_common.Location, { provide: UrlSerializer, useClass: DefaultUrlSerializer }, {
-	            provide: Router,
-	            useFactory: setupRouter,
-	            deps: [
-	                _angular_core.ApplicationRef, UrlSerializer, RouterOutletMap, _angular_common.Location, _angular_core.Injector, _angular_core.NgModuleFactoryLoader,
-	                _angular_core.Compiler, ROUTES, ROUTER_CONFIGURATION
-	            ]
-	        },
-	        RouterOutletMap, { provide: ActivatedRoute, useFactory: rootRoute, deps: [Router] },
-	        { provide: _angular_core.NgModuleFactoryLoader, useClass: _angular_core.SystemJsNgModuleLoader }, RouterPreloader, NoPreloading,
-	        PreloadAllModules, { provide: ROUTER_CONFIGURATION, useValue: { enableTracing: false } }
-	    ];
-	    /**
-	     * @whatItDoes Adds router directives and providers.
-	     *
-	     * @howToUse
-	     *
-	     * RouterModule can be imported multiple times: once per lazily-loaded bundle.
-	     * Since the router deals with a global shared resource--location, we cannot have
-	     * more than one router service active.
-	     *
-	     * That is why there are two ways to create the module: `RouterModule.forRoot` and
-	     * `RouterModule.forChild`.
-	     *
-	     * * `forRoot` creates a module that contains all the directives, the given routes, and the router
-	     * service itself.
-	     * * `forChild` creates a module that contains all the directives and the given routes, but does not
-	     * include
-	     * the router service.
-	     *
-	     * When registered at the root, the module should be used as follows
-	     *
-	     * ```
-	     * @NgModule({
-	     *   imports: [RouterModule.forRoot(ROUTES)]
-	     * })
-	     * class MyNgModule {}
-	     * ```
-	     *
-	     * For submodules and lazy loaded submodules the module should be used as follows:
-	     *
-	     * ```
-	     * @NgModule({
-	     *   imports: [RouterModule.forChild(ROUTES)]
-	     * })
-	     * class MyNgModule {}
-	     * ```
-	     *
-	     * @description
-	     *
-	     * Managing state transitions is one of the hardest parts of building applications. This is
-	     * especially true on the web, where you also need to ensure that the state is reflected in the URL.
-	     * In addition, we often want to split applications into multiple bundles and load them on demand.
-	     * Doing this transparently is not trivial.
-	     *
-	     * The Angular 2 router solves these problems. Using the router, you can declaratively specify
-	     * application states, manage state transitions while taking care of the URL, and load bundles on
-	     * demand.
-	     *
-	     * [Read this developer guide](https://angular.io/docs/ts/latest/guide/router.html) to get an
-	     * overview of how the router should be used.
-	     *
-	     * @stable
-	     */
-	    var RouterModule = (function () {
-	        function RouterModule(guard) {
-	        }
-	        /**
-	         * Creates a module with all the router providers and directives. It also optionally sets up an
-	         * application listener to perform an initial navigation.
-	         *
-	         * Options:
-	         * * `enableTracing` makes the router log all its internal events to the console.
-	         * * `useHash` enables the location strategy that uses the URL fragment instead of the history
-	         * API.
-	         * * `initialNavigation` disables the initial navigation.
-	         * * `errorHandler` provides a custom error handler.
-	         */
-	        RouterModule.forRoot = function (routes, config) {
-	            return {
-	                ngModule: RouterModule,
-	                providers: [
-	                    ROUTER_PROVIDERS, provideRoutes(routes), {
-	                        provide: ROUTER_FORROOT_GUARD,
-	                        useFactory: provideForRootGuard,
-	                        deps: [[Router, new _angular_core.Optional(), new _angular_core.SkipSelf()]]
-	                    },
-	                    { provide: ROUTER_CONFIGURATION, useValue: config ? config : {} }, {
-	                        provide: _angular_common.LocationStrategy,
-	                        useFactory: provideLocationStrategy,
-	                        deps: [
-	                            _angular_common.PlatformLocation, [new _angular_core.Inject(_angular_common.APP_BASE_HREF), new _angular_core.Optional()], ROUTER_CONFIGURATION
-	                        ]
-	                    },
-	                    {
-	                        provide: PreloadingStrategy,
-	                        useExisting: config && config.preloadingStrategy ? config.preloadingStrategy :
-	                            NoPreloading
-	                    },
-	                    provideRouterInitializer()
-	                ]
-	            };
-	        };
-	        /**
-	         * Creates a module with all the router directives and a provider registering routes.
-	         */
-	        RouterModule.forChild = function (routes) {
-	            return { ngModule: RouterModule, providers: [provideRoutes(routes)] };
-	        };
-	        RouterModule.decorators = [
-	            { type: _angular_core.NgModule, args: [{ declarations: ROUTER_DIRECTIVES, exports: ROUTER_DIRECTIVES },] },
-	        ];
-	        /** @nocollapse */
-	        RouterModule.ctorParameters = [
-	            { type: undefined, decorators: [{ type: _angular_core.Optional }, { type: _angular_core.Inject, args: [ROUTER_FORROOT_GUARD,] },] },
-	        ];
-	        return RouterModule;
-	    }());
-	    function provideLocationStrategy(platformLocationStrategy, baseHref, options) {
-	        if (options === void 0) { options = {}; }
-	        return options.useHash ? new _angular_common.HashLocationStrategy(platformLocationStrategy, baseHref) :
-	            new _angular_common.PathLocationStrategy(platformLocationStrategy, baseHref);
-	    }
-	    function provideForRootGuard(router) {
-	        if (router) {
-	            throw new Error("RouterModule.forRoot() called twice. Lazy loaded modules should use RouterModule.forChild() instead.");
-	        }
-	        return 'guarded';
-	    }
-	    /**
-	     * @whatItDoes Registers routes.
-	     *
-	     * @howToUse
-	     *
-	     * ```
-	     * @NgModule({
-	     *   imports: [RouterModule.forChild(ROUTES)],
-	     *   providers: [provideRoutes(EXTRA_ROUTES)]
-	     * })
-	     * class MyNgModule {}
-	     * ```
-	     *
-	     * @stable
-	     */
-	    function provideRoutes(routes) {
-	        return [
-	            { provide: _angular_core.ANALYZE_FOR_ENTRY_COMPONENTS, multi: true, useValue: routes },
-	            { provide: ROUTES, multi: true, useValue: routes }
-	        ];
-	    }
-	    function setupRouter(ref, urlSerializer, outletMap, location, injector, loader, compiler, config, opts) {
-	        if (opts === void 0) { opts = {}; }
-	        var r = new Router(null, urlSerializer, outletMap, location, injector, loader, compiler, flatten(config));
-	        if (opts.errorHandler) {
-	            r.errorHandler = opts.errorHandler;
-	        }
-	        if (opts.enableTracing) {
-	            r.events.subscribe(function (e) {
-	                console.group("Router Event: " + e.constructor.name);
-	                console.log(e.toString());
-	                console.log(e);
-	                console.groupEnd();
-	            });
-	        }
-	        return r;
-	    }
-	    function rootRoute(router) {
-	        return router.routerState.root;
-	    }
-	    function initialRouterNavigation(router, ref, preloader, opts) {
-	        return function () {
-	            router.resetRootComponentType(ref.componentTypes[0]);
-	            preloader.setUpPreloading();
-	            if (opts.initialNavigation === false) {
-	                router.setUpLocationChangeListener();
-	            }
-	            else {
-	                router.initialNavigation();
-	            }
-	        };
-	    }
-	    function provideRouterInitializer() {
-	        return {
-	            provide: _angular_core.APP_BOOTSTRAP_LISTENER,
-	            multi: true,
-	            useFactory: initialRouterNavigation,
-	            deps: [Router, _angular_core.ApplicationRef, RouterPreloader, ROUTER_CONFIGURATION]
-	        };
-	    }
-
-	    var __router_private__ = {
-	        ROUTER_PROVIDERS: ROUTER_PROVIDERS,
-	        ROUTES: ROUTES,
-	        flatten: flatten
-	    };
-
-	    exports.RouterLink = RouterLink;
-	    exports.RouterLinkWithHref = RouterLinkWithHref;
-	    exports.RouterLinkActive = RouterLinkActive;
-	    exports.RouterOutlet = RouterOutlet;
-	    exports.NavigationCancel = NavigationCancel;
-	    exports.NavigationEnd = NavigationEnd;
-	    exports.NavigationError = NavigationError;
-	    exports.NavigationStart = NavigationStart;
-	    exports.Router = Router;
-	    exports.RoutesRecognized = RoutesRecognized;
-	    exports.RouterModule = RouterModule;
-	    exports.provideRoutes = provideRoutes;
-	    exports.RouterOutletMap = RouterOutletMap;
-	    exports.NoPreloading = NoPreloading;
-	    exports.PreloadAllModules = PreloadAllModules;
-	    exports.PreloadingStrategy = PreloadingStrategy;
-	    exports.ActivatedRoute = ActivatedRoute;
-	    exports.ActivatedRouteSnapshot = ActivatedRouteSnapshot;
-	    exports.RouterState = RouterState;
-	    exports.RouterStateSnapshot = RouterStateSnapshot;
-	    exports.PRIMARY_OUTLET = PRIMARY_OUTLET;
-	    exports.DefaultUrlSerializer = DefaultUrlSerializer;
-	    exports.UrlSegment = UrlSegment;
-	    exports.UrlSerializer = UrlSerializer;
-	    exports.UrlTree = UrlTree;
-	    exports.__router_private__ = __router_private__;
-
-	}));
-
-
-/***/ },
-/* 371 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var FromObservable_1 = __webpack_require__(372);
-	exports.from = FromObservable_1.FromObservable.create;
-	//# sourceMappingURL=from.js.map
-
-/***/ },
-/* 372 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var isArray_1 = __webpack_require__(321);
-	var isPromise_1 = __webpack_require__(373);
-	var PromiseObservable_1 = __webpack_require__(337);
-	var IteratorObservable_1 = __webpack_require__(374);
-	var ArrayObservable_1 = __webpack_require__(376);
-	var ArrayLikeObservable_1 = __webpack_require__(380);
-	var iterator_1 = __webpack_require__(375);
-	var Observable_1 = __webpack_require__(315);
-	var observeOn_1 = __webpack_require__(381);
-	var observable_1 = __webpack_require__(328);
-	var isArrayLike = (function (x) { return x && typeof x.length === 'number'; });
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @extends {Ignored}
-	 * @hide true
-	 */
-	var FromObservable = (function (_super) {
-	    __extends(FromObservable, _super);
-	    function FromObservable(ish, scheduler) {
-	        _super.call(this, null);
-	        this.ish = ish;
-	        this.scheduler = scheduler;
-	    }
-	    /**
-	     * Creates an Observable from an Array, an array-like object, a Promise, an
-	     * iterable object, or an Observable-like object.
-	     *
-	     * <span class="informal">Converts almost anything to an Observable.</span>
-	     *
-	     * <img src="./img/from.png" width="100%">
-	     *
-	     * Convert various other objects and data types into Observables. `from`
-	     * converts a Promise or an array-like or an
-	     * [iterable](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#iterable)
-	     * object into an Observable that emits the items in that promise or array or
-	     * iterable. A String, in this context, is treated as an array of characters.
-	     * Observable-like objects (contains a function named with the ES2015 Symbol
-	     * for Observable) can also be converted through this operator.
-	     *
-	     * @example <caption>Converts an array to an Observable</caption>
-	     * var array = [10, 20, 30];
-	     * var result = Rx.Observable.from(array);
-	     * result.subscribe(x => console.log(x));
-	     *
-	     * @example <caption>Convert an infinite iterable (from a generator) to an Observable</caption>
-	     * function* generateDoubles(seed) {
-	     *   var i = seed;
-	     *   while (true) {
-	     *     yield i;
-	     *     i = 2 * i; // double it
-	     *   }
-	     * }
-	     *
-	     * var iterator = generateDoubles(3);
-	     * var result = Rx.Observable.from(iterator).take(10);
-	     * result.subscribe(x => console.log(x));
-	     *
-	     * @see {@link create}
-	     * @see {@link fromEvent}
-	     * @see {@link fromEventPattern}
-	     * @see {@link fromPromise}
-	     *
-	     * @param {ObservableInput<T>} ish A subscribable object, a Promise, an
-	     * Observable-like, an Array, an iterable or an array-like object to be
-	     * converted.
-	     * @param {Scheduler} [scheduler] The scheduler on which to schedule the
-	     * emissions of values.
-	     * @return {Observable<T>} The Observable whose values are originally from the
-	     * input object that was converted.
-	     * @static true
-	     * @name from
-	     * @owner Observable
-	     */
-	    FromObservable.create = function (ish, scheduler) {
-	        if (ish != null) {
-	            if (typeof ish[observable_1.$$observable] === 'function') {
-	                if (ish instanceof Observable_1.Observable && !scheduler) {
-	                    return ish;
-	                }
-	                return new FromObservable(ish, scheduler);
-	            }
-	            else if (isArray_1.isArray(ish)) {
-	                return new ArrayObservable_1.ArrayObservable(ish, scheduler);
-	            }
-	            else if (isPromise_1.isPromise(ish)) {
-	                return new PromiseObservable_1.PromiseObservable(ish, scheduler);
-	            }
-	            else if (typeof ish[iterator_1.$$iterator] === 'function' || typeof ish === 'string') {
-	                return new IteratorObservable_1.IteratorObservable(ish, scheduler);
-	            }
-	            else if (isArrayLike(ish)) {
-	                return new ArrayLikeObservable_1.ArrayLikeObservable(ish, scheduler);
-	            }
-	        }
-	        throw new TypeError((ish !== null && typeof ish || ish) + ' is not observable');
-	    };
-	    FromObservable.prototype._subscribe = function (subscriber) {
-	        var ish = this.ish;
-	        var scheduler = this.scheduler;
-	        if (scheduler == null) {
-	            return ish[observable_1.$$observable]().subscribe(subscriber);
-	        }
-	        else {
-	            return ish[observable_1.$$observable]().subscribe(new observeOn_1.ObserveOnSubscriber(subscriber, scheduler, 0));
-	        }
-	    };
-	    return FromObservable;
-	}(Observable_1.Observable));
-	exports.FromObservable = FromObservable;
-	//# sourceMappingURL=FromObservable.js.map
-
-/***/ },
-/* 373 */
-/***/ function(module, exports) {
-
-	"use strict";
-	function isPromise(value) {
-	    return value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
-	}
-	exports.isPromise = isPromise;
-	//# sourceMappingURL=isPromise.js.map
-
-/***/ },
-/* 374 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var root_1 = __webpack_require__(316);
-	var Observable_1 = __webpack_require__(315);
-	var iterator_1 = __webpack_require__(375);
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @extends {Ignored}
-	 * @hide true
-	 */
-	var IteratorObservable = (function (_super) {
-	    __extends(IteratorObservable, _super);
-	    function IteratorObservable(iterator, scheduler) {
-	        _super.call(this);
-	        this.scheduler = scheduler;
-	        if (iterator == null) {
-	            throw new Error('iterator cannot be null.');
-	        }
-	        this.iterator = getIterator(iterator);
-	    }
-	    IteratorObservable.create = function (iterator, scheduler) {
-	        return new IteratorObservable(iterator, scheduler);
-	    };
-	    IteratorObservable.dispatch = function (state) {
-	        var index = state.index, hasError = state.hasError, iterator = state.iterator, subscriber = state.subscriber;
-	        if (hasError) {
-	            subscriber.error(state.error);
-	            return;
-	        }
-	        var result = iterator.next();
-	        if (result.done) {
-	            subscriber.complete();
-	            return;
-	        }
-	        subscriber.next(result.value);
-	        state.index = index + 1;
-	        if (subscriber.closed) {
-	            return;
-	        }
-	        this.schedule(state);
-	    };
-	    IteratorObservable.prototype._subscribe = function (subscriber) {
-	        var index = 0;
-	        var _a = this, iterator = _a.iterator, scheduler = _a.scheduler;
-	        if (scheduler) {
-	            return scheduler.schedule(IteratorObservable.dispatch, 0, {
-	                index: index, iterator: iterator, subscriber: subscriber
-	            });
-	        }
-	        else {
-	            do {
-	                var result = iterator.next();
-	                if (result.done) {
-	                    subscriber.complete();
-	                    break;
-	                }
-	                else {
-	                    subscriber.next(result.value);
-	                }
-	                if (subscriber.closed) {
-	                    break;
-	                }
-	            } while (true);
-	        }
-	    };
-	    return IteratorObservable;
-	}(Observable_1.Observable));
-	exports.IteratorObservable = IteratorObservable;
-	var StringIterator = (function () {
-	    function StringIterator(str, idx, len) {
-	        if (idx === void 0) { idx = 0; }
-	        if (len === void 0) { len = str.length; }
-	        this.str = str;
-	        this.idx = idx;
-	        this.len = len;
-	    }
-	    StringIterator.prototype[iterator_1.$$iterator] = function () { return (this); };
-	    StringIterator.prototype.next = function () {
-	        return this.idx < this.len ? {
-	            done: false,
-	            value: this.str.charAt(this.idx++)
-	        } : {
-	            done: true,
-	            value: undefined
-	        };
-	    };
-	    return StringIterator;
-	}());
-	var ArrayIterator = (function () {
-	    function ArrayIterator(arr, idx, len) {
-	        if (idx === void 0) { idx = 0; }
-	        if (len === void 0) { len = toLength(arr); }
-	        this.arr = arr;
-	        this.idx = idx;
-	        this.len = len;
-	    }
-	    ArrayIterator.prototype[iterator_1.$$iterator] = function () { return this; };
-	    ArrayIterator.prototype.next = function () {
-	        return this.idx < this.len ? {
-	            done: false,
-	            value: this.arr[this.idx++]
-	        } : {
-	            done: true,
-	            value: undefined
-	        };
-	    };
-	    return ArrayIterator;
-	}());
-	function getIterator(obj) {
-	    var i = obj[iterator_1.$$iterator];
-	    if (!i && typeof obj === 'string') {
-	        return new StringIterator(obj);
-	    }
-	    if (!i && obj.length !== undefined) {
-	        return new ArrayIterator(obj);
-	    }
-	    if (!i) {
-	        throw new TypeError('object is not iterable');
-	    }
-	    return obj[iterator_1.$$iterator]();
-	}
-	var maxSafeInteger = Math.pow(2, 53) - 1;
-	function toLength(o) {
-	    var len = +o.length;
-	    if (isNaN(len)) {
-	        return 0;
-	    }
-	    if (len === 0 || !numberIsFinite(len)) {
-	        return len;
-	    }
-	    len = sign(len) * Math.floor(Math.abs(len));
-	    if (len <= 0) {
-	        return 0;
-	    }
-	    if (len > maxSafeInteger) {
-	        return maxSafeInteger;
-	    }
-	    return len;
-	}
-	function numberIsFinite(value) {
-	    return typeof value === 'number' && root_1.root.isFinite(value);
-	}
-	function sign(value) {
-	    var valueAsNumber = +value;
-	    if (valueAsNumber === 0) {
-	        return valueAsNumber;
-	    }
-	    if (isNaN(valueAsNumber)) {
-	        return valueAsNumber;
-	    }
-	    return valueAsNumber < 0 ? -1 : 1;
-	}
-	//# sourceMappingURL=IteratorObservable.js.map
-
-/***/ },
-/* 375 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var root_1 = __webpack_require__(316);
-	var Symbol = root_1.root.Symbol;
-	if (typeof Symbol === 'function') {
-	    if (Symbol.iterator) {
-	        exports.$$iterator = Symbol.iterator;
-	    }
-	    else if (typeof Symbol.for === 'function') {
-	        exports.$$iterator = Symbol.for('iterator');
-	    }
-	}
-	else {
-	    if (root_1.root.Set && typeof new root_1.root.Set()['@@iterator'] === 'function') {
-	        // Bug for mozilla version
-	        exports.$$iterator = '@@iterator';
-	    }
-	    else if (root_1.root.Map) {
-	        // es6-shim specific logic
-	        var keys = Object.getOwnPropertyNames(root_1.root.Map.prototype);
-	        for (var i = 0; i < keys.length; ++i) {
-	            var key = keys[i];
-	            if (key !== 'entries' && key !== 'size' && root_1.root.Map.prototype[key] === root_1.root.Map.prototype['entries']) {
-	                exports.$$iterator = key;
-	                break;
-	            }
-	        }
-	    }
-	    else {
-	        exports.$$iterator = '@@iterator';
-	    }
-	}
-	//# sourceMappingURL=iterator.js.map
-
-/***/ },
-/* 376 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Observable_1 = __webpack_require__(315);
-	var ScalarObservable_1 = __webpack_require__(377);
-	var EmptyObservable_1 = __webpack_require__(378);
-	var isScheduler_1 = __webpack_require__(379);
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @extends {Ignored}
-	 * @hide true
-	 */
-	var ArrayObservable = (function (_super) {
-	    __extends(ArrayObservable, _super);
-	    function ArrayObservable(array, scheduler) {
-	        _super.call(this);
-	        this.array = array;
-	        this.scheduler = scheduler;
-	        if (!scheduler && array.length === 1) {
-	            this._isScalar = true;
-	            this.value = array[0];
-	        }
-	    }
-	    ArrayObservable.create = function (array, scheduler) {
-	        return new ArrayObservable(array, scheduler);
-	    };
-	    /**
-	     * Creates an Observable that emits some values you specify as arguments,
-	     * immediately one after the other, and then emits a complete notification.
-	     *
-	     * <span class="informal">Emits the arguments you provide, then completes.
-	     * </span>
-	     *
-	     * <img src="./img/of.png" width="100%">
-	     *
-	     * This static operator is useful for creating a simple Observable that only
-	     * emits the arguments given, and the complete notification thereafter. It can
-	     * be used for composing with other Observables, such as with {@link concat}.
-	     * By default, it uses a `null` Scheduler, which means the `next`
-	     * notifications are sent synchronously, although with a different Scheduler
-	     * it is possible to determine when those notifications will be delivered.
-	     *
-	     * @example <caption>Emit 10, 20, 30, then 'a', 'b', 'c', then start ticking every second.</caption>
-	     * var numbers = Rx.Observable.of(10, 20, 30);
-	     * var letters = Rx.Observable.of('a', 'b', 'c');
-	     * var interval = Rx.Observable.interval(1000);
-	     * var result = numbers.concat(letters).concat(interval);
-	     * result.subscribe(x => console.log(x));
-	     *
-	     * @see {@link create}
-	     * @see {@link empty}
-	     * @see {@link never}
-	     * @see {@link throw}
-	     *
-	     * @param {...T} values Arguments that represent `next` values to be emitted.
-	     * @param {Scheduler} [scheduler] A {@link Scheduler} to use for scheduling
-	     * the emissions of the `next` notifications.
-	     * @return {Observable<T>} An Observable that emits each given input value.
-	     * @static true
-	     * @name of
-	     * @owner Observable
-	     */
-	    ArrayObservable.of = function () {
-	        var array = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            array[_i - 0] = arguments[_i];
-	        }
-	        var scheduler = array[array.length - 1];
-	        if (isScheduler_1.isScheduler(scheduler)) {
-	            array.pop();
-	        }
-	        else {
-	            scheduler = null;
-	        }
-	        var len = array.length;
-	        if (len > 1) {
-	            return new ArrayObservable(array, scheduler);
-	        }
-	        else if (len === 1) {
-	            return new ScalarObservable_1.ScalarObservable(array[0], scheduler);
-	        }
-	        else {
-	            return new EmptyObservable_1.EmptyObservable(scheduler);
-	        }
-	    };
-	    ArrayObservable.dispatch = function (state) {
-	        var array = state.array, index = state.index, count = state.count, subscriber = state.subscriber;
-	        if (index >= count) {
-	            subscriber.complete();
-	            return;
-	        }
-	        subscriber.next(array[index]);
-	        if (subscriber.closed) {
-	            return;
-	        }
-	        state.index = index + 1;
-	        this.schedule(state);
-	    };
-	    ArrayObservable.prototype._subscribe = function (subscriber) {
-	        var index = 0;
-	        var array = this.array;
-	        var count = array.length;
-	        var scheduler = this.scheduler;
-	        if (scheduler) {
-	            return scheduler.schedule(ArrayObservable.dispatch, 0, {
-	                array: array, index: index, count: count, subscriber: subscriber
-	            });
-	        }
-	        else {
-	            for (var i = 0; i < count && !subscriber.closed; i++) {
-	                subscriber.next(array[i]);
-	            }
-	            subscriber.complete();
-	        }
-	    };
-	    return ArrayObservable;
-	}(Observable_1.Observable));
-	exports.ArrayObservable = ArrayObservable;
-	//# sourceMappingURL=ArrayObservable.js.map
-
-/***/ },
-/* 377 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Observable_1 = __webpack_require__(315);
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @extends {Ignored}
-	 * @hide true
-	 */
-	var ScalarObservable = (function (_super) {
-	    __extends(ScalarObservable, _super);
-	    function ScalarObservable(value, scheduler) {
-	        _super.call(this);
-	        this.value = value;
-	        this.scheduler = scheduler;
-	        this._isScalar = true;
-	        if (scheduler) {
-	            this._isScalar = false;
-	        }
-	    }
-	    ScalarObservable.create = function (value, scheduler) {
-	        return new ScalarObservable(value, scheduler);
-	    };
-	    ScalarObservable.dispatch = function (state) {
-	        var done = state.done, value = state.value, subscriber = state.subscriber;
-	        if (done) {
-	            subscriber.complete();
-	            return;
-	        }
-	        subscriber.next(value);
-	        if (subscriber.closed) {
-	            return;
-	        }
-	        state.done = true;
-	        this.schedule(state);
-	    };
-	    ScalarObservable.prototype._subscribe = function (subscriber) {
-	        var value = this.value;
-	        var scheduler = this.scheduler;
-	        if (scheduler) {
-	            return scheduler.schedule(ScalarObservable.dispatch, 0, {
-	                done: false, value: value, subscriber: subscriber
-	            });
-	        }
-	        else {
-	            subscriber.next(value);
-	            if (!subscriber.closed) {
-	                subscriber.complete();
-	            }
-	        }
-	    };
-	    return ScalarObservable;
-	}(Observable_1.Observable));
-	exports.ScalarObservable = ScalarObservable;
-	//# sourceMappingURL=ScalarObservable.js.map
-
-/***/ },
-/* 378 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Observable_1 = __webpack_require__(315);
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @extends {Ignored}
-	 * @hide true
-	 */
-	var EmptyObservable = (function (_super) {
-	    __extends(EmptyObservable, _super);
-	    function EmptyObservable(scheduler) {
-	        _super.call(this);
-	        this.scheduler = scheduler;
-	    }
-	    /**
-	     * Creates an Observable that emits no items to the Observer and immediately
-	     * emits a complete notification.
-	     *
-	     * <span class="informal">Just emits 'complete', and nothing else.
-	     * </span>
-	     *
-	     * <img src="./img/empty.png" width="100%">
-	     *
-	     * This static operator is useful for creating a simple Observable that only
-	     * emits the complete notification. It can be used for composing with other
-	     * Observables, such as in a {@link mergeMap}.
-	     *
-	     * @example <caption>Emit the number 7, then complete.</caption>
-	     * var result = Rx.Observable.empty().startWith(7);
-	     * result.subscribe(x => console.log(x));
-	     *
-	     * @example <caption>Map and flatten only odd numbers to the sequence 'a', 'b', 'c'</caption>
-	     * var interval = Rx.Observable.interval(1000);
-	     * var result = interval.mergeMap(x =>
-	     *   x % 2 === 1 ? Rx.Observable.of('a', 'b', 'c') : Rx.Observable.empty()
-	     * );
-	     * result.subscribe(x => console.log(x));
-	     *
-	     * @see {@link create}
-	     * @see {@link never}
-	     * @see {@link of}
-	     * @see {@link throw}
-	     *
-	     * @param {Scheduler} [scheduler] A {@link Scheduler} to use for scheduling
-	     * the emission of the complete notification.
-	     * @return {Observable} An "empty" Observable: emits only the complete
-	     * notification.
-	     * @static true
-	     * @name empty
-	     * @owner Observable
-	     */
-	    EmptyObservable.create = function (scheduler) {
-	        return new EmptyObservable(scheduler);
-	    };
-	    EmptyObservable.dispatch = function (arg) {
-	        var subscriber = arg.subscriber;
-	        subscriber.complete();
-	    };
-	    EmptyObservable.prototype._subscribe = function (subscriber) {
-	        var scheduler = this.scheduler;
-	        if (scheduler) {
-	            return scheduler.schedule(EmptyObservable.dispatch, 0, { subscriber: subscriber });
-	        }
-	        else {
-	            subscriber.complete();
-	        }
-	    };
-	    return EmptyObservable;
-	}(Observable_1.Observable));
-	exports.EmptyObservable = EmptyObservable;
-	//# sourceMappingURL=EmptyObservable.js.map
-
-/***/ },
-/* 379 */
-/***/ function(module, exports) {
-
-	"use strict";
-	function isScheduler(value) {
-	    return value && typeof value.schedule === 'function';
-	}
-	exports.isScheduler = isScheduler;
-	//# sourceMappingURL=isScheduler.js.map
-
-/***/ },
-/* 380 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Observable_1 = __webpack_require__(315);
-	var ScalarObservable_1 = __webpack_require__(377);
-	var EmptyObservable_1 = __webpack_require__(378);
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @extends {Ignored}
-	 * @hide true
-	 */
-	var ArrayLikeObservable = (function (_super) {
-	    __extends(ArrayLikeObservable, _super);
-	    function ArrayLikeObservable(arrayLike, scheduler) {
-	        _super.call(this);
-	        this.arrayLike = arrayLike;
-	        this.scheduler = scheduler;
-	        if (!scheduler && arrayLike.length === 1) {
-	            this._isScalar = true;
-	            this.value = arrayLike[0];
-	        }
-	    }
-	    ArrayLikeObservable.create = function (arrayLike, scheduler) {
-	        var length = arrayLike.length;
-	        if (length === 0) {
-	            return new EmptyObservable_1.EmptyObservable();
-	        }
-	        else if (length === 1) {
-	            return new ScalarObservable_1.ScalarObservable(arrayLike[0], scheduler);
-	        }
-	        else {
-	            return new ArrayLikeObservable(arrayLike, scheduler);
-	        }
-	    };
-	    ArrayLikeObservable.dispatch = function (state) {
-	        var arrayLike = state.arrayLike, index = state.index, length = state.length, subscriber = state.subscriber;
-	        if (subscriber.closed) {
-	            return;
-	        }
-	        if (index >= length) {
-	            subscriber.complete();
-	            return;
-	        }
-	        subscriber.next(arrayLike[index]);
-	        state.index = index + 1;
-	        this.schedule(state);
-	    };
-	    ArrayLikeObservable.prototype._subscribe = function (subscriber) {
-	        var index = 0;
-	        var _a = this, arrayLike = _a.arrayLike, scheduler = _a.scheduler;
-	        var length = arrayLike.length;
-	        if (scheduler) {
-	            return scheduler.schedule(ArrayLikeObservable.dispatch, 0, {
-	                arrayLike: arrayLike, index: index, length: length, subscriber: subscriber
-	            });
-	        }
-	        else {
-	            for (var i = 0; i < length && !subscriber.closed; i++) {
-	                subscriber.next(arrayLike[i]);
-	            }
-	            subscriber.complete();
-	        }
-	    };
-	    return ArrayLikeObservable;
-	}(Observable_1.Observable));
-	exports.ArrayLikeObservable = ArrayLikeObservable;
-	//# sourceMappingURL=ArrayLikeObservable.js.map
-
-/***/ },
-/* 381 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	var Notification_1 = __webpack_require__(382);
-	/**
-	 * @see {@link Notification}
-	 *
-	 * @param scheduler
-	 * @param delay
-	 * @return {Observable<R>|WebSocketSubject<T>|Observable<T>}
-	 * @method observeOn
-	 * @owner Observable
-	 */
-	function observeOn(scheduler, delay) {
-	    if (delay === void 0) { delay = 0; }
-	    return this.lift(new ObserveOnOperator(scheduler, delay));
-	}
-	exports.observeOn = observeOn;
-	var ObserveOnOperator = (function () {
-	    function ObserveOnOperator(scheduler, delay) {
-	        if (delay === void 0) { delay = 0; }
-	        this.scheduler = scheduler;
-	        this.delay = delay;
-	    }
-	    ObserveOnOperator.prototype.call = function (subscriber, source) {
-	        return source._subscribe(new ObserveOnSubscriber(subscriber, this.scheduler, this.delay));
-	    };
-	    return ObserveOnOperator;
-	}());
-	exports.ObserveOnOperator = ObserveOnOperator;
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var ObserveOnSubscriber = (function (_super) {
-	    __extends(ObserveOnSubscriber, _super);
-	    function ObserveOnSubscriber(destination, scheduler, delay) {
-	        if (delay === void 0) { delay = 0; }
-	        _super.call(this, destination);
-	        this.scheduler = scheduler;
-	        this.delay = delay;
-	    }
-	    ObserveOnSubscriber.dispatch = function (arg) {
-	        var notification = arg.notification, destination = arg.destination;
-	        notification.observe(destination);
-	    };
-	    ObserveOnSubscriber.prototype.scheduleMessage = function (notification) {
-	        this.add(this.scheduler.schedule(ObserveOnSubscriber.dispatch, this.delay, new ObserveOnMessage(notification, this.destination)));
-	    };
-	    ObserveOnSubscriber.prototype._next = function (value) {
-	        this.scheduleMessage(Notification_1.Notification.createNext(value));
-	    };
-	    ObserveOnSubscriber.prototype._error = function (err) {
-	        this.scheduleMessage(Notification_1.Notification.createError(err));
-	    };
-	    ObserveOnSubscriber.prototype._complete = function () {
-	        this.scheduleMessage(Notification_1.Notification.createComplete());
-	    };
-	    return ObserveOnSubscriber;
-	}(Subscriber_1.Subscriber));
-	exports.ObserveOnSubscriber = ObserveOnSubscriber;
-	var ObserveOnMessage = (function () {
-	    function ObserveOnMessage(notification, destination) {
-	        this.notification = notification;
-	        this.destination = destination;
-	    }
-	    return ObserveOnMessage;
-	}());
-	exports.ObserveOnMessage = ObserveOnMessage;
-	//# sourceMappingURL=observeOn.js.map
-
-/***/ },
-/* 382 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var Observable_1 = __webpack_require__(315);
-	/**
-	 * Represents a push-based event or value that an {@link Observable} can emit.
-	 * This class is particularly useful for operators that manage notifications,
-	 * like {@link materialize}, {@link dematerialize}, {@link observeOn}, and
-	 * others. Besides wrapping the actual delivered value, it also annotates it
-	 * with metadata of, for instance, what type of push message it is (`next`,
-	 * `error`, or `complete`).
-	 *
-	 * @see {@link materialize}
-	 * @see {@link dematerialize}
-	 * @see {@link observeOn}
-	 *
-	 * @class Notification<T>
-	 */
-	var Notification = (function () {
-	    function Notification(kind, value, exception) {
-	        this.kind = kind;
-	        this.value = value;
-	        this.exception = exception;
-	        this.hasValue = kind === 'N';
-	    }
-	    /**
-	     * Delivers to the given `observer` the value wrapped by this Notification.
-	     * @param {Observer} observer
-	     * @return
-	     */
-	    Notification.prototype.observe = function (observer) {
-	        switch (this.kind) {
-	            case 'N':
-	                return observer.next && observer.next(this.value);
-	            case 'E':
-	                return observer.error && observer.error(this.exception);
-	            case 'C':
-	                return observer.complete && observer.complete();
-	        }
-	    };
-	    /**
-	     * Given some {@link Observer} callbacks, deliver the value represented by the
-	     * current Notification to the correctly corresponding callback.
-	     * @param {function(value: T): void} next An Observer `next` callback.
-	     * @param {function(err: any): void} [error] An Observer `error` callback.
-	     * @param {function(): void} [complete] An Observer `complete` callback.
-	     * @return {any}
-	     */
-	    Notification.prototype.do = function (next, error, complete) {
-	        var kind = this.kind;
-	        switch (kind) {
-	            case 'N':
-	                return next && next(this.value);
-	            case 'E':
-	                return error && error(this.exception);
-	            case 'C':
-	                return complete && complete();
-	        }
-	    };
-	    /**
-	     * Takes an Observer or its individual callback functions, and calls `observe`
-	     * or `do` methods accordingly.
-	     * @param {Observer|function(value: T): void} nextOrObserver An Observer or
-	     * the `next` callback.
-	     * @param {function(err: any): void} [error] An Observer `error` callback.
-	     * @param {function(): void} [complete] An Observer `complete` callback.
-	     * @return {any}
-	     */
-	    Notification.prototype.accept = function (nextOrObserver, error, complete) {
-	        if (nextOrObserver && typeof nextOrObserver.next === 'function') {
-	            return this.observe(nextOrObserver);
-	        }
-	        else {
-	            return this.do(nextOrObserver, error, complete);
-	        }
-	    };
-	    /**
-	     * Returns a simple Observable that just delivers the notification represented
-	     * by this Notification instance.
-	     * @return {any}
-	     */
-	    Notification.prototype.toObservable = function () {
-	        var kind = this.kind;
-	        switch (kind) {
-	            case 'N':
-	                return Observable_1.Observable.of(this.value);
-	            case 'E':
-	                return Observable_1.Observable.throw(this.exception);
-	            case 'C':
-	                return Observable_1.Observable.empty();
-	        }
-	        throw new Error('unexpected notification kind value');
-	    };
-	    /**
-	     * A shortcut to create a Notification instance of the type `next` from a
-	     * given value.
-	     * @param {T} value The `next` value.
-	     * @return {Notification<T>} The "next" Notification representing the
-	     * argument.
-	     */
-	    Notification.createNext = function (value) {
-	        if (typeof value !== 'undefined') {
-	            return new Notification('N', value);
-	        }
-	        return this.undefinedValueNotification;
-	    };
-	    /**
-	     * A shortcut to create a Notification instance of the type `error` from a
-	     * given error.
-	     * @param {any} [err] The `error` exception.
-	     * @return {Notification<T>} The "error" Notification representing the
-	     * argument.
-	     */
-	    Notification.createError = function (err) {
-	        return new Notification('E', undefined, err);
-	    };
-	    /**
-	     * A shortcut to create a Notification instance of the type `complete`.
-	     * @return {Notification<any>} The valueless "complete" Notification.
-	     */
-	    Notification.createComplete = function () {
-	        return this.completeNotification;
-	    };
-	    Notification.completeNotification = new Notification('C');
-	    Notification.undefinedValueNotification = new Notification('N', undefined);
-	    return Notification;
-	}());
-	exports.Notification = Notification;
-	//# sourceMappingURL=Notification.js.map
-
-/***/ },
-/* 383 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var ArrayObservable_1 = __webpack_require__(376);
-	exports.of = ArrayObservable_1.ArrayObservable.of;
-	//# sourceMappingURL=of.js.map
-
-/***/ },
-/* 384 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var mergeMap_1 = __webpack_require__(385);
-	/**
-	 * Projects each source value to an Observable which is merged in the output
-	 * Observable, in a serialized fashion waiting for each one to complete before
-	 * merging the next.
-	 *
-	 * <span class="informal">Maps each value to an Observable, then flattens all of
-	 * these inner Observables using {@link concatAll}.</span>
-	 *
-	 * <img src="./img/concatMap.png" width="100%">
-	 *
-	 * Returns an Observable that emits items based on applying a function that you
-	 * supply to each item emitted by the source Observable, where that function
-	 * returns an (so-called "inner") Observable. Each new inner Observable is
-	 * concatenated with the previous inner Observable.
-	 *
-	 * __Warning:__ if source values arrive endlessly and faster than their
-	 * corresponding inner Observables can complete, it will result in memory issues
-	 * as inner Observables amass in an unbounded buffer waiting for their turn to
-	 * be subscribed to.
-	 *
-	 * Note: `concatMap` is equivalent to `mergeMap` with concurrency parameter set
-	 * to `1`.
-	 *
-	 * @example <caption>For each click event, tick every second from 0 to 3, with no concurrency</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var result = clicks.concatMap(ev => Rx.Observable.interval(1000).take(4));
-	 * result.subscribe(x => console.log(x));
-	 *
-	 * @see {@link concat}
-	 * @see {@link concatAll}
-	 * @see {@link concatMapTo}
-	 * @see {@link exhaustMap}
-	 * @see {@link mergeMap}
-	 * @see {@link switchMap}
-	 *
-	 * @param {function(value: T, ?index: number): Observable} project A function
-	 * that, when applied to an item emitted by the source Observable, returns an
-	 * Observable.
-	 * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
-	 * A function to produce the value on the output Observable based on the values
-	 * and the indices of the source (outer) emission and the inner Observable
-	 * emission. The arguments passed to this function are:
-	 * - `outerValue`: the value that came from the source
-	 * - `innerValue`: the value that came from the projected Observable
-	 * - `outerIndex`: the "index" of the value that came from the source
-	 * - `innerIndex`: the "index" of the value from the projected Observable
-	 * @return {Observable} an observable of values merged from the projected
-	 * Observables as they were subscribed to, one at a time. Optionally, these
-	 * values may have been projected from a passed `projectResult` argument.
-	 * @return {Observable} An Observable that emits the result of applying the
-	 * projection function (and the optional `resultSelector`) to each item emitted
-	 * by the source Observable and taking values from each projected inner
-	 * Observable sequentially.
-	 * @method concatMap
-	 * @owner Observable
-	 */
-	function concatMap(project, resultSelector) {
-	    return this.lift(new mergeMap_1.MergeMapOperator(project, resultSelector, 1));
-	}
-	exports.concatMap = concatMap;
-	//# sourceMappingURL=concatMap.js.map
-
-/***/ },
-/* 385 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var subscribeToResult_1 = __webpack_require__(386);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	/**
-	 * Projects each source value to an Observable which is merged in the output
-	 * Observable.
-	 *
-	 * <span class="informal">Maps each value to an Observable, then flattens all of
-	 * these inner Observables using {@link mergeAll}.</span>
-	 *
-	 * <img src="./img/mergeMap.png" width="100%">
-	 *
-	 * Returns an Observable that emits items based on applying a function that you
-	 * supply to each item emitted by the source Observable, where that function
-	 * returns an Observable, and then merging those resulting Observables and
-	 * emitting the results of this merger.
-	 *
-	 * @example <caption>Map and flatten each letter to an Observable ticking every 1 second</caption>
-	 * var letters = Rx.Observable.of('a', 'b', 'c');
-	 * var result = letters.mergeMap(x =>
-	 *   Rx.Observable.interval(1000).map(i => x+i)
-	 * );
-	 * result.subscribe(x => console.log(x));
-	 *
-	 * @see {@link concatMap}
-	 * @see {@link exhaustMap}
-	 * @see {@link merge}
-	 * @see {@link mergeAll}
-	 * @see {@link mergeMapTo}
-	 * @see {@link mergeScan}
-	 * @see {@link switchMap}
-	 *
-	 * @param {function(value: T, ?index: number): Observable} project A function
-	 * that, when applied to an item emitted by the source Observable, returns an
-	 * Observable.
-	 * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
-	 * A function to produce the value on the output Observable based on the values
-	 * and the indices of the source (outer) emission and the inner Observable
-	 * emission. The arguments passed to this function are:
-	 * - `outerValue`: the value that came from the source
-	 * - `innerValue`: the value that came from the projected Observable
-	 * - `outerIndex`: the "index" of the value that came from the source
-	 * - `innerIndex`: the "index" of the value from the projected Observable
-	 * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
-	 * Observables being subscribed to concurrently.
-	 * @return {Observable} An Observable that emits the result of applying the
-	 * projection function (and the optional `resultSelector`) to each item emitted
-	 * by the source Observable and merging the results of the Observables obtained
-	 * from this transformation.
-	 * @method mergeMap
-	 * @owner Observable
-	 */
-	function mergeMap(project, resultSelector, concurrent) {
-	    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
-	    if (typeof resultSelector === 'number') {
-	        concurrent = resultSelector;
-	        resultSelector = null;
-	    }
-	    return this.lift(new MergeMapOperator(project, resultSelector, concurrent));
-	}
-	exports.mergeMap = mergeMap;
-	var MergeMapOperator = (function () {
-	    function MergeMapOperator(project, resultSelector, concurrent) {
-	        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
-	        this.project = project;
-	        this.resultSelector = resultSelector;
-	        this.concurrent = concurrent;
-	    }
-	    MergeMapOperator.prototype.call = function (observer, source) {
-	        return source._subscribe(new MergeMapSubscriber(observer, this.project, this.resultSelector, this.concurrent));
-	    };
-	    return MergeMapOperator;
-	}());
-	exports.MergeMapOperator = MergeMapOperator;
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var MergeMapSubscriber = (function (_super) {
-	    __extends(MergeMapSubscriber, _super);
-	    function MergeMapSubscriber(destination, project, resultSelector, concurrent) {
-	        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
-	        _super.call(this, destination);
-	        this.project = project;
-	        this.resultSelector = resultSelector;
-	        this.concurrent = concurrent;
-	        this.hasCompleted = false;
-	        this.buffer = [];
-	        this.active = 0;
-	        this.index = 0;
-	    }
-	    MergeMapSubscriber.prototype._next = function (value) {
-	        if (this.active < this.concurrent) {
-	            this._tryNext(value);
-	        }
-	        else {
-	            this.buffer.push(value);
-	        }
-	    };
-	    MergeMapSubscriber.prototype._tryNext = function (value) {
-	        var result;
-	        var index = this.index++;
-	        try {
-	            result = this.project(value, index);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        this.active++;
-	        this._innerSub(result, value, index);
-	    };
-	    MergeMapSubscriber.prototype._innerSub = function (ish, value, index) {
-	        this.add(subscribeToResult_1.subscribeToResult(this, ish, value, index));
-	    };
-	    MergeMapSubscriber.prototype._complete = function () {
-	        this.hasCompleted = true;
-	        if (this.active === 0 && this.buffer.length === 0) {
-	            this.destination.complete();
-	        }
-	    };
-	    MergeMapSubscriber.prototype.notifyNext = function (outerValue, innerValue, outerIndex, innerIndex, innerSub) {
-	        if (this.resultSelector) {
-	            this._notifyResultSelector(outerValue, innerValue, outerIndex, innerIndex);
-	        }
-	        else {
-	            this.destination.next(innerValue);
-	        }
-	    };
-	    MergeMapSubscriber.prototype._notifyResultSelector = function (outerValue, innerValue, outerIndex, innerIndex) {
-	        var result;
-	        try {
-	            result = this.resultSelector(outerValue, innerValue, outerIndex, innerIndex);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        this.destination.next(result);
-	    };
-	    MergeMapSubscriber.prototype.notifyComplete = function (innerSub) {
-	        var buffer = this.buffer;
-	        this.remove(innerSub);
-	        this.active--;
-	        if (buffer.length > 0) {
-	            this._next(buffer.shift());
-	        }
-	        else if (this.active === 0 && this.hasCompleted) {
-	            this.destination.complete();
-	        }
-	    };
-	    return MergeMapSubscriber;
-	}(OuterSubscriber_1.OuterSubscriber));
-	exports.MergeMapSubscriber = MergeMapSubscriber;
-	//# sourceMappingURL=mergeMap.js.map
-
-/***/ },
-/* 386 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var root_1 = __webpack_require__(316);
-	var isArray_1 = __webpack_require__(321);
-	var isPromise_1 = __webpack_require__(373);
-	var Observable_1 = __webpack_require__(315);
-	var iterator_1 = __webpack_require__(375);
-	var InnerSubscriber_1 = __webpack_require__(387);
-	var observable_1 = __webpack_require__(328);
-	function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
-	    var destination = new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex);
-	    if (destination.closed) {
-	        return null;
-	    }
-	    if (result instanceof Observable_1.Observable) {
-	        if (result._isScalar) {
-	            destination.next(result.value);
-	            destination.complete();
-	            return null;
-	        }
-	        else {
-	            return result.subscribe(destination);
-	        }
-	    }
-	    if (isArray_1.isArray(result)) {
-	        for (var i = 0, len = result.length; i < len && !destination.closed; i++) {
-	            destination.next(result[i]);
-	        }
-	        if (!destination.closed) {
-	            destination.complete();
-	        }
-	    }
-	    else if (isPromise_1.isPromise(result)) {
-	        result.then(function (value) {
-	            if (!destination.closed) {
-	                destination.next(value);
-	                destination.complete();
-	            }
-	        }, function (err) { return destination.error(err); })
-	            .then(null, function (err) {
-	            // Escaping the Promise trap: globally throw unhandled errors
-	            root_1.root.setTimeout(function () { throw err; });
-	        });
-	        return destination;
-	    }
-	    else if (typeof result[iterator_1.$$iterator] === 'function') {
-	        var iterator = result[iterator_1.$$iterator]();
-	        do {
-	            var item = iterator.next();
-	            if (item.done) {
-	                destination.complete();
-	                break;
-	            }
-	            destination.next(item.value);
-	            if (destination.closed) {
-	                break;
-	            }
-	        } while (true);
-	    }
-	    else if (typeof result[observable_1.$$observable] === 'function') {
-	        var obs = result[observable_1.$$observable]();
-	        if (typeof obs.subscribe !== 'function') {
-	            destination.error(new Error('invalid observable'));
-	        }
-	        else {
-	            return obs.subscribe(new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex));
-	        }
-	    }
-	    else {
-	        destination.error(new TypeError('unknown type returned'));
-	    }
-	    return null;
-	}
-	exports.subscribeToResult = subscribeToResult;
-	//# sourceMappingURL=subscribeToResult.js.map
-
-/***/ },
-/* 387 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var InnerSubscriber = (function (_super) {
-	    __extends(InnerSubscriber, _super);
-	    function InnerSubscriber(parent, outerValue, outerIndex) {
-	        _super.call(this);
-	        this.parent = parent;
-	        this.outerValue = outerValue;
-	        this.outerIndex = outerIndex;
-	        this.index = 0;
-	    }
-	    InnerSubscriber.prototype._next = function (value) {
-	        this.parent.notifyNext(this.outerValue, value, this.outerIndex, this.index++, this);
-	    };
-	    InnerSubscriber.prototype._error = function (error) {
-	        this.parent.notifyError(error, this);
-	        this.unsubscribe();
-	    };
-	    InnerSubscriber.prototype._complete = function () {
-	        this.parent.notifyComplete(this);
-	        this.unsubscribe();
-	    };
-	    return InnerSubscriber;
-	}(Subscriber_1.Subscriber));
-	exports.InnerSubscriber = InnerSubscriber;
-	//# sourceMappingURL=InnerSubscriber.js.map
-
-/***/ },
-/* 388 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var OuterSubscriber = (function (_super) {
-	    __extends(OuterSubscriber, _super);
-	    function OuterSubscriber() {
-	        _super.apply(this, arguments);
-	    }
-	    OuterSubscriber.prototype.notifyNext = function (outerValue, innerValue, outerIndex, innerIndex, innerSub) {
-	        this.destination.next(innerValue);
-	    };
-	    OuterSubscriber.prototype.notifyError = function (error, innerSub) {
-	        this.destination.error(error);
-	    };
-	    OuterSubscriber.prototype.notifyComplete = function (innerSub) {
-	        this.destination.complete();
-	    };
-	    return OuterSubscriber;
-	}(Subscriber_1.Subscriber));
-	exports.OuterSubscriber = OuterSubscriber;
-	//# sourceMappingURL=OuterSubscriber.js.map
-
-/***/ },
-/* 389 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	/**
-	 * Returns an Observable that emits whether or not every item of the source satisfies the condition specified.
-	 * @param {function} predicate a function for determining if an item meets a specified condition.
-	 * @param {any} [thisArg] optional object to use for `this` in the callback
-	 * @return {Observable} an Observable of booleans that determines if all items of the source Observable meet the condition specified.
-	 * @method every
-	 * @owner Observable
-	 */
-	function every(predicate, thisArg) {
-	    return this.lift(new EveryOperator(predicate, thisArg, this));
-	}
-	exports.every = every;
-	var EveryOperator = (function () {
-	    function EveryOperator(predicate, thisArg, source) {
-	        this.predicate = predicate;
-	        this.thisArg = thisArg;
-	        this.source = source;
-	    }
-	    EveryOperator.prototype.call = function (observer, source) {
-	        return source._subscribe(new EverySubscriber(observer, this.predicate, this.thisArg, this.source));
-	    };
-	    return EveryOperator;
-	}());
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var EverySubscriber = (function (_super) {
-	    __extends(EverySubscriber, _super);
-	    function EverySubscriber(destination, predicate, thisArg, source) {
-	        _super.call(this, destination);
-	        this.predicate = predicate;
-	        this.thisArg = thisArg;
-	        this.source = source;
-	        this.index = 0;
-	        this.thisArg = thisArg || this;
-	    }
-	    EverySubscriber.prototype.notifyComplete = function (everyValueMatch) {
-	        this.destination.next(everyValueMatch);
-	        this.destination.complete();
-	    };
-	    EverySubscriber.prototype._next = function (value) {
-	        var result = false;
-	        try {
-	            result = this.predicate.call(this.thisArg, value, this.index++, this.source);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        if (!result) {
-	            this.notifyComplete(false);
-	        }
-	    };
-	    EverySubscriber.prototype._complete = function () {
-	        this.notifyComplete(true);
-	    };
-	    return EverySubscriber;
-	}(Subscriber_1.Subscriber));
-	//# sourceMappingURL=every.js.map
-
-/***/ },
-/* 390 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	/**
-	 * Applies a given `project` function to each value emitted by the source
-	 * Observable, and emits the resulting values as an Observable.
-	 *
-	 * <span class="informal">Like [Array.prototype.map()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map),
-	 * it passes each source value through a transformation function to get
-	 * corresponding output values.</span>
-	 *
-	 * <img src="./img/map.png" width="100%">
-	 *
-	 * Similar to the well known `Array.prototype.map` function, this operator
-	 * applies a projection to each value and emits that projection in the output
-	 * Observable.
-	 *
-	 * @example <caption>Map every every click to the clientX position of that click</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var positions = clicks.map(ev => ev.clientX);
-	 * positions.subscribe(x => console.log(x));
-	 *
-	 * @see {@link mapTo}
-	 * @see {@link pluck}
-	 *
-	 * @param {function(value: T, index: number): R} project The function to apply
-	 * to each `value` emitted by the source Observable. The `index` parameter is
-	 * the number `i` for the i-th emission that has happened since the
-	 * subscription, starting from the number `0`.
-	 * @param {any} [thisArg] An optional argument to define what `this` is in the
-	 * `project` function.
-	 * @return {Observable<R>} An Observable that emits the values from the source
-	 * Observable transformed by the given `project` function.
-	 * @method map
-	 * @owner Observable
-	 */
-	function map(project, thisArg) {
-	    if (typeof project !== 'function') {
-	        throw new TypeError('argument is not a function. Are you looking for `mapTo()`?');
-	    }
-	    return this.lift(new MapOperator(project, thisArg));
-	}
-	exports.map = map;
-	var MapOperator = (function () {
-	    function MapOperator(project, thisArg) {
-	        this.project = project;
-	        this.thisArg = thisArg;
-	    }
-	    MapOperator.prototype.call = function (subscriber, source) {
-	        return source._subscribe(new MapSubscriber(subscriber, this.project, this.thisArg));
-	    };
-	    return MapOperator;
-	}());
-	exports.MapOperator = MapOperator;
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var MapSubscriber = (function (_super) {
-	    __extends(MapSubscriber, _super);
-	    function MapSubscriber(destination, project, thisArg) {
-	        _super.call(this, destination);
-	        this.project = project;
-	        this.count = 0;
-	        this.thisArg = thisArg || this;
-	    }
-	    // NOTE: This looks unoptimized, but it's actually purposefully NOT
-	    // using try/catch optimizations.
-	    MapSubscriber.prototype._next = function (value) {
-	        var result;
-	        try {
-	            result = this.project.call(this.thisArg, value, this.count++);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        this.destination.next(result);
-	    };
-	    return MapSubscriber;
-	}(Subscriber_1.Subscriber));
-	//# sourceMappingURL=map.js.map
-
-/***/ },
-/* 391 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
-	/**
-	 * Converts a higher-order Observable into a first-order Observable which
-	 * concurrently delivers all values that are emitted on the inner Observables.
-	 *
-	 * <span class="informal">Flattens an Observable-of-Observables.</span>
-	 *
-	 * <img src="./img/mergeAll.png" width="100%">
-	 *
-	 * `mergeAll` subscribes to an Observable that emits Observables, also known as
-	 * a higher-order Observable. Each time it observes one of these emitted inner
-	 * Observables, it subscribes to that and delivers all the values from the
-	 * inner Observable on the output Observable. The output Observable only
-	 * completes once all inner Observables have completed. Any error delivered by
-	 * a inner Observable will be immediately emitted on the output Observable.
-	 *
-	 * @example <caption>Spawn a new interval Observable for each click event, and blend their outputs as one Observable</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var higherOrder = clicks.map((ev) => Rx.Observable.interval(1000));
-	 * var firstOrder = higherOrder.mergeAll();
-	 * firstOrder.subscribe(x => console.log(x));
-	 *
-	 * @example <caption>Count from 0 to 9 every second for each click, but only allow 2 concurrent timers</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var higherOrder = clicks.map((ev) => Rx.Observable.interval(1000).take(10));
-	 * var firstOrder = higherOrder.mergeAll(2);
-	 * firstOrder.subscribe(x => console.log(x));
-	 *
-	 * @see {@link combineAll}
-	 * @see {@link concatAll}
-	 * @see {@link exhaust}
-	 * @see {@link merge}
-	 * @see {@link mergeMap}
-	 * @see {@link mergeMapTo}
-	 * @see {@link mergeScan}
-	 * @see {@link switch}
-	 * @see {@link zipAll}
-	 *
-	 * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of inner
-	 * Observables being subscribed to concurrently.
-	 * @return {Observable} An Observable that emits values coming from all the
-	 * inner Observables emitted by the source Observable.
-	 * @method mergeAll
-	 * @owner Observable
-	 */
-	function mergeAll(concurrent) {
-	    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
-	    return this.lift(new MergeAllOperator(concurrent));
-	}
-	exports.mergeAll = mergeAll;
-	var MergeAllOperator = (function () {
-	    function MergeAllOperator(concurrent) {
-	        this.concurrent = concurrent;
-	    }
-	    MergeAllOperator.prototype.call = function (observer, source) {
-	        return source._subscribe(new MergeAllSubscriber(observer, this.concurrent));
-	    };
-	    return MergeAllOperator;
-	}());
-	exports.MergeAllOperator = MergeAllOperator;
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var MergeAllSubscriber = (function (_super) {
-	    __extends(MergeAllSubscriber, _super);
-	    function MergeAllSubscriber(destination, concurrent) {
-	        _super.call(this, destination);
-	        this.concurrent = concurrent;
-	        this.hasCompleted = false;
-	        this.buffer = [];
-	        this.active = 0;
-	    }
-	    MergeAllSubscriber.prototype._next = function (observable) {
-	        if (this.active < this.concurrent) {
-	            this.active++;
-	            this.add(subscribeToResult_1.subscribeToResult(this, observable));
-	        }
-	        else {
-	            this.buffer.push(observable);
-	        }
-	    };
-	    MergeAllSubscriber.prototype._complete = function () {
-	        this.hasCompleted = true;
-	        if (this.active === 0 && this.buffer.length === 0) {
-	            this.destination.complete();
-	        }
-	    };
-	    MergeAllSubscriber.prototype.notifyComplete = function (innerSub) {
-	        var buffer = this.buffer;
-	        this.remove(innerSub);
-	        this.active--;
-	        if (buffer.length > 0) {
-	            this._next(buffer.shift());
-	        }
-	        else if (this.active === 0 && this.hasCompleted) {
-	            this.destination.complete();
-	        }
-	    };
-	    return MergeAllSubscriber;
-	}(OuterSubscriber_1.OuterSubscriber));
-	exports.MergeAllSubscriber = MergeAllSubscriber;
-	//# sourceMappingURL=mergeAll.js.map
-
-/***/ },
-/* 392 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	/**
-	 * Applies an accumulator function over the source Observable, and returns the
-	 * accumulated result when the source completes, given an optional seed value.
-	 *
-	 * <span class="informal">Combines together all values emitted on the source,
-	 * using an accumulator function that knows how to join a new source value into
-	 * the accumulation from the past.</span>
-	 *
-	 * <img src="./img/reduce.png" width="100%">
-	 *
-	 * Like
-	 * [Array.prototype.reduce()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce),
-	 * `reduce` applies an `accumulator` function against an accumulation and each
-	 * value of the source Observable (from the past) to reduce it to a single
-	 * value, emitted on the output Observable. Note that `reduce` will only emit
-	 * one value, only when the source Observable completes. It is equivalent to
-	 * applying operator {@link scan} followed by operator {@link last}.
-	 *
-	 * Returns an Observable that applies a specified `accumulator` function to each
-	 * item emitted by the source Observable. If a `seed` value is specified, then
-	 * that value will be used as the initial value for the accumulator. If no seed
-	 * value is specified, the first item of the source is used as the seed.
-	 *
-	 * @example <caption>Count the number of click events that happened in 5 seconds</caption>
-	 * var clicksInFiveSeconds = Rx.Observable.fromEvent(document, 'click')
-	 *   .takeUntil(Rx.Observable.interval(5000));
-	 * var ones = clicksInFiveSeconds.mapTo(1);
-	 * var seed = 0;
-	 * var count = ones.reduce((acc, one) => acc + one, seed);
-	 * count.subscribe(x => console.log(x));
-	 *
-	 * @see {@link count}
-	 * @see {@link expand}
-	 * @see {@link mergeScan}
-	 * @see {@link scan}
-	 *
-	 * @param {function(acc: R, value: T): R} accumulator The accumulator function
-	 * called on each source value.
-	 * @param {R} [seed] The initial accumulation value.
-	 * @return {Observable<R>} An observable of the accumulated values.
-	 * @return {Observable<R>} An Observable that emits a single value that is the
-	 * result of accumulating the values emitted by the source Observable.
-	 * @method reduce
-	 * @owner Observable
-	 */
-	function reduce(accumulator, seed) {
-	    return this.lift(new ReduceOperator(accumulator, seed));
-	}
-	exports.reduce = reduce;
-	var ReduceOperator = (function () {
-	    function ReduceOperator(accumulator, seed) {
-	        this.accumulator = accumulator;
-	        this.seed = seed;
-	    }
-	    ReduceOperator.prototype.call = function (subscriber, source) {
-	        return source._subscribe(new ReduceSubscriber(subscriber, this.accumulator, this.seed));
-	    };
-	    return ReduceOperator;
-	}());
-	exports.ReduceOperator = ReduceOperator;
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var ReduceSubscriber = (function (_super) {
-	    __extends(ReduceSubscriber, _super);
-	    function ReduceSubscriber(destination, accumulator, seed) {
-	        _super.call(this, destination);
-	        this.accumulator = accumulator;
-	        this.hasValue = false;
-	        this.acc = seed;
-	        this.accumulator = accumulator;
-	        this.hasSeed = typeof seed !== 'undefined';
-	    }
-	    ReduceSubscriber.prototype._next = function (value) {
-	        if (this.hasValue || (this.hasValue = this.hasSeed)) {
-	            this._tryReduce(value);
-	        }
-	        else {
-	            this.acc = value;
-	            this.hasValue = true;
-	        }
-	    };
-	    ReduceSubscriber.prototype._tryReduce = function (value) {
-	        var result;
-	        try {
-	            result = this.accumulator(this.acc, value);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        this.acc = result;
-	    };
-	    ReduceSubscriber.prototype._complete = function () {
-	        if (this.hasValue || this.hasSeed) {
-	            this.destination.next(this.acc);
-	        }
-	        this.destination.complete();
-	    };
-	    return ReduceSubscriber;
-	}(Subscriber_1.Subscriber));
-	exports.ReduceSubscriber = ReduceSubscriber;
-	//# sourceMappingURL=reduce.js.map
-
-/***/ },
-/* 393 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
-	/**
-	 * Catches errors on the observable to be handled by returning a new observable or throwing an error.
-	 * @param {function} selector a function that takes as arguments `err`, which is the error, and `caught`, which
-	 *  is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable
-	 *  is returned by the `selector` will be used to continue the observable chain.
-	 * @return {Observable} an observable that originates from either the source or the observable returned by the
-	 *  catch `selector` function.
-	 * @method catch
-	 * @owner Observable
-	 */
-	function _catch(selector) {
-	    var operator = new CatchOperator(selector);
-	    var caught = this.lift(operator);
-	    return (operator.caught = caught);
-	}
-	exports._catch = _catch;
-	var CatchOperator = (function () {
-	    function CatchOperator(selector) {
-	        this.selector = selector;
-	    }
-	    CatchOperator.prototype.call = function (subscriber, source) {
-	        return source._subscribe(new CatchSubscriber(subscriber, this.selector, this.caught));
-	    };
-	    return CatchOperator;
-	}());
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var CatchSubscriber = (function (_super) {
-	    __extends(CatchSubscriber, _super);
-	    function CatchSubscriber(destination, selector, caught) {
-	        _super.call(this, destination);
-	        this.selector = selector;
-	        this.caught = caught;
-	    }
-	    // NOTE: overriding `error` instead of `_error` because we don't want
-	    // to have this flag this subscriber as `isStopped`.
-	    CatchSubscriber.prototype.error = function (err) {
-	        if (!this.isStopped) {
-	            var result = void 0;
-	            try {
-	                result = this.selector(err, this.caught);
-	            }
-	            catch (err) {
-	                this.destination.error(err);
-	                return;
-	            }
-	            this.unsubscribe();
-	            this.destination.remove(this);
-	            subscribeToResult_1.subscribeToResult(this, result);
-	        }
-	    };
-	    return CatchSubscriber;
-	}(OuterSubscriber_1.OuterSubscriber));
-	//# sourceMappingURL=catch.js.map
-
-/***/ },
-/* 394 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var mergeAll_1 = __webpack_require__(391);
-	/**
-	 * Converts a higher-order Observable into a first-order Observable by
-	 * concatenating the inner Observables in order.
-	 *
-	 * <span class="informal">Flattens an Observable-of-Observables by putting one
-	 * inner Observable after the other.</span>
-	 *
-	 * <img src="./img/concatAll.png" width="100%">
-	 *
-	 * Joins every Observable emitted by the source (a higher-order Observable), in
-	 * a serial fashion. It subscribes to each inner Observable only after the
-	 * previous inner Observable has completed, and merges all of their values into
-	 * the returned observable.
-	 *
-	 * __Warning:__ If the source Observable emits Observables quickly and
-	 * endlessly, and the inner Observables it emits generally complete slower than
-	 * the source emits, you can run into memory issues as the incoming Observables
-	 * collect in an unbounded buffer.
-	 *
-	 * Note: `concatAll` is equivalent to `mergeAll` with concurrency parameter set
-	 * to `1`.
-	 *
-	 * @example <caption>For each click event, tick every second from 0 to 3, with no concurrency</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var higherOrder = clicks.map(ev => Rx.Observable.interval(1000).take(4));
-	 * var firstOrder = higherOrder.concatAll();
-	 * firstOrder.subscribe(x => console.log(x));
-	 *
-	 * @see {@link combineAll}
-	 * @see {@link concat}
-	 * @see {@link concatMap}
-	 * @see {@link concatMapTo}
-	 * @see {@link exhaust}
-	 * @see {@link mergeAll}
-	 * @see {@link switch}
-	 * @see {@link zipAll}
-	 *
-	 * @return {Observable} An Observable emitting values from all the inner
-	 * Observables concatenated.
-	 * @method concatAll
-	 * @owner Observable
-	 */
-	function concatAll() {
-	    return this.lift(new mergeAll_1.MergeAllOperator(1));
-	}
-	exports.concatAll = concatAll;
-	//# sourceMappingURL=concatAll.js.map
-
-/***/ },
-/* 395 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	var EmptyError_1 = __webpack_require__(396);
-	/**
-	 * Emits only the first value (or the first value that meets some condition)
-	 * emitted by the source Observable.
-	 *
-	 * <span class="informal">Emits only the first value. Or emits only the first
-	 * value that passes some test.</span>
-	 *
-	 * <img src="./img/first.png" width="100%">
-	 *
-	 * If called with no arguments, `first` emits the first value of the source
-	 * Observable, then completes. If called with a `predicate` function, `first`
-	 * emits the first value of the source that matches the specified condition. It
-	 * may also take a `resultSelector` function to produce the output value from
-	 * the input value, and a `defaultValue` to emit in case the source completes
-	 * before it is able to emit a valid value. Throws an error if `defaultValue`
-	 * was not provided and a matching element is not found.
-	 *
-	 * @example <caption>Emit only the first click that happens on the DOM</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var result = clicks.first();
-	 * result.subscribe(x => console.log(x));
-	 *
-	 * @example <caption>Emits the first click that happens on a DIV</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var result = clicks.first(ev => ev.target.tagName === 'DIV');
-	 * result.subscribe(x => console.log(x));
-	 *
-	 * @see {@link filter}
-	 * @see {@link find}
-	 * @see {@link take}
-	 *
-	 * @throws {EmptyError} Delivers an EmptyError to the Observer's `error`
-	 * callback if the Observable completes before any `next` notification was sent.
-	 *
-	 * @param {function(value: T, index: number, source: Observable<T>): boolean} [predicate]
-	 * An optional function called with each item to test for condition matching.
-	 * @param {function(value: T, index: number): R} [resultSelector] A function to
-	 * produce the value on the output Observable based on the values
-	 * and the indices of the source Observable. The arguments passed to this
-	 * function are:
-	 * - `value`: the value that was emitted on the source.
-	 * - `index`: the "index" of the value from the source.
-	 * @param {R} [defaultValue] The default value emitted in case no valid value
-	 * was found on the source.
-	 * @return {Observable<T|R>} an Observable of the first item that matches the
-	 * condition.
-	 * @method first
-	 * @owner Observable
-	 */
-	function first(predicate, resultSelector, defaultValue) {
-	    return this.lift(new FirstOperator(predicate, resultSelector, defaultValue, this));
-	}
-	exports.first = first;
-	var FirstOperator = (function () {
-	    function FirstOperator(predicate, resultSelector, defaultValue, source) {
-	        this.predicate = predicate;
-	        this.resultSelector = resultSelector;
-	        this.defaultValue = defaultValue;
-	        this.source = source;
-	    }
-	    FirstOperator.prototype.call = function (observer, source) {
-	        return source._subscribe(new FirstSubscriber(observer, this.predicate, this.resultSelector, this.defaultValue, this.source));
-	    };
-	    return FirstOperator;
-	}());
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var FirstSubscriber = (function (_super) {
-	    __extends(FirstSubscriber, _super);
-	    function FirstSubscriber(destination, predicate, resultSelector, defaultValue, source) {
-	        _super.call(this, destination);
-	        this.predicate = predicate;
-	        this.resultSelector = resultSelector;
-	        this.defaultValue = defaultValue;
-	        this.source = source;
-	        this.index = 0;
-	        this.hasCompleted = false;
-	    }
-	    FirstSubscriber.prototype._next = function (value) {
-	        var index = this.index++;
-	        if (this.predicate) {
-	            this._tryPredicate(value, index);
-	        }
-	        else {
-	            this._emit(value, index);
-	        }
-	    };
-	    FirstSubscriber.prototype._tryPredicate = function (value, index) {
-	        var result;
-	        try {
-	            result = this.predicate(value, index, this.source);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        if (result) {
-	            this._emit(value, index);
-	        }
-	    };
-	    FirstSubscriber.prototype._emit = function (value, index) {
-	        if (this.resultSelector) {
-	            this._tryResultSelector(value, index);
-	            return;
-	        }
-	        this._emitFinal(value);
-	    };
-	    FirstSubscriber.prototype._tryResultSelector = function (value, index) {
-	        var result;
-	        try {
-	            result = this.resultSelector(value, index);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        this._emitFinal(result);
-	    };
-	    FirstSubscriber.prototype._emitFinal = function (value) {
-	        var destination = this.destination;
-	        destination.next(value);
-	        destination.complete();
-	        this.hasCompleted = true;
-	    };
-	    FirstSubscriber.prototype._complete = function () {
-	        var destination = this.destination;
-	        if (!this.hasCompleted && typeof this.defaultValue !== 'undefined') {
-	            destination.next(this.defaultValue);
-	            destination.complete();
-	        }
-	        else if (!this.hasCompleted) {
-	            destination.error(new EmptyError_1.EmptyError);
-	        }
-	    };
-	    return FirstSubscriber;
-	}(Subscriber_1.Subscriber));
-	//# sourceMappingURL=first.js.map
-
-/***/ },
-/* 396 */
-/***/ function(module, exports) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	/**
-	 * An error thrown when an Observable or a sequence was queried but has no
-	 * elements.
-	 *
-	 * @see {@link first}
-	 * @see {@link last}
-	 * @see {@link single}
-	 *
-	 * @class EmptyError
-	 */
-	var EmptyError = (function (_super) {
-	    __extends(EmptyError, _super);
-	    function EmptyError() {
-	        var err = _super.call(this, 'no elements in sequence');
-	        this.name = err.name = 'EmptyError';
-	        this.stack = err.stack;
-	        this.message = err.message;
-	    }
-	    return EmptyError;
-	}(Error));
-	exports.EmptyError = EmptyError;
-	//# sourceMappingURL=EmptyError.js.map
-
-/***/ },
-/* 397 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	var EmptyError_1 = __webpack_require__(396);
-	/**
-	 * Returns an Observable that emits only the last item emitted by the source Observable.
-	 * It optionally takes a predicate function as a parameter, in which case, rather than emitting
-	 * the last item from the source Observable, the resulting Observable will emit the last item
-	 * from the source Observable that satisfies the predicate.
-	 *
-	 * <img src="./img/last.png" width="100%">
-	 *
-	 * @throws {EmptyError} Delivers an EmptyError to the Observer's `error`
-	 * callback if the Observable completes before any `next` notification was sent.
-	 * @param {function} predicate - the condition any source emitted item has to satisfy.
-	 * @return {Observable} an Observable that emits only the last item satisfying the given condition
-	 * from the source, or an NoSuchElementException if no such items are emitted.
-	 * @throws - Throws if no items that match the predicate are emitted by the source Observable.
-	 * @method last
-	 * @owner Observable
-	 */
-	function last(predicate, resultSelector, defaultValue) {
-	    return this.lift(new LastOperator(predicate, resultSelector, defaultValue, this));
-	}
-	exports.last = last;
-	var LastOperator = (function () {
-	    function LastOperator(predicate, resultSelector, defaultValue, source) {
-	        this.predicate = predicate;
-	        this.resultSelector = resultSelector;
-	        this.defaultValue = defaultValue;
-	        this.source = source;
-	    }
-	    LastOperator.prototype.call = function (observer, source) {
-	        return source._subscribe(new LastSubscriber(observer, this.predicate, this.resultSelector, this.defaultValue, this.source));
-	    };
-	    return LastOperator;
-	}());
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var LastSubscriber = (function (_super) {
-	    __extends(LastSubscriber, _super);
-	    function LastSubscriber(destination, predicate, resultSelector, defaultValue, source) {
-	        _super.call(this, destination);
-	        this.predicate = predicate;
-	        this.resultSelector = resultSelector;
-	        this.defaultValue = defaultValue;
-	        this.source = source;
-	        this.hasValue = false;
-	        this.index = 0;
-	        if (typeof defaultValue !== 'undefined') {
-	            this.lastValue = defaultValue;
-	            this.hasValue = true;
-	        }
-	    }
-	    LastSubscriber.prototype._next = function (value) {
-	        var index = this.index++;
-	        if (this.predicate) {
-	            this._tryPredicate(value, index);
-	        }
-	        else {
-	            if (this.resultSelector) {
-	                this._tryResultSelector(value, index);
-	                return;
-	            }
-	            this.lastValue = value;
-	            this.hasValue = true;
-	        }
-	    };
-	    LastSubscriber.prototype._tryPredicate = function (value, index) {
-	        var result;
-	        try {
-	            result = this.predicate(value, index, this.source);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        if (result) {
-	            if (this.resultSelector) {
-	                this._tryResultSelector(value, index);
-	                return;
-	            }
-	            this.lastValue = value;
-	            this.hasValue = true;
-	        }
-	    };
-	    LastSubscriber.prototype._tryResultSelector = function (value, index) {
-	        var result;
-	        try {
-	            result = this.resultSelector(value, index);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        this.lastValue = result;
-	        this.hasValue = true;
-	    };
-	    LastSubscriber.prototype._complete = function () {
-	        var destination = this.destination;
-	        if (this.hasValue) {
-	            destination.next(this.lastValue);
-	            destination.complete();
-	        }
-	        else {
-	            destination.error(new EmptyError_1.EmptyError);
-	        }
-	    };
-	    return LastSubscriber;
-	}(Subscriber_1.Subscriber));
-	//# sourceMappingURL=last.js.map
-
-/***/ },
-/* 398 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subject_1 = __webpack_require__(314);
-	var ObjectUnsubscribedError_1 = __webpack_require__(329);
-	/**
-	 * @class BehaviorSubject<T>
-	 */
-	var BehaviorSubject = (function (_super) {
-	    __extends(BehaviorSubject, _super);
-	    function BehaviorSubject(_value) {
-	        _super.call(this);
-	        this._value = _value;
-	    }
-	    Object.defineProperty(BehaviorSubject.prototype, "value", {
-	        get: function () {
-	            return this.getValue();
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    BehaviorSubject.prototype._subscribe = function (subscriber) {
-	        var subscription = _super.prototype._subscribe.call(this, subscriber);
-	        if (subscription && !subscription.closed) {
-	            subscriber.next(this._value);
-	        }
-	        return subscription;
-	    };
-	    BehaviorSubject.prototype.getValue = function () {
-	        if (this.hasError) {
-	            throw this.thrownError;
-	        }
-	        else if (this.closed) {
-	            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
-	        }
-	        else {
-	            return this._value;
-	        }
-	    };
-	    BehaviorSubject.prototype.next = function (value) {
-	        _super.prototype.next.call(this, this._value = value);
-	    };
-	    return BehaviorSubject;
-	}(Subject_1.Subject));
-	exports.BehaviorSubject = BehaviorSubject;
-	//# sourceMappingURL=BehaviorSubject.js.map
-
-/***/ },
-/* 399 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var Subscriber_1 = __webpack_require__(318);
-	/**
-	 * Filter items emitted by the source Observable by only emitting those that
-	 * satisfy a specified predicate.
-	 *
-	 * <span class="informal">Like
-	 * [Array.prototype.filter()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter),
-	 * it only emits a value from the source if it passes a criterion function.</span>
-	 *
-	 * <img src="./img/filter.png" width="100%">
-	 *
-	 * Similar to the well-known `Array.prototype.filter` method, this operator
-	 * takes values from the source Observable, passes them through a `predicate`
-	 * function and only emits those values that yielded `true`.
-	 *
-	 * @example <caption>Emit only click events whose target was a DIV element</caption>
-	 * var clicks = Rx.Observable.fromEvent(document, 'click');
-	 * var clicksOnDivs = clicks.filter(ev => ev.target.tagName === 'DIV');
-	 * clicksOnDivs.subscribe(x => console.log(x));
-	 *
-	 * @see {@link distinct}
-	 * @see {@link distinctKey}
-	 * @see {@link distinctUntilChanged}
-	 * @see {@link distinctUntilKeyChanged}
-	 * @see {@link ignoreElements}
-	 * @see {@link partition}
-	 * @see {@link skip}
-	 *
-	 * @param {function(value: T, index: number): boolean} predicate A function that
-	 * evaluates each value emitted by the source Observable. If it returns `true`,
-	 * the value is emitted, if `false` the value is not passed to the output
-	 * Observable. The `index` parameter is the number `i` for the i-th source
-	 * emission that has happened since the subscription, starting from the number
-	 * `0`.
-	 * @param {any} [thisArg] An optional argument to determine the value of `this`
-	 * in the `predicate` function.
-	 * @return {Observable} An Observable of values from the source that were
-	 * allowed by the `predicate` function.
-	 * @method filter
-	 * @owner Observable
-	 */
-	function filter(predicate, thisArg) {
-	    return this.lift(new FilterOperator(predicate, thisArg));
-	}
-	exports.filter = filter;
-	var FilterOperator = (function () {
-	    function FilterOperator(predicate, thisArg) {
-	        this.predicate = predicate;
-	        this.thisArg = thisArg;
-	    }
-	    FilterOperator.prototype.call = function (subscriber, source) {
-	        return source._subscribe(new FilterSubscriber(subscriber, this.predicate, this.thisArg));
-	    };
-	    return FilterOperator;
-	}());
-	/**
-	 * We need this JSDoc comment for affecting ESDoc.
-	 * @ignore
-	 * @extends {Ignored}
-	 */
-	var FilterSubscriber = (function (_super) {
-	    __extends(FilterSubscriber, _super);
-	    function FilterSubscriber(destination, predicate, thisArg) {
-	        _super.call(this, destination);
-	        this.predicate = predicate;
-	        this.thisArg = thisArg;
-	        this.count = 0;
-	        this.predicate = predicate;
-	    }
-	    // the try catch block below is left specifically for
-	    // optimization and perf reasons. a tryCatcher is not necessary here.
-	    FilterSubscriber.prototype._next = function (value) {
-	        var result;
-	        try {
-	            result = this.predicate.call(this.thisArg, value, this.count++);
-	        }
-	        catch (err) {
-	            this.destination.error(err);
-	            return;
-	        }
-	        if (result) {
-	            this.destination.next(value);
-	        }
-	    };
-	    return FilterSubscriber;
-	}(Subscriber_1.Subscriber));
-	//# sourceMappingURL=filter.js.map
 
 /***/ },
 /* 400 */
@@ -65504,13 +65523,13 @@
 	var login_service_1 = __webpack_require__(401);
 	var login_model_1 = __webpack_require__(404);
 	var auth_service_1 = __webpack_require__(339);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var LoginComponent = (function () {
 	    function LoginComponent(_loginSevice, _auth, _router) {
 	        this._loginSevice = _loginSevice;
 	        this._auth = _auth;
 	        this._router = _router;
-	        this.loginModel = new login_model_1.LoginModel("ioannis.noukakis@heig-vd.ch", "ioannis");
+	        this.loginModel = new login_model_1.LoginModel("", "");
 	        if (this._auth.isConnected()) {
 	            this._router.navigateByUrl('/mapView');
 	        }
@@ -65546,12 +65565,12 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var http_1 = __webpack_require__(341);
-	var http_2 = __webpack_require__(341);
+	var http_1 = __webpack_require__(371);
+	var http_2 = __webpack_require__(371);
 	var token_1 = __webpack_require__(402);
 	__webpack_require__(403);
 	var auth_service_1 = __webpack_require__(339);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var LoginService = (function () {
 	    function LoginService(_http, _auth, _router) {
 	        this._http = _http;
@@ -65573,17 +65592,22 @@
 	        var credentials = JSON.stringify({ mail: loginModel.username, pass: loginModel.password });
 	        this._http.post(this.apiURL, credentials, { headers: this.headers })
 	            .map(function (res) { return res.json(); })
-	            .subscribe(function (data) { return _this.saveJwt(data); }, function (err) { return _this.logError(err); }, function () {
+	            .subscribe(function (data) {
+	            _this.saveJwt(data);
 	            console.log("[LOGIN_SERVICE][I] Authentication Complete.");
 	            _this._router.navigateByUrl('/mapView');
+	        }, function (err) {
+	            _this.logError(err);
+	            alert(JSON.parse(err._body).message);
+	            loginModel.password = "";
+	            loginModel.username = "";
 	        });
 	    };
 	    LoginService.prototype.saveJwt = function (jwt) {
 	        if (jwt) {
 	            this._auth.setToken(new token_1.Token(jwt.token, jwt.string, false));
 	            this._auth.setUserID(jwt.user.id);
-	            this._auth.setAdmin(jwt.user.admin);
-	            console.log(this._auth.getToken());
+	            this._auth.setRank(jwt.user.rank);
 	        }
 	    };
 	    LoginService.prototype.logError = function (error) {
@@ -65620,7 +65644,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var map_1 = __webpack_require__(390);
+	var map_1 = __webpack_require__(360);
 	Observable_1.Observable.prototype.map = map_1.map;
 	//# sourceMappingURL=map.js.map
 
@@ -65643,7 +65667,7 @@
 /* 405 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <form>\n      <div class=\"form-group\">\n        <img src=\"images/logo.png\" alt=\"Eventail\" style=\"width:100%;\">\n        <label for=\"name\">Name</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"loginModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"loginModel.password\" name=\"password\">\n      </div>\n      <button (click)=\"onSubmit()\" type=\"submit\" class=\"button big\">Submit</button>\n    </form>\n  </div>\n</section>"
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <form>\n      <div class=\"form-group\">\n        <img src=\"images/logo.png\" alt=\"Eventail\" style=\"width:100%;\">\n        <label for=\"name\">Email</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"loginModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"loginModel.password\" name=\"password\">\n      </div>\n      <button (click)=\"onSubmit()\" type=\"submit\" class=\"button big\">Submit</button>\n    </form>\n    <p> You don't have an account? Click <a routerLink=\"/register\">here</a>.</p>\n  </div>\n</section>"
 
 /***/ },
 /* 406 */
@@ -65661,59 +65685,46 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var auth_service_1 = __webpack_require__(339);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var mapView_service_1 = __webpack_require__(407);
 	var user_service_1 = __webpack_require__(698);
 	var MapView = (function () {
+	    //TODO FAIRE UN POLLING
 	    function MapView(_auth, _router, mapService, userService) {
-	        var _this = this;
 	        this._auth = _auth;
 	        this._router = _router;
 	        this.mapService = mapService;
 	        this.userService = userService;
 	        this.editingPointsOfInterest = false;
 	        this.markerEvent = [];
-	        this.commandMakerEvent = this.markerEvent[this.markerEvent.length - 1];
+	        this.commandMakerEvent = null;
 	        this.markerPOI = [];
 	        this.commandMakerPOI = this.markerPOI[this.markerPOI.length - 1];
 	        this.markerPerson = [];
-	        this.zoom = 14;
+	        this.zoom = 15;
+	        this.loadElements();
+	        this.radius = 2000;
+	    }
+	    MapView.prototype.loadElements = function () {
+	        var _this = this;
+	        this.markerEvent = [];
+	        this.markerPOI = [];
+	        this.markerPerson = [];
 	        //localisation
 	        navigator.geolocation.getCurrentPosition(function (position) {
 	            _this.lat = position.coords.latitude;
 	            _this.lng = position.coords.longitude;
-	            _this.radius = 2000;
-	            mapService.getEventNearby(_this.lat, _this.lng, _this.radius)
-	                .subscribe(function (success) {
-	                success.forEach(function (element) {
-	                    _this.markerEvent.push({
-	                        id: element.id,
-	                        owner: element.owner,
-	                        title: element.title,
-	                        desc: element.desc,
-	                        begin: new Date(element.begin).toISOString().substring(0, 10),
-	                        end: new Date(element.end).toISOString().substring(0, 10),
-	                        hbegin: new Date(element.begin).toISOString().substring(11, 16),
-	                        hend: new Date(element.end).toISOString().substring(11, 16),
-	                        spontaneous: element.spontaneous,
-	                        location: element.location,
-	                        radius: element.radius,
-	                        draggable: _this._auth.getUserId() == element.owner
-	                    });
-	                });
-	                _this.commandMakerEvent = _this.markerEvent[_this.markerEvent.length - 1];
-	            }, function (error) { return alert("Error: " + error); });
-	            _this.userService.getUsersNearby(_this.lat, _this.lng, _this.radius, false)
-	                .subscribe(function (success) {
-	                success.forEach(function (user) {
-	                    _this.markerPerson.push({
-	                        id: user.id,
-	                        title: user.username,
-	                        location: user.location
-	                    });
-	                    console.log(_this.markerPerson);
-	                });
-	            }, function (error) { return alert("Error: " + error); });
+	            if (_this.lat == undefined)
+	                return;
+	            _this.markerPerson.push({
+	                id: 0,
+	                title: "You",
+	                location: [
+	                    _this.lat,
+	                    _this.lng
+	                ]
+	            });
+	            _this.loadMapElements();
 	        }, function () {
 	            alert('Please use HTML5 enabled browser');
 	        }, {
@@ -65721,7 +65732,41 @@
 	            maximumAge: 1,
 	            enableHighAccuracy: true
 	        });
-	    }
+	    };
+	    MapView.prototype.loadMapElements = function () {
+	        var _this = this;
+	        this.radius = 3333 * (21 - this.zoom);
+	        this.markerEvent = [];
+	        this.mapService.getEventNearby(this.lat, this.lng, this.radius)
+	            .subscribe(function (success) {
+	            success.forEach(function (element) {
+	                _this.markerEvent.push({
+	                    id: element.id,
+	                    owner: element.owner,
+	                    title: element.title,
+	                    desc: element.desc,
+	                    begin: new Date(element.begin).toISOString().substring(0, 10),
+	                    end: new Date(element.end).toISOString().substring(0, 10),
+	                    hbegin: new Date(element.begin).toISOString().substring(11, 16),
+	                    hend: new Date(element.end).toISOString().substring(11, 16),
+	                    spontaneous: element.spontaneous,
+	                    location: element.location,
+	                    radius: element.radius,
+	                    draggable: _this._auth.getUserId() == element.owner
+	                });
+	            });
+	        }, function (error) { return alert("Error: " + error); });
+	        this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
+	            .subscribe(function (success) {
+	            success.forEach(function (user) {
+	                _this.markerPerson.push({
+	                    id: user.id,
+	                    title: user.username,
+	                    location: user.location
+	                });
+	            });
+	        }, function (error) { return alert("Error: " + error); });
+	    };
 	    MapView.prototype.clickedMarkerEvent = function (label, index) {
 	        var _this = this;
 	        this.commandMakerEvent = this.markerEvent[index];
@@ -65747,7 +65792,7 @@
 	            success.forEach(function (element) {
 	                _this.markerPerson.push({
 	                    id: element.id,
-	                    username: element.username,
+	                    title: element.username,
 	                    location: element.location
 	                });
 	            });
@@ -65787,6 +65832,16 @@
 	            });
 	            this.commandMakerPOI = this.markerPOI[this.markerPOI.length - 1];
 	        }
+	    };
+	    MapView.prototype.centerMapChanged = function ($event) {
+	        this.lat = $event.lat;
+	        this.lng = $event.lng;
+	    };
+	    MapView.prototype.mapIdle = function () {
+	        this.loadMapElements();
+	    };
+	    MapView.prototype.zoomChanged = function ($event) {
+	        this.zoom = $event;
 	    };
 	    MapView.prototype.eventMarkerDragEnd = function (m, $event) {
 	        m.location[0] = $event.coords.lat;
@@ -65899,7 +65954,7 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
 	var header_model_1 = __webpack_require__(697);
@@ -65992,8 +66047,8 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var http_1 = __webpack_require__(341);
-	var http_2 = __webpack_require__(341);
+	var http_1 = __webpack_require__(371);
+	var http_2 = __webpack_require__(371);
 	var Rx_1 = __webpack_require__(409);
 	__webpack_require__(403);
 	var HTTPService = (function () {
@@ -66045,13 +66100,13 @@
 	        return this._http.delete(url, options)
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
 	    };
-	    HTTPService.prototype.doPut = function (url, pHeaders) {
+	    HTTPService.prototype.doPut = function (body, url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        pHeaders.forEach(function (header) {
 	            headers.append(header.key, header.value);
 	        });
 	        var options = new http_2.RequestOptions({ headers: headers });
-	        return this._http.put(url, {}, options)
+	        return this._http.put(url, body, options)
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
 	    };
 	    return HTTPService;
@@ -66087,7 +66142,7 @@
 	__webpack_require__(426);
 	__webpack_require__(428);
 	__webpack_require__(431);
-	__webpack_require__(366);
+	__webpack_require__(396);
 	__webpack_require__(432);
 	__webpack_require__(435);
 	__webpack_require__(436);
@@ -66132,7 +66187,7 @@
 	__webpack_require__(530);
 	__webpack_require__(532);
 	__webpack_require__(534);
-	__webpack_require__(362);
+	__webpack_require__(392);
 	__webpack_require__(536);
 	__webpack_require__(538);
 	__webpack_require__(540);
@@ -66148,7 +66203,7 @@
 	__webpack_require__(562);
 	__webpack_require__(564);
 	__webpack_require__(566);
-	__webpack_require__(364);
+	__webpack_require__(394);
 	__webpack_require__(567);
 	__webpack_require__(403);
 	__webpack_require__(568);
@@ -66219,15 +66274,15 @@
 	exports.AsyncSubject = AsyncSubject_1.AsyncSubject;
 	var ReplaySubject_1 = __webpack_require__(487);
 	exports.ReplaySubject = ReplaySubject_1.ReplaySubject;
-	var BehaviorSubject_1 = __webpack_require__(398);
+	var BehaviorSubject_1 = __webpack_require__(368);
 	exports.BehaviorSubject = BehaviorSubject_1.BehaviorSubject;
 	var MulticastObservable_1 = __webpack_require__(584);
 	exports.MulticastObservable = MulticastObservable_1.MulticastObservable;
 	var ConnectableObservable_1 = __webpack_require__(585);
 	exports.ConnectableObservable = ConnectableObservable_1.ConnectableObservable;
-	var Notification_1 = __webpack_require__(382);
+	var Notification_1 = __webpack_require__(352);
 	exports.Notification = Notification_1.Notification;
-	var EmptyError_1 = __webpack_require__(396);
+	var EmptyError_1 = __webpack_require__(366);
 	exports.EmptyError = EmptyError_1.EmptyError;
 	var ArgumentOutOfRangeError_1 = __webpack_require__(544);
 	exports.ArgumentOutOfRangeError = ArgumentOutOfRangeError_1.ArgumentOutOfRangeError;
@@ -66252,7 +66307,7 @@
 	var queue_1 = __webpack_require__(488);
 	var animationFrame_1 = __webpack_require__(693);
 	var rxSubscriber_1 = __webpack_require__(327);
-	var iterator_1 = __webpack_require__(375);
+	var iterator_1 = __webpack_require__(345);
 	var observable_1 = __webpack_require__(328);
 	/* tslint:enable:no-unused-variable */
 	/**
@@ -66752,9 +66807,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var isScheduler_1 = __webpack_require__(379);
+	var isScheduler_1 = __webpack_require__(349);
 	var isArray_1 = __webpack_require__(321);
-	var ArrayObservable_1 = __webpack_require__(376);
+	var ArrayObservable_1 = __webpack_require__(346);
 	var combineLatest_1 = __webpack_require__(419);
 	/* tslint:enable:max-line-length */
 	/**
@@ -66833,10 +66888,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var ArrayObservable_1 = __webpack_require__(376);
+	var ArrayObservable_1 = __webpack_require__(346);
 	var isArray_1 = __webpack_require__(321);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	var none = {};
 	/**
 	 * Combines multiple Observables to create an Observable whose values are
@@ -66999,9 +67054,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var isScheduler_1 = __webpack_require__(379);
-	var ArrayObservable_1 = __webpack_require__(376);
-	var mergeAll_1 = __webpack_require__(391);
+	var isScheduler_1 = __webpack_require__(349);
+	var ArrayObservable_1 = __webpack_require__(346);
+	var mergeAll_1 = __webpack_require__(361);
 	/**
 	 * Creates an output Observable which sequentially emits all values from every
 	 * given input Observable after the current Observable.
@@ -67137,8 +67192,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Observable_1 = __webpack_require__(315);
-	var subscribeToResult_1 = __webpack_require__(386);
-	var OuterSubscriber_1 = __webpack_require__(388);
+	var subscribeToResult_1 = __webpack_require__(356);
+	var OuterSubscriber_1 = __webpack_require__(358);
 	/**
 	 * We need this JSDoc comment for affecting ESDoc.
 	 * @extends {Ignored}
@@ -67239,7 +67294,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var EmptyObservable_1 = __webpack_require__(378);
+	var EmptyObservable_1 = __webpack_require__(348);
 	exports.empty = EmptyObservable_1.EmptyObservable.create;
 	//# sourceMappingURL=empty.js.map
 
@@ -67273,10 +67328,10 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Observable_1 = __webpack_require__(315);
-	var EmptyObservable_1 = __webpack_require__(378);
+	var EmptyObservable_1 = __webpack_require__(348);
 	var isArray_1 = __webpack_require__(321);
-	var subscribeToResult_1 = __webpack_require__(386);
-	var OuterSubscriber_1 = __webpack_require__(388);
+	var subscribeToResult_1 = __webpack_require__(356);
+	var OuterSubscriber_1 = __webpack_require__(358);
 	/**
 	 * We need this JSDoc comment for affecting ESDoc.
 	 * @extends {Ignored}
@@ -67385,7 +67440,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var from_1 = __webpack_require__(371);
+	var from_1 = __webpack_require__(341);
 	Observable_1.Observable.from = from_1.from;
 	//# sourceMappingURL=from.js.map
 
@@ -67552,7 +67607,7 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Observable_1 = __webpack_require__(315);
-	var isScheduler_1 = __webpack_require__(379);
+	var isScheduler_1 = __webpack_require__(349);
 	var selfSelector = function (value) { return value; };
 	/**
 	 * We need this JSDoc comment for affecting ESDoc.
@@ -67711,8 +67766,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Observable_1 = __webpack_require__(315);
-	var subscribeToResult_1 = __webpack_require__(386);
-	var OuterSubscriber_1 = __webpack_require__(388);
+	var subscribeToResult_1 = __webpack_require__(356);
+	var OuterSubscriber_1 = __webpack_require__(358);
 	/**
 	 * We need this JSDoc comment for affecting ESDoc.
 	 * @extends {Ignored}
@@ -68235,9 +68290,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var ArrayObservable_1 = __webpack_require__(376);
-	var mergeAll_1 = __webpack_require__(391);
-	var isScheduler_1 = __webpack_require__(379);
+	var ArrayObservable_1 = __webpack_require__(346);
+	var mergeAll_1 = __webpack_require__(361);
+	var isScheduler_1 = __webpack_require__(349);
 	/**
 	 * Creates an output Observable which concurrently emits all values from every
 	 * given input Observable.
@@ -68386,9 +68441,9 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var isArray_1 = __webpack_require__(321);
-	var ArrayObservable_1 = __webpack_require__(376);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var ArrayObservable_1 = __webpack_require__(346);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Returns an Observable that mirrors the first source Observable to emit an item
 	 * from the combination of this Observable and supplied Observables
@@ -68590,7 +68645,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var of_1 = __webpack_require__(383);
+	var of_1 = __webpack_require__(353);
 	Observable_1.Observable.of = of_1.of;
 	//# sourceMappingURL=of.js.map
 
@@ -68614,10 +68669,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var FromObservable_1 = __webpack_require__(372);
+	var FromObservable_1 = __webpack_require__(342);
 	var isArray_1 = __webpack_require__(321);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	function onErrorResumeNext() {
 	    var nextSources = [];
 	    for (var _i = 0; _i < arguments.length; _i++) {
@@ -68943,8 +68998,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Observable_1 = __webpack_require__(315);
-	var subscribeToResult_1 = __webpack_require__(386);
-	var OuterSubscriber_1 = __webpack_require__(388);
+	var subscribeToResult_1 = __webpack_require__(356);
+	var OuterSubscriber_1 = __webpack_require__(358);
 	/**
 	 * We need this JSDoc comment for affecting ESDoc.
 	 * @extends {Ignored}
@@ -69136,7 +69191,7 @@
 	var isNumeric_1 = __webpack_require__(444);
 	var Observable_1 = __webpack_require__(315);
 	var async_1 = __webpack_require__(445);
-	var isScheduler_1 = __webpack_require__(379);
+	var isScheduler_1 = __webpack_require__(349);
 	var isDate_1 = __webpack_require__(477);
 	/**
 	 * We need this JSDoc comment for affecting ESDoc.
@@ -69275,12 +69330,12 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var ArrayObservable_1 = __webpack_require__(376);
+	var ArrayObservable_1 = __webpack_require__(346);
 	var isArray_1 = __webpack_require__(321);
 	var Subscriber_1 = __webpack_require__(318);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
-	var iterator_1 = __webpack_require__(375);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
+	var iterator_1 = __webpack_require__(345);
 	/**
 	 * @param observables
 	 * @return {Observable<R>}
@@ -69558,7 +69613,7 @@
 	var errorObject_1 = __webpack_require__(324);
 	var Observable_1 = __webpack_require__(315);
 	var Subscriber_1 = __webpack_require__(318);
-	var map_1 = __webpack_require__(390);
+	var map_1 = __webpack_require__(360);
 	function getCORSRequest() {
 	    if (root_1.root.XMLHttpRequest) {
 	        var xhr = new root_1.root.XMLHttpRequest();
@@ -70182,7 +70237,7 @@
 	};
 	var Subject_1 = __webpack_require__(314);
 	var queue_1 = __webpack_require__(488);
-	var observeOn_1 = __webpack_require__(381);
+	var observeOn_1 = __webpack_require__(351);
 	/**
 	 * @class ReplaySubject<T>
 	 */
@@ -70393,8 +70448,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Buffers the source Observable values until `closingNotifier` emits.
 	 *
@@ -70615,7 +70670,7 @@
 	};
 	var async_1 = __webpack_require__(445);
 	var Subscriber_1 = __webpack_require__(318);
-	var isScheduler_1 = __webpack_require__(379);
+	var isScheduler_1 = __webpack_require__(349);
 	/**
 	 * Buffers the source Observable values for a specific time period.
 	 *
@@ -70827,8 +70882,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Subscription_1 = __webpack_require__(320);
-	var subscribeToResult_1 = __webpack_require__(386);
-	var OuterSubscriber_1 = __webpack_require__(388);
+	var subscribeToResult_1 = __webpack_require__(356);
+	var OuterSubscriber_1 = __webpack_require__(358);
 	/**
 	 * Buffers the source Observable values starting from an emission from
 	 * `openings` and ending when the output of `closingSelector` emits.
@@ -70996,8 +71051,8 @@
 	var Subscription_1 = __webpack_require__(320);
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Buffers the source Observable values, using a factory function of closing
 	 * Observables to determine when to close, emit, and reset the buffer.
@@ -71180,7 +71235,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var catch_1 = __webpack_require__(393);
+	var catch_1 = __webpack_require__(363);
 	Observable_1.Observable.prototype.catch = catch_1._catch;
 	Observable_1.Observable.prototype._catch = catch_1._catch;
 	//# sourceMappingURL=catch.js.map
@@ -71273,7 +71328,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var concatAll_1 = __webpack_require__(394);
+	var concatAll_1 = __webpack_require__(364);
 	Observable_1.Observable.prototype.concatAll = concatAll_1.concatAll;
 	//# sourceMappingURL=concatAll.js.map
 
@@ -71283,7 +71338,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var concatMap_1 = __webpack_require__(384);
+	var concatMap_1 = __webpack_require__(354);
 	Observable_1.Observable.prototype.concatMap = concatMap_1.concatMap;
 	//# sourceMappingURL=concatMap.js.map
 
@@ -71369,8 +71424,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Projects each source value to the same Observable which is merged multiple
 	 * times in the output Observable.
@@ -71746,8 +71801,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Emits a value from the source Observable only after a particular time span
 	 * determined by another Observable has passed without another source emission.
@@ -72113,7 +72168,7 @@
 	var async_1 = __webpack_require__(445);
 	var isDate_1 = __webpack_require__(477);
 	var Subscriber_1 = __webpack_require__(318);
-	var Notification_1 = __webpack_require__(382);
+	var Notification_1 = __webpack_require__(352);
 	/**
 	 * Delays the emission of items from the source Observable by a given timeout or
 	 * until a given Date.
@@ -72262,8 +72317,8 @@
 	};
 	var Subscriber_1 = __webpack_require__(318);
 	var Observable_1 = __webpack_require__(315);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Delays the emission of items from the source Observable by a given time span
 	 * determined by the emissions of another Observable.
@@ -72465,8 +72520,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from previous items.
 	 * If a comparator function is provided, then it will be called for each item to test for whether or not that value should be emitted.
@@ -72734,8 +72789,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Converts a higher-order Observable into a first-order Observable by dropping
 	 * inner Observables while the previous inner Observable has not yet completed.
@@ -72839,8 +72894,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Projects each source value to an Observable which is merged in the output
 	 * Observable only if the previous projected Observable has completed.
@@ -72993,8 +73048,8 @@
 	};
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Recursively projects each source value to an Observable which is merged in
 	 * the output Observable.
@@ -73285,7 +73340,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var filter_1 = __webpack_require__(399);
+	var filter_1 = __webpack_require__(369);
 	Observable_1.Observable.prototype.filter = filter_1.filter;
 	//# sourceMappingURL=filter.js.map
 
@@ -73525,7 +73580,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var first_1 = __webpack_require__(395);
+	var first_1 = __webpack_require__(365);
 	Observable_1.Observable.prototype.first = first_1.first;
 	//# sourceMappingURL=first.js.map
 
@@ -74025,8 +74080,8 @@
 	};
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Ignores source values for a duration determined by another Observable, then
 	 * emits the most recent value from the source Observable, then repeats this
@@ -74253,7 +74308,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var last_1 = __webpack_require__(397);
+	var last_1 = __webpack_require__(367);
 	Observable_1.Observable.prototype.last = last_1.last;
 	//# sourceMappingURL=last.js.map
 
@@ -74263,7 +74318,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var every_1 = __webpack_require__(389);
+	var every_1 = __webpack_require__(359);
 	Observable_1.Observable.prototype.every = every_1.every;
 	//# sourceMappingURL=every.js.map
 
@@ -74366,7 +74421,7 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Subscriber_1 = __webpack_require__(318);
-	var Notification_1 = __webpack_require__(382);
+	var Notification_1 = __webpack_require__(352);
 	/**
 	 * Represents all of the notifications from the source Observable as `next`
 	 * emissions marked with their original types within {@link Notification}
@@ -74458,7 +74513,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var reduce_1 = __webpack_require__(392);
+	var reduce_1 = __webpack_require__(362);
 	/**
 	 * The Max operator operates on an Observable that emits numbers (or items that can be evaluated as numbers),
 	 * and when source Observable completes it emits a single item: the item with the largest number.
@@ -74496,7 +74551,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var mergeAll_1 = __webpack_require__(391);
+	var mergeAll_1 = __webpack_require__(361);
 	Observable_1.Observable.prototype.mergeAll = mergeAll_1.mergeAll;
 	//# sourceMappingURL=mergeAll.js.map
 
@@ -74506,7 +74561,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var mergeMap_1 = __webpack_require__(385);
+	var mergeMap_1 = __webpack_require__(355);
 	Observable_1.Observable.prototype.mergeMap = mergeMap_1.mergeMap;
 	Observable_1.Observable.prototype.flatMap = mergeMap_1.mergeMap;
 	//# sourceMappingURL=mergeMap.js.map
@@ -74544,8 +74599,8 @@
 	};
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var subscribeToResult_1 = __webpack_require__(386);
-	var OuterSubscriber_1 = __webpack_require__(388);
+	var subscribeToResult_1 = __webpack_require__(356);
+	var OuterSubscriber_1 = __webpack_require__(358);
 	/**
 	 * @param project
 	 * @param seed
@@ -74658,7 +74713,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var reduce_1 = __webpack_require__(392);
+	var reduce_1 = __webpack_require__(362);
 	/**
 	 * The Min operator operates on an Observable that emits numbers (or items that can be evaluated as numbers),
 	 * and when source Observable completes it emits a single item: the item with the smallest number.
@@ -74929,7 +74984,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var observeOn_1 = __webpack_require__(381);
+	var observeOn_1 = __webpack_require__(351);
 	Observable_1.Observable.prototype.observeOn = observeOn_1.observeOn;
 	//# sourceMappingURL=observeOn.js.map
 
@@ -75051,7 +75106,7 @@
 
 	"use strict";
 	var not_1 = __webpack_require__(592);
-	var filter_1 = __webpack_require__(399);
+	var filter_1 = __webpack_require__(369);
 	/**
 	 * Splits the source Observable into two, one with values that satisfy a
 	 * predicate, and another with values that don't satisfy the predicate.
@@ -75133,7 +75188,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var map_1 = __webpack_require__(390);
+	var map_1 = __webpack_require__(360);
 	/**
 	 * Maps each source value (an object) to its specified nested property.
 	 *
@@ -75243,7 +75298,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var BehaviorSubject_1 = __webpack_require__(398);
+	var BehaviorSubject_1 = __webpack_require__(368);
 	var multicast_1 = __webpack_require__(583);
 	/**
 	 * @param value
@@ -75334,7 +75389,7 @@
 
 	"use strict";
 	var Observable_1 = __webpack_require__(315);
-	var reduce_1 = __webpack_require__(392);
+	var reduce_1 = __webpack_require__(362);
 	Observable_1.Observable.prototype.reduce = reduce_1.reduce;
 	//# sourceMappingURL=reduce.js.map
 
@@ -75359,7 +75414,7 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Subscriber_1 = __webpack_require__(318);
-	var EmptyObservable_1 = __webpack_require__(378);
+	var EmptyObservable_1 = __webpack_require__(348);
 	/**
 	 * Returns an Observable that repeats the stream of items emitted by the source Observable at most count times,
 	 * on a particular Scheduler.
@@ -75451,8 +75506,8 @@
 	var Subject_1 = __webpack_require__(314);
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Returns an Observable that emits the same values as the source observable with the exception of a `complete`.
 	 * A `complete` will cause the emission of the Throwable that cause the complete to the Observable returned from
@@ -75656,8 +75711,8 @@
 	var Subject_1 = __webpack_require__(314);
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Returns an Observable that emits the same values as the source observable with the exception of an `error`.
 	 * An `error` will cause the emission of the Throwable that cause the error to the Observable returned from
@@ -75774,8 +75829,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Emits the most recently emitted value from the source Observable whenever
 	 * another Observable, the `notifier`, emits.
@@ -76323,7 +76378,7 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Subscriber_1 = __webpack_require__(318);
-	var EmptyError_1 = __webpack_require__(396);
+	var EmptyError_1 = __webpack_require__(366);
 	/**
 	 * Returns an Observable that emits the single item emitted by the source Observable that matches a specified
 	 * predicate, if that Observable emits one such item. If the source Observable emits more than one such item or no
@@ -76498,8 +76553,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Returns an Observable that skips items emitted by the source Observable until a second Observable emits an item.
 	 *
@@ -76660,11 +76715,11 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var ArrayObservable_1 = __webpack_require__(376);
-	var ScalarObservable_1 = __webpack_require__(377);
-	var EmptyObservable_1 = __webpack_require__(378);
+	var ArrayObservable_1 = __webpack_require__(346);
+	var ScalarObservable_1 = __webpack_require__(347);
+	var EmptyObservable_1 = __webpack_require__(348);
 	var concat_1 = __webpack_require__(422);
-	var isScheduler_1 = __webpack_require__(379);
+	var isScheduler_1 = __webpack_require__(349);
 	/**
 	 * Returns an Observable that emits the items in a specified Iterable before it begins to emit items emitted by the
 	 * source Observable.
@@ -77391,8 +77446,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Converts a higher-order Observable into a first-order Observable by
 	 * subscribing to only the most recently emitted of those inner Observables.
@@ -77514,8 +77569,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Projects each source value to an Observable which is merged in the output
 	 * Observable, emitting values only from the most recently projected Observable.
@@ -77668,8 +77723,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Projects each source value to the same Observable which is flattened multiple
 	 * times with {@link switch} in the output Observable.
@@ -77811,7 +77866,7 @@
 	};
 	var Subscriber_1 = __webpack_require__(318);
 	var ArgumentOutOfRangeError_1 = __webpack_require__(544);
-	var EmptyObservable_1 = __webpack_require__(378);
+	var EmptyObservable_1 = __webpack_require__(348);
 	/**
 	 * Emits only the first `count` values emitted by the source Observable.
 	 *
@@ -77914,7 +77969,7 @@
 	};
 	var Subscriber_1 = __webpack_require__(318);
 	var ArgumentOutOfRangeError_1 = __webpack_require__(544);
-	var EmptyObservable_1 = __webpack_require__(378);
+	var EmptyObservable_1 = __webpack_require__(348);
 	/**
 	 * Emits only the last `count` values emitted by the source Observable.
 	 *
@@ -78034,8 +78089,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Emits the values emitted by the source Observable until a `notifier`
 	 * Observable emits a value.
@@ -78231,8 +78286,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Emits a value from the source Observable, then ignores subsequent source
 	 * values for a duration determined by another Observable, then repeats this
@@ -78657,8 +78712,8 @@
 	};
 	var async_1 = __webpack_require__(445);
 	var isDate_1 = __webpack_require__(477);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * @param due
 	 * @param withObservable
@@ -78916,8 +78971,8 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Subject_1 = __webpack_require__(314);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Branch out the source Observable values as a nested Observable whenever
 	 * `windowBoundaries` emits.
@@ -79374,8 +79429,8 @@
 	var Subscription_1 = __webpack_require__(320);
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Branch out the source Observable values as a nested Observable starting from
 	 * an emission from `openings` and ending when the output of `closingSelector`
@@ -79568,8 +79623,8 @@
 	var Subject_1 = __webpack_require__(314);
 	var tryCatch_1 = __webpack_require__(323);
 	var errorObject_1 = __webpack_require__(324);
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Branch out the source Observable values as a nested Observable using a
 	 * factory function of closing Observables to determine when to start a new
@@ -79707,8 +79762,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var OuterSubscriber_1 = __webpack_require__(388);
-	var subscribeToResult_1 = __webpack_require__(386);
+	var OuterSubscriber_1 = __webpack_require__(358);
+	var subscribeToResult_1 = __webpack_require__(356);
 	/**
 	 * Combines the source Observable with other Observables to create an Observable
 	 * whose values are calculated from the latest values of each, only when the
@@ -79881,7 +79936,7 @@
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
 	var Observable_1 = __webpack_require__(315);
-	var Notification_1 = __webpack_require__(382);
+	var Notification_1 = __webpack_require__(352);
 	var ColdObservable_1 = __webpack_require__(687);
 	var HotObservable_1 = __webpack_require__(691);
 	var SubscriptionLog_1 = __webpack_require__(689);
@@ -80542,15 +80597,18 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
 	var header_model_1 = __webpack_require__(697);
+	var http_1 = __webpack_require__(371);
+	var http_2 = __webpack_require__(371);
 	var UserService = (function () {
-	    function UserService(httpService, auth, router) {
+	    function UserService(httpService, auth, router, _http) {
 	        this.httpService = httpService;
 	        this.auth = auth;
 	        this.router = router;
+	        this._http = _http;
 	    }
 	    UserService.prototype.searchUser = function (q) {
 	        var additionnalsHeaders = [
@@ -80563,14 +80621,28 @@
 	        var additionnalsHeaders = [
 	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
 	        ];
-	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lng + '&radius=' + radius + '&all=' + this.auth.isAdmin(), additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lng + '&radius=' + radius + '&all=' + (this.auth.getRank() == 0), additionnalsHeaders)
 	            .map(function (obj) { return (obj); });
+	    };
+	    UserService.prototype.getUsers = function (pageNumber) {
+	        var headers = new http_1.Headers();
+	        headers.append('Accept', 'application/json');
+	        headers.append('Authorization', "Token " + this.auth.getToken().token);
+	        var options = new http_1.RequestOptions({ headers: headers });
+	        return this._http.get('https://api.eventail.me/users?count=5&page=' + pageNumber, options);
+	    };
+	    UserService.prototype.changeUserRank = function (userID, rank) {
+	        var additionnalsHeaders = [
+	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
+	        ];
+	        return this.httpService.doPut(rank, 'https://api.eventail.me/users/' + userID + '/rank', additionnalsHeaders);
 	    };
 	    return UserService;
 	}());
 	UserService = __decorate([
 	    core_1.Injectable(),
-	    __metadata("design:paramtypes", [http_service_1.HTTPService, auth_service_1.AuthService, router_1.Router])
+	    __metadata("design:paramtypes", [http_service_1.HTTPService, auth_service_1.AuthService, router_1.Router,
+	        http_2.Http])
 	], UserService);
 	exports.UserService = UserService;
 
@@ -80579,7 +80651,7 @@
 /* 699 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Header -->\n<header id=\"header\">\n    <button (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button ref\" type=\"submit\">Eventail/Map View</button>\n    <button (click)=\"this._router.navigateByUrl('/friends')\" class=\"button ref\" type=\"submit\">Friends</button>\n</header>\n\n<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"posts\">\n    <article>\n      <!-- this creates a google map on the page with the given lat/lng from -->\n      <!-- the component as the initial center of the map: -->\n      <sebm-google-map \n        [latitude]=\"lat\"\n        [longitude]=\"lng\"\n        [zoom]=\"zoom\"\n        [disableDefaultUI]=\"false\"\n        (mapClick)=\"mapClicked($event)\">\n        <!-- Persons -->\n        <sebm-google-map-marker \n            *ngFor=\"let m of markerPerson\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'U'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"false\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.label }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n\n        <!-- Points of interest -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerPOI; let i = index\"\n            (markerClick)=\"clickedMarkerPOI(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'I'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"POIMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n        \n        <!-- Events -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerEvent; let i = index\"\n            (markerClick)=\"clickedMarkerEvent(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'E'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"eventMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n\n          <sebm-google-map-circle [latitude]=\"m.location[0]\" [longitude]=\"m.location[1]\" \n            [radius]=\"m.radius\"\n            [fillColor]=\"'red'\"\n            [circleDraggable]=\"false\"\n            [editable]=\"false\">\n          </sebm-google-map-circle>\n        </sebm-google-map-marker>\n      </sebm-google-map>\n    </article>\n    <article *ngIf=\"this.markerEvent.length > 0 && !this.editingPointsOfInterest\">\n     <strong> {{ this.commandMakerEvent.title }}</strong> <br>\n               lat: {{ this.commandMakerEvent.location[0] }} <br>\n               lng: {{ this.commandMakerEvent.location[1] }} <br>\n               radius: <input #number type='number' min=\"0\" max=\"500\" [(ngModel)]='this.commandMakerEvent.radius' required> <br><br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.desc' required>\n               This event begins: <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.begin' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hbegin' required><br>\n               This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.end' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hend' required><br>\n               Spontaneous <input #textbox type='checkbox' [(ngModel)]='this.commandMakerEvent.spontaneous' required> <br> \n      <button *ngIf=\"this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"saveEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button *ngIf=\"this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"deleteMarkerEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button *ngIf=\"this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"this.editingPointsOfInterest = true\" type=\"submit\" class=\"button big\">SWITCH TO POINTS OF INTEREST</button>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length > 0\">\n     <strong> {{ this.commandMakerPOI.title }}</strong> <br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.desc' required> \n      <button \n       (click)=\"savePOI(this.commandMakerPOI, true)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button\n       (click)=\"deleteMarkerPOI(this.commandMakerPOI)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button \n       (click)=\"this.editingPointsOfInterest = false\" type=\"submit\" class=\"button big\">SWITCH TO EVENTS</button>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length == 0\">\n      <strong> Click anywere on the map to add a new POI.</strong> <br>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length == 0\">\n     <strong> Click anywere on the map to start a new event.</strong> <br>\n    </article>\n  </div>\n</section>"
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"posts\">\n    <article>\n      <!-- this creates a google map on the page with the given lat/lng from -->\n      <!-- the component as the initial center of the map: -->\n      <sebm-google-map \n        [latitude]=\"lat\"\n        [longitude]=\"lng\"\n        [zoom]=\"zoom\"\n        [disableDefaultUI]=\"false\"\n        (mapClick)=\"mapClicked($event)\"\n        (centerChange)=\"centerMapChanged($event)\"\n        (zoomChange)=\"zoomChanged($event)\"\n        (idle)=\"mapIdle()\">\n        <!-- Persons -->\n        <sebm-google-map-marker \n            *ngFor=\"let m of markerPerson\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'U'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"false\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n\n        <!-- Points of interest -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerPOI; let i = index\"\n            (markerClick)=\"clickedMarkerPOI(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'I'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"POIMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n        \n        <!-- Events -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerEvent; let i = index\"\n            (markerClick)=\"clickedMarkerEvent(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'E'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"eventMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n\n          <sebm-google-map-circle [latitude]=\"m.location[0]\" [longitude]=\"m.location[1]\" \n            [radius]=\"m.radius\"\n            [fillColor]=\"'red'\"\n            [circleDraggable]=\"false\"\n            [editable]=\"false\">\n          </sebm-google-map-circle>\n        </sebm-google-map-marker>\n      </sebm-google-map>\n    </article>\n    <article *ngIf=\"this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent != null && this.commandMakerEvent != undefined\">\n     <strong> {{ this.commandMakerEvent.title }}</strong> <br>\n               lat: {{ this.commandMakerEvent.location[0] }} <br>\n               lng: {{ this.commandMakerEvent.location[1] }} <br>\n               radius: <input #number type='number' min=\"0\" max=\"500\" [(ngModel)]='this.commandMakerEvent.radius' required> <br><br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.desc' required>\n               This event begins: <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.begin' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hbegin' required><br>\n               This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.end' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hend' required><br>\n               Spontaneous <input #textbox type='checkbox' [(ngModel)]='this.commandMakerEvent.spontaneous' required> <br> \n      <button *ngIf=\"this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"saveEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button *ngIf=\"this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"deleteMarkerEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button *ngIf=\"this._auth.getRank() < 2 && this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"this.editingPointsOfInterest = true\" type=\"submit\" class=\"button big\">SWITCH TO POINTS OF INTEREST</button>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length > 0\">\n     <strong> {{ this.commandMakerPOI.title }}</strong> <br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.desc' required> \n      <button \n       (click)=\"savePOI(this.commandMakerPOI, true)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button\n       (click)=\"deleteMarkerPOI(this.commandMakerPOI)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button \n       (click)=\"this.editingPointsOfInterest = false\" type=\"submit\" class=\"button big\">SWITCH TO EVENTS</button>\n    </article>\n<!-- this.commandMakerEvent = this.markerEvent[this.markerEvent.length-1]; -->\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length == 0\">\n      <strong> Click anywere on the map to add a new POI.</strong> <br>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent == null || this.commandMakerEvent == undefined\">\n      <strong> Click on an event or click on the map to create one.</strong> <br>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length == 0\">\n     <strong> Click anywere on the map to start a new event.</strong> <br>\n    </article>\n  </div>\n</section>"
 
 /***/ },
 /* 700 */
@@ -80603,7 +80675,7 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var auth_service_1 = __webpack_require__(339);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var user_service_1 = __webpack_require__(698);
 	var friend_service_1 = __webpack_require__(702);
 	var FriendComponent = (function () {
@@ -80714,7 +80786,7 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var router_1 = __webpack_require__(370);
+	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
 	var header_model_1 = __webpack_require__(697);
@@ -80742,13 +80814,13 @@
 	        var additionnalsHeaders = [
 	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
 	        ];
-	        return this.httpService.doPut('https://api.eventail.me/users/self/friends/requests/' + userID, additionnalsHeaders);
+	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/requests/' + userID, additionnalsHeaders);
 	    };
 	    FriendService.prototype.confirmFriend = function (userID) {
 	        var additionnalsHeaders = [
 	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
 	        ];
-	        return this.httpService.doPut('https://api.eventail.me/users/self/friends/' + userID, additionnalsHeaders);
+	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/' + userID, additionnalsHeaders);
 	    };
 	    FriendService.prototype.deleteFriendshipRequest = function (userID) {
 	        var additionnalsHeaders = [
@@ -80777,7 +80849,200 @@
 /* 703 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Header -->\n<header id=\"header\">\n    <button (click)=\"this._router.navigateByUrl('/friends')\" class=\"button ref\" type=\"submit\">Eventail/Friends</button>\n    <button (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button ref\" type=\"submit\">Map View</button>\n</header>\n\n<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <div>\n      <form>\n          <p> Find a user </p>\n        <div class=\"form-group\">\n          <input type=\"text\" class=\"form-control\" id=\"name\" required\n                [(ngModel)]=\"username\" name=\"username\"\n                (ngModelChange)=\"onChange($event)\">\n        </div>        \n      </form>\n      <table>\n          <tr *ngFor=\"let u of foundUsers\">\n            <th>{{u.username}}</th>\n            <th> <button (click)=\"addFriend(u)\" type=\"submit\" class=\"button big\">add friend</button></th>\n          </tr>\n      </table>\n    </div>\n    <div *ngIf=\"this.friends.length > 0\">\n      List of your firends:<br>\n      <table>\n          <tr *ngFor=\"let friend of friends; let i = index\">>\n            <th>{{friend.username}}</th>\n            <th> <button (click)=\"deleteFriend(friend, i)\" type=\"submit\" class=\"button danger\">delete friend</button></th>\n          </tr>\n      </table>\n    </div>\n    <div *ngIf=\"this.pendingFriends.length > 0\">\n      List of pending friendship requests:<br>\n      <table>\n          <tr *ngFor=\"let pfriend of pendingFriends\">>\n            <th>{{pfriend.user.username}}</th>\n            <th> <button (click)=\"confirmFriend(pfriend.user, i)\" type=\"submit\" class=\"button big\">confirm friend</button></th>\n            <th> <button (click)=\"unconfirmFriend(pfriend.user, i)\" type=\"submit\" class=\"button danger\">reject request</button></th>\n          </tr>\n      </table>\n    </div>\n    <div>\n      <button (click)=\"loadFriends()\" type=\"submit\" class=\"button big\">refresh</button>\n    </div>\n  </div>\n</section>\n        "
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <div>\n      <form>\n          <p> Find a user </p>\n        <div class=\"form-group\">\n          <input type=\"text\" class=\"form-control\" id=\"name\" required\n                [(ngModel)]=\"username\" name=\"username\"\n                (ngModelChange)=\"onChange($event)\">\n        </div>        \n      </form>\n      <table>\n          <tr *ngFor=\"let u of foundUsers\">\n            <th>{{u.username}}</th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"addFriend(u)\" type=\"submit\" class=\"button big\">add friend</button></th>\n          </tr>\n      </table>\n    </div>\n    <div *ngIf=\"this.friends.length > 0\">\n      List of your firends:<br>\n      <table>\n          <tr *ngFor=\"let friend of friends; let i = index\">>\n            <th>{{friend.username}}</th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"deleteFriend(friend, i)\" type=\"submit\" class=\"button danger\">delete friend</button></th>\n          </tr>\n      </table>\n    </div>\n    <div *ngIf=\"this.pendingFriends.length > 0\">\n      List of pending friendship requests:<br>\n      <table>\n          <tr *ngFor=\"let pfriend of pendingFriends\">>\n            <th>{{pfriend.user.username}}</th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"confirmFriend(pfriend.user, i)\" type=\"submit\" class=\"button big\">confirm friend</button></th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"unconfirmFriend(pfriend.user, i)\" type=\"submit\" class=\"button danger\">reject request</button></th>\n          </tr>\n      </table>\n    </div>\n    <div>\n      <button (click)=\"loadFriends()\" type=\"submit\" class=\"button big\">refresh</button>\n    </div>\n  </div>\n</section>\n        "
+
+/***/ },
+/* 704 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var core_1 = __webpack_require__(313);
+	var auth_service_1 = __webpack_require__(339);
+	var router_1 = __webpack_require__(340);
+	var register_model_1 = __webpack_require__(705);
+	var register_service_1 = __webpack_require__(706);
+	var login_service_1 = __webpack_require__(401);
+	var login_model_1 = __webpack_require__(404);
+	var RegisterComponent = (function () {
+	    function RegisterComponent(_auth, _router, registerService, loginService) {
+	        this._auth = _auth;
+	        this._router = _router;
+	        this.registerService = registerService;
+	        this.loginService = loginService;
+	        this.registerModel = new register_model_1.RegisterModel("", "", "", "", "");
+	    }
+	    RegisterComponent.prototype.doRegister = function () {
+	        var _this = this;
+	        if (this.cpassword != this.registerModel.password) {
+	            alert("The two passwords you provided must match!");
+	            this.cpassword = "";
+	            this.registerModel.password = "";
+	            return;
+	        }
+	        this.registerService.register(this.registerModel)
+	            .subscribe(function (success) {
+	            _this.loginService.requestToken(new login_model_1.LoginModel(_this.registerModel.mail, _this.registerModel.password));
+	        }, function (error) { return alert("This username is already taken."); });
+	    };
+	    return RegisterComponent;
+	}());
+	RegisterComponent = __decorate([
+	    core_1.Component({
+	        selector: 'register',
+	        template: __webpack_require__(707),
+	        providers: [register_service_1.RegisterService, login_service_1.LoginService]
+	    }),
+	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, register_service_1.RegisterService,
+	        login_service_1.LoginService])
+	], RegisterComponent);
+	exports.RegisterComponent = RegisterComponent;
+
+
+/***/ },
+/* 705 */
+/***/ function(module, exports) {
+
+	"use strict";
+	var RegisterModel = (function () {
+	    function RegisterModel(username, firstname, lastname, mail, password) {
+	        this.username = username;
+	        this.firstname = firstname;
+	        this.lastname = lastname;
+	        this.mail = mail;
+	        this.password = password;
+	    }
+	    return RegisterModel;
+	}());
+	exports.RegisterModel = RegisterModel;
+
+
+/***/ },
+/* 706 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var core_1 = __webpack_require__(313);
+	var router_1 = __webpack_require__(340);
+	var auth_service_1 = __webpack_require__(339);
+	var http_service_1 = __webpack_require__(408);
+	var RegisterService = (function () {
+	    function RegisterService(httpService, auth, router) {
+	        this.httpService = httpService;
+	        this.auth = auth;
+	        this.router = router;
+	    }
+	    RegisterService.prototype.register = function (registerModel) {
+	        var additionnalsHeaders = [];
+	        return this.httpService.doPost(registerModel, 'https://api.eventail.me/auth/register', additionnalsHeaders)
+	            .map(function (obj) { return (obj); });
+	    };
+	    return RegisterService;
+	}());
+	RegisterService = __decorate([
+	    core_1.Injectable(),
+	    __metadata("design:paramtypes", [http_service_1.HTTPService,
+	        auth_service_1.AuthService,
+	        router_1.Router])
+	], RegisterService);
+	exports.RegisterService = RegisterService;
+
+
+/***/ },
+/* 707 */
+/***/ function(module, exports) {
+
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    Create your account.\n    <form>\n      <div class=\"form-group\">\n        <img src=\"images/logo.png\" alt=\"Eventail\" style=\"width:100%;\">\n        <label for=\"name\">Name</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"firstname\">Firstname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.firstname\" name=\"firstname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"lastname\">Lastname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.lastname\" name=\"lastname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"mail\">Mail</label>\n        <input type=\"email\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.mail\" name=\"mail\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.password\" name=\"password\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"cpassword\">Confirme your password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"cpassword\" name=\"cpassword\">\n      </div>\n      <button (click)=\"doRegister()\" type=\"submit\" class=\"button big\">Submit</button>\n    </form>\n  </div>\n</section>"
+
+/***/ },
+/* 708 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var core_1 = __webpack_require__(313);
+	var auth_service_1 = __webpack_require__(339);
+	var router_1 = __webpack_require__(340);
+	var user_service_1 = __webpack_require__(698);
+	var AdminComponent = (function () {
+	    function AdminComponent(auth, router, userService) {
+	        this.auth = auth;
+	        this.router = router;
+	        this.userService = userService;
+	        this.users = [];
+	        this.numberOfPages = 1;
+	        this.numberOfUsers = 1;
+	        this.currentPage = 1;
+	        this.lastPage = 0;
+	        this.roles = ['Admin', 'Normal User', 'Restricted User', 'Banned User'];
+	        if (this.auth.getRank() != 0)
+	            this.router.navigateByUrl('/mapView');
+	        this.getPartOfUsers(1);
+	    }
+	    AdminComponent.prototype.getPartOfUsers = function (pageNumber) {
+	        var _this = this;
+	        this.userService.getUsers(pageNumber)
+	            .subscribe(function (res) {
+	            _this.users = res.json();
+	            var headers = res.headers;
+	            _this.numberOfPages = parseInt(headers.get('x-paginate-pages'));
+	            _this.numberOfUsers = parseInt(headers.get('x-paginate-items'));
+	        });
+	    };
+	    AdminComponent.prototype.saveUser = function (userModel) {
+	        this.userService.changeUserRank(userModel.id, userModel.rank)
+	            .subscribe(function (success) { }, function (error) { return alert("Error: " + error); });
+	    };
+	    AdminComponent.prototype.changePage = function ($event) {
+	        if (this.lastPage != this.currentPage) {
+	            if (this.currentPage > this.numberOfPages)
+	                this.currentPage = this.numberOfPages;
+	            this.getPartOfUsers(this.currentPage);
+	            this.lastPage = this.currentPage;
+	        }
+	    };
+	    return AdminComponent;
+	}());
+	AdminComponent = __decorate([
+	    core_1.Component({
+	        selector: 'admin',
+	        template: __webpack_require__(709),
+	    }),
+	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, user_service_1.UserService])
+	], AdminComponent);
+	exports.AdminComponent = AdminComponent;
+
+
+/***/ },
+/* 709 */
+/***/ function(module, exports) {
+
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n      <p> {{numberOfUsers}} users in record. </p>\n      <p *ngIf=\"numberOfPages > 1\"> Showing page \n            <input #number type='number' min=\"1\" max=\"numberOfPages\" [(ngModel)]='currentPage' (ngModelChange)=\"changePage($event)\" required>\n         of {{numberOfPages}}.\n      </p>\n    <table>\n        <tr>\n            <th>Id</th>\n            <th>Username</th>\n            <th>Firstname</th>\n            <th>Lastname</th>\n            <th>Mail</th>\n            <th>Rank</th>\n            <th>Location</th>\n            <th></th>\n        </tr>\n        <tr *ngFor=\"let u of users\">\n            <th>{{u.id}}</th>\n            <th>{{u.username}}</th>\n            <th>{{u.firstname}}</th>\n            <th>{{u.lastname}}</th>\n            <th>{{u.mail}}</th>\n            <th>\n                <strong>Change a user role</strong>\n                <select [(ngModel)]=\"u.rank\" class=\"form-control m-b\">\n                    <option *ngFor=\"let role of roles; let j = index\" [ngValue]=\"j\">{{role}}</option>\n                </select>\n            </th>\n            <th *ngIf=\"u.location!=null\"> lat:{{u.location[0]}} <br> lng:{{u.location[1]}} </th>\n            <th *ngIf=\"u.location==null\"> - </th>\n            <th> <button (click)=\"saveUser(u)\" type=\"submit\" class=\"button big\">save changes</button></th>\n        </tr>\n    </table>\n  </div>\n</section>"
 
 /***/ }
 /******/ ]);

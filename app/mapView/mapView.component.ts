@@ -29,7 +29,7 @@ export class MapView {
 
   private zoom: number = 15;
 
-//TODO FAIRE UN POLLING
+//TODO FAIRE UN POLLING des users
   constructor(private _auth: AuthService, private _router: Router, private mapService :MapViewService, private userService:UserService){
     this.loadElements();
     this.radius = 2000;
@@ -42,19 +42,20 @@ export class MapView {
     this.markerPerson = [];
      //localisation
     navigator.geolocation.getCurrentPosition((position) => {
-        this.lat = position.coords.latitude;
-        this.lng = position.coords.longitude;
+      console.log(position);
+      this.lat = position.coords.latitude;
+      this.lng = position.coords.longitude;
 
-        this.markerPerson.push({
-          id: 0,
-          title: "You",
-          location: 
-            [
-              this.lat,
-              this.lng
-            ]
-        });
-        this.loadMapElements();
+      this.markerPerson.push({
+        id: 0,
+        title: "You",
+        location: 
+          [
+            this.lat,
+            this.lng
+          ]
+      });
+      this.loadMapElements();
     }, () => {
         alert('Please use HTML5 enabled browser');
     }, {
@@ -69,6 +70,8 @@ export class MapView {
   {
         this.radius = 3333*(21-this.zoom);
         this.markerEvent = [];
+        if(this.lat != undefined)
+        {
         this.mapService.getEventNearby(this.lat, this.lng, this.radius)
         .subscribe(
           success => 
@@ -111,6 +114,7 @@ export class MapView {
             },
             error => alert("Error: " + error)
           );
+        }
   }
 
   clickedMarkerEvent(label: string, index: number) {
