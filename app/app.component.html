@@ -1,18 +1,27 @@
 <!-- Wrapper -->
 <div id="wrapper">
     <div id="main">
-        <div *ngIf="this._auth.isConnected()" id="mySidenav" class="sidenav">
-            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-            <a [routerLink]="['mapView']">MapView</a>
-            <a [routerLink]="['friends']">Friends</a>
-            <button (click)="onLogout()" type="button" class="button big">Logout</button>
-        </div>
-        <div *ngIf="!this._auth.isConnected()" id="mySidenav" class="sidenav">
-            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-            <a [routerLink]="['login']">Login</a>
-        </div>
-        <span onclick="openNav()">open</span>
         <div class="inner">
+            <!-- Header -->
+            <header *ngIf="this._auth.isConnected()" id="header">
+                <div>
+                    <strong> Eventail{{this._router.url}} </strong>
+                </div>
+                <button *ngIf="this._router.url === '/mapView'"
+                    (click)="this._router.navigateByUrl('/mapView')" class="button active" type="submit">MapView</button>
+                <button *ngIf="this._router.url != '/mapView'"
+                    (click)="this._router.navigateByUrl('/mapView')" class="button ref" type="submit">MapView</button>
+
+                <button *ngIf="this._router.url === '/friends'"
+                    (click)="this._router.navigateByUrl('/friends')" class="button active" type="submit">Friends</button>
+                <button *ngIf="this._router.url != '/friends'"
+                    (click)="this._router.navigateByUrl('/friends')" class="button ref" type="submit">Friends</button>
+
+                <button (click)="onLogout()" type="button" class="button ref">Logout</button>
+            </header>
+            <header *ngIf="!this._auth.isConnected()" id="header">   
+                 <button (click)="this._router.navigateByUrl('/login')" class="button ref" type="submit">Login</button>
+            </header>
             <router-outlet></router-outlet>
         </div>
     </div>

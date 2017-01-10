@@ -23,4 +23,14 @@ export class UserService {
         return this.httpService.doGet('https://api.eventail.me/users/search?q=' + q, additionnalsHeaders)
         .map((obj: Object) => <UserModel[]>(obj));
     }
+
+    public getUsersNearby(lat: number, lng: number, radius: number, all: boolean): Observable<UserModel[]>
+    {
+        var additionnalsHeaders : HeaderModel[] = [
+            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
+        ];
+
+        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat='+lat+'&lon='+lng+'&radius='+radius+'&all='+(this.auth.getRank() == 0), additionnalsHeaders)
+        .map((obj: Object) => <UserModel[]>(obj));
+    }
 }

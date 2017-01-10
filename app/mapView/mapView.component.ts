@@ -3,6 +3,7 @@ import { AuthService }   from '../auth/auth.service'
 import { Router }        from '@angular/router'
 import { MarkerManager } from 'angular2-google-maps/core'
 import { MapViewService } from './mapView.service';
+import { UserService }   from '../user/user.service'
 
 @Component({
   selector: 'map-view',
@@ -14,6 +15,7 @@ export class MapView {
 
   private lat;
   private lng;
+  private radius;
 
   private editingPointsOfInterest: boolean = false;
 
@@ -25,13 +27,34 @@ export class MapView {
 
   private markerPerson: MarkerPerson[] = [];
 
-  constructor(private _auth: AuthService, private _router: Router, private mapService :MapViewService){
+  private zoom: number = 15;
 
-    //localisation
+//TODO FAIRE UN POLLING
+  constructor(private _auth: AuthService, private _router: Router, private mapService :MapViewService, private userService:UserService){
+    this.loadElements();
+  }
+
+  private loadElements()
+  {
+    this.markerEvent = [];
+    this.markerPOI = [];
+    this.markerPerson = [];
+     //localisation
     navigator.geolocation.getCurrentPosition((position) => {
         this.lat = position.coords.latitude;
         this.lng = position.coords.longitude;
-        mapService.getEventNearby(this.lat, this.lng, 2000)
+        this.radius = 2000;
+
+        this.markerPerson.push({
+          id: 0,
+          title: "You",
+          location: 
+            [
+              this.lat,
+              this.lng
+            ]
+        });
+        this.mapService.getEventNearby(this.lat, this.lng, this.radius)
         .subscribe(
           success => 
             {
@@ -57,6 +80,23 @@ export class MapView {
             },
             error => alert("Error: " + error)
           );
+
+          this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
+          .subscribe(
+            success =>{
+              success.forEach((user) =>
+              {
+                this.markerPerson.push(
+                  {
+                    id: user.id,
+                    title: user.username,
+                    location: user.location
+                  }
+                );
+              });
+            },
+            error => alert("Error: " + error)
+          );
     }, () => {
         alert('Please use HTML5 enabled browser');
     }, {
@@ -66,9 +106,6 @@ export class MapView {
         }
     );
   }
-
-    // google maps zoom level
-  zoom: number = 14;
 
   clickedMarkerEvent(label: string, index: number) {
     this.commandMakerEvent = this.markerEvent[index];
@@ -106,7 +143,7 @@ export class MapView {
             this.markerPerson.push(
               {
                 id: element.id,
-                username: element.username,
+                title: element.username,
                 location: element.location
               }
             );
@@ -301,7 +338,7 @@ interface MarkerPOI{
 
 interface MarkerPerson{
     id: number,
-    username: string,
+    title: string,
     location: number[]
 }
 

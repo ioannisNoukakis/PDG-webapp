@@ -33,12 +33,19 @@ export class LoginService {
         this._http.post(this.apiURL, credentials, { headers: this.headers })
             .map(res => res.json())
             .subscribe(
-                data => this.saveJwt(data),
-                err => this.logError(err),
-                () => {
+                data => 
+                {
+                    this.saveJwt(data);
                     console.log("[LOGIN_SERVICE][I] Authentication Complete.");
                     this._router.navigateByUrl('/mapView');
-                 }
+                 },
+                err => 
+                {
+                    this.logError(err);
+                    alert("Invalid username or password.");
+                    loginModel.password = "";
+                    loginModel.username = "";
+                }
             );
     }
 
@@ -46,7 +53,7 @@ export class LoginService {
         if(jwt) {
             this._auth.setToken(new Token(jwt.token, jwt.string, false));
             this._auth.setUserID(jwt.user.id);
-            console.log(this._auth.getToken());
+            this._auth.setRank(jwt.user.rank);
         }
     }
 

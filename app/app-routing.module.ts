@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { LoginComponent }  from './login/login.component';
 import { MapView }         from './mapView/mapView.component';
 import { FriendComponent } from './friend/friend.component';
+import { RegisterComponent } from './register/register.component';
 
 @NgModule({
   imports: [
@@ -11,6 +12,7 @@ import { FriendComponent } from './friend/friend.component';
       { path: 'mapView', component: MapView },
       { path: 'login', component: LoginComponent },
       { path: 'friends', component: FriendComponent },
+      { path: 'register', component: RegisterComponent},
       { path: '', component: LoginComponent }
     ])
   ],

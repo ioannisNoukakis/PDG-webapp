@@ -5,10 +5,13 @@ import { Injectable }     from '@angular/core';
 export class AuthService {
   private _token: Token;
   private userID;
+  private rank: number;
 
   constructor()
   {
-    console.log("AUTH INSTANCE");
+    this._token = JSON.parse(localStorage.getItem('EventailToken'));
+    this.userID = parseInt(localStorage.getItem('EventailUserID'));
+    this.rank = parseInt(localStorage.getItem('EventailRank'));
   }
 
   public getToken(): Token
@@ -21,12 +24,12 @@ export class AuthService {
     if(this._token == null)
       return false;
 
-    //var time = new Date().getTime() - new Date(this._token.expires).getTime();
-    return true; //time >= 0;
+    return true;
   }
 
   public setUserID(userID: number)
   {
+    localStorage.setItem('EventailUserID', ""+userID);
     this.userID = userID;
   }
 
@@ -36,11 +39,23 @@ export class AuthService {
 
   public setToken(token: Token)
   {
+    localStorage.setItem('EventailToken', JSON.stringify(token));
     this._token = token;
   }
 
   public logout()
   {
+    localStorage.clear();
     this._token = null;
+  }
+
+  public setRank(rank:number)
+  {
+    localStorage.setItem('EventailRank', ""+rank);
+    this.rank = rank;
+  }
+
+  public getRank():number{
+    return this.rank;
   }
 }
