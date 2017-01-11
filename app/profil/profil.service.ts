@@ -15,8 +15,8 @@ export class ProfilService {
     {
     }
 
-    public update(registerModel: RegisterModel):Observable<Object>
+    public update(registerModel: RegisterModel):Observable<Response>
     {
-         return this.httpService.doPatch(registerModel,'https://api.eventail.me/users/self');
+         return this.httpService.doPatch(registerModel,'https://api.eventail.me/users/self')
     }
 }

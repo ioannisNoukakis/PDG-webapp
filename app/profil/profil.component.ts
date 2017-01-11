@@ -36,11 +36,17 @@ export class ProfilComponent{
         }
         this.profilService.update(this.registerModel)
         .subscribe (
-        success => alert("Your settings have been sucessfully updated."),
+        success => {
+            var userResponse = success.json();
+            this.registerModel.username = userResponse.username;
+            this.registerModel.firstname = userResponse.firstname;
+            this.registerModel.lastname = userResponse.lastname;
+            this.registerModel.mail = userResponse.mail;
+            alert("Your settings have been sucessfully updated.");
+        },
         error => 
         {
-            alert(error);
-            console.log(error);
+            alert("You can't have the same email as an other user.");
         }
         );
     }

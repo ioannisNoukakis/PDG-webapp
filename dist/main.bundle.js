@@ -44811,18 +44811,19 @@
 	var platform_browser_1 = __webpack_require__(331);
 	var forms_1 = __webpack_require__(334);
 	var app_component_1 = __webpack_require__(338);
-	var http_1 = __webpack_require__(371);
+	var http_1 = __webpack_require__(370);
 	var core_2 = __webpack_require__(372);
 	var ng_bootstrap_1 = __webpack_require__(391);
 	var auth_service_1 = __webpack_require__(339);
 	var app_routing_module_1 = __webpack_require__(399);
 	var http_service_1 = __webpack_require__(408);
-	var user_service_1 = __webpack_require__(698);
+	var user_service_1 = __webpack_require__(697);
 	var login_component_1 = __webpack_require__(400);
 	var mapView_component_1 = __webpack_require__(406);
-	var friend_component_1 = __webpack_require__(701);
-	var register_component_1 = __webpack_require__(704);
-	var admin_component_1 = __webpack_require__(708);
+	var friend_component_1 = __webpack_require__(700);
+	var register_component_1 = __webpack_require__(703);
+	var admin_component_1 = __webpack_require__(707);
+	var profil_component_1 = __webpack_require__(709);
 	var AppModule = (function () {
 	    function AppModule() {
 	    }
@@ -44847,7 +44848,8 @@
 	            mapView_component_1.MapView,
 	            friend_component_1.FriendComponent,
 	            register_component_1.RegisterComponent,
-	            admin_component_1.AdminComponent
+	            admin_component_1.AdminComponent,
+	            profil_component_1.ProfilComponent
 	        ],
 	        providers: [auth_service_1.AuthService, http_service_1.HTTPService, user_service_1.UserService],
 	        bootstrap: [app_component_1.AppComponent]
@@ -49499,7 +49501,7 @@
 	AppComponent = __decorate([
 	    core_1.Component({
 	        selector: 'my-app',
-	        template: __webpack_require__(370)
+	        template: __webpack_require__(371)
 	    }),
 	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router])
 	], AppComponent);
@@ -49522,12 +49524,16 @@
 	};
 	var core_1 = __webpack_require__(313);
 	var router_1 = __webpack_require__(340);
+	var http_1 = __webpack_require__(370);
+	var http_2 = __webpack_require__(370);
 	var AuthService = (function () {
-	    function AuthService(_router) {
+	    function AuthService(_http, _router) {
+	        this._http = _http;
 	        this._router = _router;
 	        this._token = JSON.parse(localStorage.getItem('EventailToken'));
 	        this.userID = parseInt(localStorage.getItem('EventailUserID'));
 	        this.rank = parseInt(localStorage.getItem('EventailRank'));
+	        this.userDetails = JSON.parse(localStorage.getItem('EventailUserDetail'));
 	    }
 	    AuthService.prototype.getToken = function () {
 	        if (this._token == null)
@@ -49535,8 +49541,29 @@
 	        return this._token;
 	    };
 	    AuthService.prototype.isConnected = function () {
+	        var _this = this;
 	        if (this._token == null)
 	            return false;
+	        //Get 1 day in milliseconds
+	        var one_day = 1000 * 60 * 60 * 24;
+	        // Convert both dates to milliseconds
+	        var date1_ms = new Date(this._token.expires).getTime();
+	        var date2_ms = new Date().getTime();
+	        // Calculate the difference in milliseconds
+	        var difference_ms = date1_ms - date2_ms;
+	        if (difference_ms / one_day < 1) {
+	            var headers = new http_1.Headers();
+	            headers.append('Content-Type', 'application/json');
+	            headers.append('Accept', 'application/json');
+	            headers.append('Authorization', "Token " + this._token);
+	            var options = new http_1.RequestOptions({ headers: headers });
+	            this._http.post('https://api.eventail.me/auth/extend', "{}", options)
+	                .map(function (res) { return res.json(); })
+	                .subscribe(function (res) {
+	                _this._token.token = res.json().token;
+	                _this._token.expires = res.json().expires;
+	            });
+	        }
 	        return true;
 	    };
 	    AuthService.prototype.setUserID = function (userID) {
@@ -49562,11 +49589,18 @@
 	    AuthService.prototype.getRank = function () {
 	        return this.rank;
 	    };
+	    AuthService.prototype.getUserDetails = function () {
+	        return this.userDetails;
+	    };
+	    AuthService.prototype.setUserDetails = function (userDetails) {
+	        localStorage.setItem('EventailUserDetail', JSON.stringify(userDetails));
+	        this.userDetails = userDetails;
+	    };
 	    return AuthService;
 	}());
 	AuthService = __decorate([
 	    core_1.Injectable(),
-	    __metadata("design:paramtypes", [router_1.Router])
+	    __metadata("design:paramtypes", [http_2.Http, router_1.Router])
 	], AuthService);
 	exports.AuthService = AuthService;
 
@@ -55696,12 +55730,6 @@
 
 /***/ },
 /* 370 */
-/***/ function(module, exports) {
-
-	module.exports = "<!-- Wrapper -->\n<div id=\"wrapper\">\n    <div id=\"main\">\n        <div class=\"inner\">\n            <!-- Header -->\n            <header *ngIf=\"this._auth.isConnected()\" id=\"header\">\n                <div>\n                    <strong> Eventail{{this._router.url}} </strong>\n                    <strong *ngIf=\"this._auth.getRank() == 2\"><br> You are a restricted user.</strong>\n                </div>\n                <button *ngIf=\"this._router.url === '/mapView'\"\n                    (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button active\" type=\"submit\">MapView</button>\n                <button *ngIf=\"this._router.url != '/mapView'\"\n                    (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button ref\" type=\"submit\">MapView</button>\n\n                <button *ngIf=\"this._router.url === '/friends'\"\n                    (click)=\"this._router.navigateByUrl('/friends')\" class=\"button active\" type=\"submit\">Friends</button>\n                <button *ngIf=\"this._router.url != '/friends'\"\n                    (click)=\"this._router.navigateByUrl('/friends')\" class=\"button ref\" type=\"submit\">Friends</button>\n\n                <button *ngIf=\"this._auth.getRank() == 0 && this._router.url === '/admin'\"\n                    (click)=\"this._router.navigateByUrl('/admin')\" class=\"button active\" type=\"submit\">User Administration</button>\n                <button *ngIf=\"this._auth.getRank() == 0 && this._router.url != '/admin'\"\n                    (click)=\"this._router.navigateByUrl('/admin')\" class=\"button ref\" type=\"submit\">User Administration</button>\n\n                <button (click)=\"onLogout()\" type=\"button\" class=\"button ref\">Logout</button>\n            </header>\n            <header *ngIf=\"!this._auth.isConnected()\" id=\"header\">   \n                 <button (click)=\"this._router.navigateByUrl('/login')\" class=\"button ref\" type=\"submit\">Login</button>\n            </header>\n            <router-outlet></router-outlet>\n        </div>\n    </div>\n</div>"
-
-/***/ },
-/* 371 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -57560,6 +57588,12 @@
 	}));
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 371 */
+/***/ function(module, exports) {
+
+	module.exports = "<!-- Wrapper -->\n<div id=\"wrapper\">\n    <div id=\"main\">\n        <div class=\"inner\">\n            <!-- Header -->\n            <header *ngIf=\"this._auth.isConnected()\" id=\"header\">\n                <div>\n                    <strong> Eventail{{this._router.url}} </strong>\n                    <strong *ngIf=\"this._auth.getRank() == 2\"><br> You are a restricted user.</strong>\n                </div>\n                <button *ngIf=\"this._router.url === '/mapView'\"\n                    (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button active\" type=\"submit\">MapView</button>\n                <button *ngIf=\"this._router.url != '/mapView'\"\n                    (click)=\"this._router.navigateByUrl('/mapView')\" class=\"button ref\" type=\"submit\">MapView</button>\n\n                <button *ngIf=\"this._router.url === '/friends'\"\n                    (click)=\"this._router.navigateByUrl('/friends')\" class=\"button active\" type=\"submit\">Friends</button>\n                <button *ngIf=\"this._router.url != '/friends'\"\n                    (click)=\"this._router.navigateByUrl('/friends')\" class=\"button ref\" type=\"submit\">Friends</button>\n\n                <button *ngIf=\"this._auth.getRank() == 0 && this._router.url === '/admin'\"\n                    (click)=\"this._router.navigateByUrl('/admin')\" class=\"button active\" type=\"submit\">User Administration</button>\n                <button *ngIf=\"this._auth.getRank() == 0 && this._router.url != '/admin'\"\n                    (click)=\"this._router.navigateByUrl('/admin')\" class=\"button ref\" type=\"submit\">User Administration</button>\n\n                <button *ngIf=\"this._router.url === '/profil'\"\n                    (click)=\"this._router.navigateByUrl('/profil')\" class=\"button active\" type=\"submit\">Me</button>\n                <button *ngIf=\"this._router.url != '/profil'\"\n                    (click)=\"this._router.navigateByUrl('/profil')\" class=\"button ref\" type=\"submit\">Me</button>\n\n                <button (click)=\"onLogout()\" type=\"button\" class=\"button ref\">Logout</button>\n            </header>\n            <header *ngIf=\"!this._auth.isConnected()\" id=\"header\">   \n                 <button (click)=\"this._router.navigateByUrl('/login')\" class=\"button ref\" type=\"submit\">Login</button>\n            </header>\n            <router-outlet></router-outlet>\n        </div>\n    </div>\n</div>"
 
 /***/ },
 /* 372 */
@@ -65480,9 +65514,10 @@
 	var router_1 = __webpack_require__(340);
 	var login_component_1 = __webpack_require__(400);
 	var mapView_component_1 = __webpack_require__(406);
-	var friend_component_1 = __webpack_require__(701);
-	var register_component_1 = __webpack_require__(704);
-	var admin_component_1 = __webpack_require__(708);
+	var friend_component_1 = __webpack_require__(700);
+	var register_component_1 = __webpack_require__(703);
+	var admin_component_1 = __webpack_require__(707);
+	var profil_component_1 = __webpack_require__(709);
 	var AppRoutingModule = (function () {
 	    function AppRoutingModule() {
 	    }
@@ -65497,6 +65532,7 @@
 	                { path: 'friends', component: friend_component_1.FriendComponent },
 	                { path: 'register', component: register_component_1.RegisterComponent },
 	                { path: 'admin', component: admin_component_1.AdminComponent },
+	                { path: 'profil', component: profil_component_1.ProfilComponent },
 	                { path: '', component: login_component_1.LoginComponent }
 	            ])
 	        ],
@@ -65569,8 +65605,8 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var http_1 = __webpack_require__(371);
-	var http_2 = __webpack_require__(371);
+	var http_1 = __webpack_require__(370);
+	var http_2 = __webpack_require__(370);
 	var token_1 = __webpack_require__(402);
 	__webpack_require__(403);
 	var auth_service_1 = __webpack_require__(339);
@@ -65609,9 +65645,10 @@
 	    };
 	    LoginService.prototype.saveJwt = function (jwt) {
 	        if (jwt) {
-	            this._auth.setToken(new token_1.Token(jwt.token, jwt.string, false));
+	            this._auth.setToken(new token_1.Token(jwt.token, jwt.expires, false));
 	            this._auth.setUserID(jwt.user.id);
 	            this._auth.setRank(jwt.user.rank);
+	            this._auth.setUserDetails(jwt.user);
 	        }
 	    };
 	    LoginService.prototype.logError = function (error) {
@@ -65691,10 +65728,11 @@
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
 	var mapView_service_1 = __webpack_require__(407);
-	var user_service_1 = __webpack_require__(698);
+	var user_service_1 = __webpack_require__(697);
 	var MapView = (function () {
 	    //TODO FAIRE UN POLLING des users
 	    function MapView(_auth, _router, mapService, userService) {
+	        var _this = this;
 	        this._auth = _auth;
 	        this._router = _router;
 	        this.mapService = mapService;
@@ -65708,6 +65746,9 @@
 	        this.zoom = 15;
 	        this.loadElements();
 	        this.radius = 2000;
+	        setInterval(function (e) {
+	            _this.loadPersons();
+	        }, 5000);
 	    }
 	    MapView.prototype.loadElements = function () {
 	        var _this = this;
@@ -65716,17 +65757,8 @@
 	        this.markerPerson = [];
 	        //localisation
 	        navigator.geolocation.getCurrentPosition(function (position) {
-	            console.log(position);
 	            _this.lat = position.coords.latitude;
 	            _this.lng = position.coords.longitude;
-	            _this.markerPerson.push({
-	                id: 0,
-	                title: "You",
-	                location: [
-	                    _this.lat,
-	                    _this.lng
-	                ]
-	            });
 	            _this.loadMapElements();
 	        }, function () {
 	            alert('Please use HTML5 enabled browser');
@@ -65735,6 +65767,20 @@
 	            maximumAge: 1,
 	            enableHighAccuracy: true
 	        });
+	    };
+	    MapView.prototype.loadPersons = function () {
+	        var _this = this;
+	        this.markerPerson = [];
+	        this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
+	            .subscribe(function (success) {
+	            success.forEach(function (user) {
+	                _this.markerPerson.push({
+	                    id: user.id,
+	                    title: user.username,
+	                    location: user.location
+	                });
+	            });
+	        }, function (error) { return alert("Error: " + error); });
 	    };
 	    MapView.prototype.loadMapElements = function () {
 	        var _this = this;
@@ -65757,16 +65803,6 @@
 	                        location: element.location,
 	                        radius: element.radius,
 	                        draggable: _this._auth.getUserId() == element.owner
-	                    });
-	                });
-	            }, function (error) { return alert("Error: " + error); });
-	            this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
-	                .subscribe(function (success) {
-	                success.forEach(function (user) {
-	                    _this.markerPerson.push({
-	                        id: user.id,
-	                        title: user.username,
-	                        location: user.location
 	                    });
 	                });
 	            }, function (error) { return alert("Error: " + error); });
@@ -65844,6 +65880,12 @@
 	    };
 	    MapView.prototype.mapIdle = function () {
 	        this.loadMapElements();
+	        if (this.commandMakerEvent != null) {
+	            if (this.commandMakerEvent.id == undefined) {
+	                this.markerEvent.push(this.commandMakerEvent);
+	                return;
+	            }
+	        }
 	    };
 	    MapView.prototype.zoomChanged = function ($event) {
 	        this.zoom = $event;
@@ -65865,6 +65907,7 @@
 	            });
 	            this.markerPOI = [];
 	            this.markerEvent.splice(index, 1);
+	            this.commandMakerEvent = null;
 	            if (m.id != undefined) {
 	                this.mapService.deleteEvent(m.id)
 	                    .subscribe(function (success) { return alert("Event successfully deleted!"); }, function (error) { return alert("Error: " + error); });
@@ -65935,8 +65978,8 @@
 	MapView = __decorate([
 	    core_1.Component({
 	        selector: 'map-view',
-	        template: __webpack_require__(699),
-	        styles: [__webpack_require__(700)],
+	        template: __webpack_require__(698),
+	        styles: [__webpack_require__(699)],
 	        providers: [mapView_service_1.MapViewService]
 	    }),
 	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, mapView_service_1.MapViewService, user_service_1.UserService])
@@ -65962,7 +66005,6 @@
 	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
-	var header_model_1 = __webpack_require__(697);
 	var MapViewService = (function () {
 	    function MapViewService(httpService, auth, router) {
 	        this.httpService = httpService;
@@ -65970,62 +66012,35 @@
 	        this.router = router;
 	    }
 	    MapViewService.prototype.getEventNearby = function (lat, lon, radius) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doGet('https://api.eventail.me/events/nearby?lat=' + lat + '&lon=' + lon + '&radius=' + radius, additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/events/nearby?lat=' + lat + '&lon=' + lon + '&radius=' + radius)
 	            .map(function (obj) { return (obj); });
 	    };
 	    MapViewService.prototype.saveEvent = function (body) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doPost(body, 'https://api.eventail.me/events', additionnalsHeaders)
+	        return this.httpService.doPost(body, 'https://api.eventail.me/events')
 	            .map(function (obj) { return (obj); });
 	    };
 	    MapViewService.prototype.updateEvent = function (body, idEvent) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doPatch(body, 'https://api.eventail.me/events/' + idEvent, additionnalsHeaders);
+	        return this.httpService.doPatch(body, 'https://api.eventail.me/events/' + idEvent);
 	    };
 	    MapViewService.prototype.deleteEvent = function (idEvent) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doDelete('https://api.eventail.me/events/' + idEvent, additionnalsHeaders);
+	        return this.httpService.doDelete('https://api.eventail.me/events/' + idEvent);
 	    };
 	    MapViewService.prototype.savePOI = function (body, idEvent) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doPost(body, 'https://api.eventail.me/events/' + idEvent + '/poi', additionnalsHeaders)
+	        return this.httpService.doPost(body, 'https://api.eventail.me/events/' + idEvent + '/poi')
 	            .map(function (obj) { return (obj); });
 	    };
 	    MapViewService.prototype.updatePOI = function (body, idEvent, idPOI) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doPatch(body, 'https://api.eventail.me/events/' + idEvent + '/poi/' + idPOI, additionnalsHeaders);
+	        return this.httpService.doPatch(body, 'https://api.eventail.me/events/' + idEvent + '/poi/' + idPOI);
 	    };
 	    MapViewService.prototype.deletePOI = function (idEvent, idPOI) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doDelete('https://api.eventail.me/events/' + idEvent + '/poi/' + idPOI, additionnalsHeaders);
+	        return this.httpService.doDelete('https://api.eventail.me/events/' + idEvent + '/poi/' + idPOI);
 	    };
 	    MapViewService.prototype.getPOIs = function (idEvent) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doGet('https://api.eventail.me/events/' + idEvent + '/poi', additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/events/' + idEvent + '/poi')
 	            .map(function (obj) { return (obj); });
 	    };
 	    MapViewService.prototype.getFriendsNearby = function (lat, lon, radius) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lon + '&radius=' + radius, additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lon + '&radius=' + radius)
 	            .map(function (obj) { return (obj); });
 	    };
 	    return MapViewService;
@@ -66052,21 +66067,26 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
-	var http_1 = __webpack_require__(371);
-	var http_2 = __webpack_require__(371);
+	var http_1 = __webpack_require__(370);
+	var http_2 = __webpack_require__(370);
 	var Rx_1 = __webpack_require__(409);
 	__webpack_require__(403);
+	var auth_service_1 = __webpack_require__(339);
 	var HTTPService = (function () {
-	    function HTTPService(_http) {
+	    function HTTPService(_http, auth) {
 	        this._http = _http;
+	        this.auth = auth;
 	    }
 	    HTTPService.prototype.doPost = function (body, url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        headers.append('Content-Type', 'application/json');
 	        headers.append('Accept', 'application/json');
-	        pHeaders.forEach(function (header) {
-	            headers.append(header.key, header.value);
-	        });
+	        headers.append('Authorization', "Token " + this.auth.getToken().token);
+	        if (pHeaders != undefined) {
+	            pHeaders.forEach(function (header) {
+	                headers.append(header.key, header.value);
+	            });
+	        }
 	        var bodyString = JSON.stringify(body);
 	        var options = new http_2.RequestOptions({ headers: headers });
 	        return this._http.post(url, bodyString, options)
@@ -66077,9 +66097,12 @@
 	        var headers = new http_2.Headers();
 	        headers.append('Content-Type', 'application/json');
 	        headers.append('Accept', 'application/json');
-	        pHeaders.forEach(function (header) {
-	            headers.append(header.key, header.value);
-	        });
+	        headers.append('Authorization', "Token " + this.auth.getToken().token);
+	        if (pHeaders != undefined) {
+	            pHeaders.forEach(function (header) {
+	                headers.append(header.key, header.value);
+	            });
+	        }
 	        var bodyString = JSON.stringify(body);
 	        var options = new http_2.RequestOptions({ headers: headers });
 	        return this._http.patch(url, bodyString, options)
@@ -66088,9 +66111,12 @@
 	    HTTPService.prototype.doGet = function (url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        headers.append('Accept', 'application/json');
-	        pHeaders.forEach(function (header) {
-	            headers.append(header.key, header.value);
-	        });
+	        headers.append('Authorization', "Token " + this.auth.getToken().token);
+	        if (pHeaders != undefined) {
+	            pHeaders.forEach(function (header) {
+	                headers.append(header.key, header.value);
+	            });
+	        }
 	        var options = new http_2.RequestOptions({ headers: headers });
 	        return this._http.get(url, options)
 	            .map(function (res) { return res.json(); })
@@ -66098,18 +66124,24 @@
 	    };
 	    HTTPService.prototype.doDelete = function (url, pHeaders) {
 	        var headers = new http_2.Headers();
-	        pHeaders.forEach(function (header) {
-	            headers.append(header.key, header.value);
-	        });
+	        headers.append('Authorization', "Token " + this.auth.getToken().token);
+	        if (pHeaders != undefined) {
+	            pHeaders.forEach(function (header) {
+	                headers.append(header.key, header.value);
+	            });
+	        }
 	        var options = new http_2.RequestOptions({ headers: headers });
 	        return this._http.delete(url, options)
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
 	    };
 	    HTTPService.prototype.doPut = function (body, url, pHeaders) {
 	        var headers = new http_2.Headers();
-	        pHeaders.forEach(function (header) {
-	            headers.append(header.key, header.value);
-	        });
+	        headers.append('Authorization', "Token " + this.auth.getToken().token);
+	        if (pHeaders != undefined) {
+	            pHeaders.forEach(function (header) {
+	                headers.append(header.key, header.value);
+	            });
+	        }
 	        var options = new http_2.RequestOptions({ headers: headers });
 	        return this._http.put(url, body, options)
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
@@ -66118,7 +66150,7 @@
 	}());
 	HTTPService = __decorate([
 	    core_1.Injectable(),
-	    __metadata("design:paramtypes", [http_1.Http])
+	    __metadata("design:paramtypes", [http_1.Http, auth_service_1.AuthService])
 	], HTTPService);
 	exports.HTTPService = HTTPService;
 
@@ -80574,21 +80606,6 @@
 
 /***/ },
 /* 697 */
-/***/ function(module, exports) {
-
-	"use strict";
-	var HeaderModel = (function () {
-	    function HeaderModel(key, value) {
-	        this.key = key;
-	        this.value = value;
-	    }
-	    return HeaderModel;
-	}());
-	exports.HeaderModel = HeaderModel;
-
-
-/***/ },
-/* 698 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -80605,9 +80622,8 @@
 	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
-	var header_model_1 = __webpack_require__(697);
-	var http_1 = __webpack_require__(371);
-	var http_2 = __webpack_require__(371);
+	var http_1 = __webpack_require__(370);
+	var http_2 = __webpack_require__(370);
 	var UserService = (function () {
 	    function UserService(httpService, auth, router, _http) {
 	        this.httpService = httpService;
@@ -80616,17 +80632,11 @@
 	        this._http = _http;
 	    }
 	    UserService.prototype.searchUser = function (q) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doGet('https://api.eventail.me/users/search?q=' + q, additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/users/search?q=' + q)
 	            .map(function (obj) { return (obj); });
 	    };
 	    UserService.prototype.getUsersNearby = function (lat, lng, radius, all) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lng + '&radius=' + radius + '&all=' + (this.auth.getRank() == 0), additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lng + '&radius=' + radius + '&all=' + (this.auth.getRank() == 0))
 	            .map(function (obj) { return (obj); });
 	    };
 	    UserService.prototype.getUsers = function (pageNumber) {
@@ -80637,10 +80647,7 @@
 	        return this._http.get('https://api.eventail.me/users?count=5&page=' + pageNumber, options);
 	    };
 	    UserService.prototype.changeUserRank = function (userID, rank) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doPut(rank, 'https://api.eventail.me/users/' + userID + '/rank', additionnalsHeaders);
+	        return this.httpService.doPut(rank, 'https://api.eventail.me/users/' + userID + '/rank');
 	    };
 	    return UserService;
 	}());
@@ -80653,19 +80660,19 @@
 
 
 /***/ },
-/* 699 */
+/* 698 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"posts\">\n    <article>\n      <!-- this creates a google map on the page with the given lat/lng from -->\n      <!-- the component as the initial center of the map: -->\n      <sebm-google-map \n        [latitude]=\"lat\"\n        [longitude]=\"lng\"\n        [zoom]=\"zoom\"\n        [disableDefaultUI]=\"false\"\n        (mapClick)=\"mapClicked($event)\"\n        (centerChange)=\"centerMapChanged($event)\"\n        (zoomChange)=\"zoomChanged($event)\"\n        (idle)=\"mapIdle()\">\n        <!-- Persons -->\n        <sebm-google-map-marker \n            *ngFor=\"let m of markerPerson\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'U'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"false\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n\n        <!-- Points of interest -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerPOI; let i = index\"\n            (markerClick)=\"clickedMarkerPOI(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'I'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"POIMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n        \n        <!-- Events -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerEvent; let i = index\"\n            (markerClick)=\"clickedMarkerEvent(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'E'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"eventMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n\n          <sebm-google-map-circle [latitude]=\"m.location[0]\" [longitude]=\"m.location[1]\" \n            [radius]=\"m.radius\"\n            [fillColor]=\"'red'\"\n            [circleDraggable]=\"false\"\n            [editable]=\"false\">\n          </sebm-google-map-circle>\n        </sebm-google-map-marker>\n      </sebm-google-map>\n    </article>\n    <article *ngIf=\"this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent != null && this.commandMakerEvent != undefined\">\n     <strong> {{ this.commandMakerEvent.title }}</strong> <br>\n               lat: {{ this.commandMakerEvent.location[0] }} <br>\n               lng: {{ this.commandMakerEvent.location[1] }} <br>\n               radius: <input #number type='number' min=\"0\" max=\"500\" [(ngModel)]='this.commandMakerEvent.radius' required> <br><br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.desc' required>\n               This event begins: <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.begin' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hbegin' required><br>\n               This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.end' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hend' required><br>\n               Spontaneous <input #textbox type='checkbox' [(ngModel)]='this.commandMakerEvent.spontaneous' required> <br> \n      <button *ngIf=\"this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"saveEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button *ngIf=\"this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"deleteMarkerEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button *ngIf=\"this._auth.getRank() < 2 && this._auth.getUserId() == this.commandMakerEvent.owner\"\n       (click)=\"this.editingPointsOfInterest = true\" type=\"submit\" class=\"button big\">SWITCH TO POINTS OF INTEREST</button>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length > 0\">\n     <strong> {{ this.commandMakerPOI.title }}</strong> <br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.desc' required> \n      <button \n       (click)=\"savePOI(this.commandMakerPOI, true)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button\n       (click)=\"deleteMarkerPOI(this.commandMakerPOI)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button \n       (click)=\"this.editingPointsOfInterest = false\" type=\"submit\" class=\"button big\">SWITCH TO EVENTS</button>\n    </article>\n<!-- this.commandMakerEvent = this.markerEvent[this.markerEvent.length-1]; -->\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length == 0\">\n      <strong> Click anywere on the map to add a new POI.</strong> <br>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent == null || this.commandMakerEvent == undefined\">\n      <strong> Click on an event or click on the map to create one.</strong> <br>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length == 0\">\n     <strong> Click anywere on the map to start a new event.</strong> <br>\n    </article>\n  </div>\n</section>"
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"posts\">\n    <article>\n      <!-- this creates a google map on the page with the given lat/lng from -->\n      <!-- the component as the initial center of the map: -->\n      <sebm-google-map \n        [latitude]=\"lat\"\n        [longitude]=\"lng\"\n        [zoom]=\"zoom\"\n        [disableDefaultUI]=\"false\"\n        (mapClick)=\"mapClicked($event)\"\n        (centerChange)=\"centerMapChanged($event)\"\n        (zoomChange)=\"zoomChanged($event)\"\n        (idle)=\"mapIdle()\">\n        <!-- Persons -->\n        <sebm-google-map-marker \n            *ngFor=\"let m of markerPerson\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'U'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"false\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n\n        <!-- Points of interest -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerPOI; let i = index\"\n            (markerClick)=\"clickedMarkerPOI(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'I'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"POIMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n        </sebm-google-map-marker>\n        \n        <!-- Events -->\n        <sebm-google-map-marker\n            *ngFor=\"let m of markerEvent; let i = index\"\n            (markerClick)=\"clickedMarkerEvent(m.title, i)\"\n            [latitude]=\"m.location[0]\"\n            [longitude]=\"m.location[1]\"\n            [label]=\"'E'\"\n            [title]=\"m.title\"\n            [markerDraggable]=\"m.draggable\"\n            (dragEnd)=\"eventMarkerDragEnd(m, $event)\">\n            \n          <sebm-google-map-info-window>\n            <strong>{{ m.title }}</strong>\n          </sebm-google-map-info-window>\n\n          <sebm-google-map-circle [latitude]=\"m.location[0]\" [longitude]=\"m.location[1]\" \n            [radius]=\"m.radius\"\n            [fillColor]=\"'red'\"\n            [circleDraggable]=\"false\"\n            [editable]=\"false\">\n          </sebm-google-map-circle>\n        </sebm-google-map-marker>\n      </sebm-google-map>\n    </article>\n    <article *ngIf=\"this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent != null && this.commandMakerEvent != undefined\">\n     <strong> {{ this.commandMakerEvent.title }}</strong> <br>\n               lat: {{ this.commandMakerEvent.location[0] }} <br>\n               lng: {{ this.commandMakerEvent.location[1] }} <br>\n               radius: <input #number type='number' min=\"0\" max=\"500\" [(ngModel)]='this.commandMakerEvent.radius' required> <br><br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerEvent.desc' required>\n               This event begins: <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.begin' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hbegin' required><br>\n               This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.end' required> \n               <input #time type='time' [(ngModel)]='this.commandMakerEvent.hend' required><br>\n      <button *ngIf=\"this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner || this._auth.getRank() == 0\"\n       (click)=\"saveEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button *ngIf=\"this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner || this._auth.getRank() == 0\"\n       (click)=\"deleteMarkerEvent(this.commandMakerEvent)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button *ngIf=\"this._auth.getRank() < 2 && this._auth.getUserId() == this.commandMakerEvent.owner || this._auth.getRank() == 0\"\n       (click)=\"this.editingPointsOfInterest = true\" type=\"submit\" class=\"button big\">SWITCH TO POINTS OF INTEREST</button>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length > 0\">\n     <strong> {{ this.commandMakerPOI.title }}</strong> <br>\n               Event Name <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.title' required>\n               Event Desc <input #textbox type='text' [(ngModel)]='this.commandMakerPOI.desc' required> \n      <button \n       (click)=\"savePOI(this.commandMakerPOI, true)\" type=\"submit\" class=\"button big\">SAVE</button>\n      <button\n       (click)=\"deleteMarkerPOI(this.commandMakerPOI)\" type=\"submit\" class=\"button danger\">DELETE</button>\n      <button \n       (click)=\"this.editingPointsOfInterest = false\" type=\"submit\" class=\"button big\">SWITCH TO EVENTS</button>\n    </article>\n<!-- this.commandMakerEvent = this.markerEvent[this.markerEvent.length-1]; -->\n    <article *ngIf=\"this.markerEvent.length > 0 && this.editingPointsOfInterest && this.markerPOI.length == 0\">\n      <strong> Click anywere on the map to add a new POI.</strong> <br>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length > 0 && !this.editingPointsOfInterest && this.commandMakerEvent == null || this.commandMakerEvent == undefined\">\n      <strong> Click on an event or click on the map to create one.</strong> <br>\n    </article>\n\n    <article *ngIf=\"this.markerEvent.length == 0\">\n     <strong> Click anywere on the map to start a new event.</strong> <br>\n    </article>\n  </div>\n</section>"
 
 /***/ },
-/* 700 */
+/* 699 */
 /***/ function(module, exports) {
 
 	module.exports = ".sebm-google-map-container {\n  height: 75%;\n}"
 
 /***/ },
-/* 701 */
+/* 700 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -80681,8 +80688,8 @@
 	var core_1 = __webpack_require__(313);
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
-	var user_service_1 = __webpack_require__(698);
-	var friend_service_1 = __webpack_require__(702);
+	var user_service_1 = __webpack_require__(697);
+	var friend_service_1 = __webpack_require__(701);
 	var FriendComponent = (function () {
 	    function FriendComponent(_auth, _router, userService, friendService) {
 	        this._auth = _auth;
@@ -80767,7 +80774,7 @@
 	FriendComponent = __decorate([
 	    core_1.Component({
 	        selector: 'friend',
-	        template: __webpack_require__(703),
+	        template: __webpack_require__(702),
 	        providers: [friend_service_1.FriendService]
 	    }),
 	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, user_service_1.UserService,
@@ -80777,7 +80784,7 @@
 
 
 /***/ },
-/* 702 */
+/* 701 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -80794,7 +80801,6 @@
 	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
-	var header_model_1 = __webpack_require__(697);
 	var FriendService = (function () {
 	    function FriendService(httpService, auth, router) {
 	        this.httpService = httpService;
@@ -80802,42 +80808,24 @@
 	        this.router = router;
 	    }
 	    FriendService.prototype.getFriends = function () {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doGet('https://api.eventail.me/users/self/friends', additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/users/self/friends')
 	            .map(function (obj) { return (obj); });
 	    };
 	    FriendService.prototype.getPendingFriendshipRequests = function () {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doGet('https://api.eventail.me/users/self/friends/requests', additionnalsHeaders)
+	        return this.httpService.doGet('https://api.eventail.me/users/self/friends/requests')
 	            .map(function (obj) { return (obj); });
 	    };
 	    FriendService.prototype.addFriend = function (userID) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/requests/' + userID, additionnalsHeaders);
+	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/requests/' + userID);
 	    };
 	    FriendService.prototype.confirmFriend = function (userID) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/' + userID, additionnalsHeaders);
+	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/' + userID);
 	    };
 	    FriendService.prototype.deleteFriendshipRequest = function (userID) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/requests/' + userID, additionnalsHeaders);
+	        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/requests/' + userID);
 	    };
 	    FriendService.prototype.deleteFriend = function (friendID) {
-	        var additionnalsHeaders = [
-	            new header_model_1.HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-	        ];
-	        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/' + friendID, additionnalsHeaders);
+	        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/' + friendID);
 	    };
 	    return FriendService;
 	}());
@@ -80851,13 +80839,13 @@
 
 
 /***/ },
-/* 703 */
+/* 702 */
 /***/ function(module, exports) {
 
 	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <div>\n      <form>\n          <p> Find a user </p>\n        <div class=\"form-group\">\n          <input type=\"text\" class=\"form-control\" id=\"name\" required\n                [(ngModel)]=\"username\" name=\"username\"\n                (ngModelChange)=\"onChange($event)\">\n        </div>        \n      </form>\n      <table>\n          <tr *ngFor=\"let u of foundUsers\">\n            <th>{{u.username}}</th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"addFriend(u)\" type=\"submit\" class=\"button big\">add friend</button></th>\n          </tr>\n      </table>\n    </div>\n    <div *ngIf=\"this.friends.length > 0\">\n      List of your firends:<br>\n      <table>\n          <tr *ngFor=\"let friend of friends; let i = index\">>\n            <th>{{friend.username}}</th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"deleteFriend(friend, i)\" type=\"submit\" class=\"button danger\">delete friend</button></th>\n          </tr>\n      </table>\n    </div>\n    <div *ngIf=\"this.pendingFriends.length > 0\">\n      List of pending friendship requests:<br>\n      <table>\n          <tr *ngFor=\"let pfriend of pendingFriends\">>\n            <th>{{pfriend.user.username}}</th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"confirmFriend(pfriend.user, i)\" type=\"submit\" class=\"button big\">confirm friend</button></th>\n            <th *ngIf=\"this._auth.getRank() < 2\"> <button (click)=\"unconfirmFriend(pfriend.user, i)\" type=\"submit\" class=\"button danger\">reject request</button></th>\n          </tr>\n      </table>\n    </div>\n    <div>\n      <button (click)=\"loadFriends()\" type=\"submit\" class=\"button big\">refresh</button>\n    </div>\n  </div>\n</section>\n        "
 
 /***/ },
-/* 704 */
+/* 703 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -80873,8 +80861,8 @@
 	var core_1 = __webpack_require__(313);
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
-	var register_model_1 = __webpack_require__(705);
-	var register_service_1 = __webpack_require__(706);
+	var register_model_1 = __webpack_require__(704);
+	var register_service_1 = __webpack_require__(705);
 	var login_service_1 = __webpack_require__(401);
 	var login_model_1 = __webpack_require__(404);
 	var RegisterComponent = (function () {
@@ -80903,7 +80891,7 @@
 	RegisterComponent = __decorate([
 	    core_1.Component({
 	        selector: 'register',
-	        template: __webpack_require__(707),
+	        template: __webpack_require__(706),
 	        providers: [register_service_1.RegisterService, login_service_1.LoginService]
 	    }),
 	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, register_service_1.RegisterService,
@@ -80913,7 +80901,7 @@
 
 
 /***/ },
-/* 705 */
+/* 704 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -80931,7 +80919,7 @@
 
 
 /***/ },
-/* 706 */
+/* 705 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -80955,8 +80943,7 @@
 	        this.router = router;
 	    }
 	    RegisterService.prototype.register = function (registerModel) {
-	        var additionnalsHeaders = [];
-	        return this.httpService.doPost(registerModel, 'https://api.eventail.me/auth/register', additionnalsHeaders)
+	        return this.httpService.doPost(registerModel, 'https://api.eventail.me/auth/register')
 	            .map(function (obj) { return (obj); });
 	    };
 	    return RegisterService;
@@ -80971,13 +80958,13 @@
 
 
 /***/ },
-/* 707 */
+/* 706 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    Create your account.\n    <form>\n      <div class=\"form-group\">\n        <img src=\"images/logo.png\" alt=\"Eventail\" style=\"width:100%;\">\n        <label for=\"name\">Name</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"firstname\">Firstname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.firstname\" name=\"firstname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"lastname\">Lastname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.lastname\" name=\"lastname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"mail\">Mail</label>\n        <input type=\"email\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.mail\" name=\"mail\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.password\" name=\"password\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"cpassword\">Confirme your password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"cpassword\" name=\"cpassword\">\n      </div>\n      <button (click)=\"doRegister()\" type=\"submit\" class=\"button big\">Submit</button>\n    </form>\n  </div>\n</section>"
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    Create your account.\n    <form>\n      <div class=\"form-group\">\n        <img src=\"images/logo.png\" alt=\"Eventail\" style=\"width:100%;\">\n        <label for=\"name\">Username</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"firstname\">Firstname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.firstname\" name=\"firstname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"lastname\">Lastname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.lastname\" name=\"lastname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"mail\">Mail</label>\n        <input type=\"email\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.mail\" name=\"mail\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.password\" name=\"password\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"cpassword\">Confirme your password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"cpassword\" name=\"cpassword\">\n      </div>\n      <button (click)=\"doRegister()\" type=\"submit\" class=\"button big\">Submit</button>\n    </form>\n  </div>\n</section>"
 
 /***/ },
-/* 708 */
+/* 707 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -80993,7 +80980,7 @@
 	var core_1 = __webpack_require__(313);
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
-	var user_service_1 = __webpack_require__(698);
+	var user_service_1 = __webpack_require__(697);
 	var AdminComponent = (function () {
 	    function AdminComponent(auth, router, userService) {
 	        this.auth = auth;
@@ -81036,7 +81023,7 @@
 	AdminComponent = __decorate([
 	    core_1.Component({
 	        selector: 'admin',
-	        template: __webpack_require__(709),
+	        template: __webpack_require__(708),
 	    }),
 	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, user_service_1.UserService])
 	], AdminComponent);
@@ -81044,10 +81031,116 @@
 
 
 /***/ },
-/* 709 */
+/* 708 */
 /***/ function(module, exports) {
 
 	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n      <p> {{numberOfUsers}} users in record. </p>\n      <p *ngIf=\"numberOfPages > 1\"> Showing page \n            <input #number type='number' min=\"1\" max=\"numberOfPages\" [(ngModel)]='currentPage' (ngModelChange)=\"changePage($event)\" required>\n         of {{numberOfPages}}.\n      </p>\n    <table>\n        <tr>\n            <th>Id</th>\n            <th>Username</th>\n            <th>Firstname</th>\n            <th>Lastname</th>\n            <th>Mail</th>\n            <th>Rank</th>\n            <th>Location</th>\n            <th></th>\n        </tr>\n        <tr *ngFor=\"let u of users\">\n            <th>{{u.id}}</th>\n            <th>{{u.username}}</th>\n            <th>{{u.firstname}}</th>\n            <th>{{u.lastname}}</th>\n            <th>{{u.mail}}</th>\n            <th>\n                <strong>Change a user role</strong>\n                <select [(ngModel)]=\"u.rank\" class=\"form-control m-b\">\n                    <option *ngFor=\"let role of roles; let j = index\" [ngValue]=\"j\">{{role}}</option>\n                </select>\n            </th>\n            <th *ngIf=\"u.location!=null\"> lat:{{u.location[0]}} <br> lng:{{u.location[1]}} </th>\n            <th *ngIf=\"u.location==null\"> - </th>\n            <th> <button (click)=\"saveUser(u)\" type=\"submit\" class=\"button big\">save changes</button></th>\n        </tr>\n    </table>\n  </div>\n</section>"
+
+/***/ },
+/* 709 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var core_1 = __webpack_require__(313);
+	var auth_service_1 = __webpack_require__(339);
+	var router_1 = __webpack_require__(340);
+	var register_model_1 = __webpack_require__(704);
+	var profil_service_1 = __webpack_require__(710);
+	var login_service_1 = __webpack_require__(401);
+	var ProfilComponent = (function () {
+	    function ProfilComponent(_auth, _router, profilService, loginService) {
+	        this._auth = _auth;
+	        this._router = _router;
+	        this.profilService = profilService;
+	        this.loginService = loginService;
+	        this.registerModel = new register_model_1.RegisterModel("", "", "", "", "");
+	        this.registerModel = new register_model_1.RegisterModel(this._auth.getUserDetails().username, this._auth.getUserDetails().firstname, this._auth.getUserDetails().lastname, this._auth.getUserDetails().mail, "");
+	    }
+	    ProfilComponent.prototype.doUpdate = function () {
+	        var _this = this;
+	        if (this.registerModel.password == "" || this.registerModel.firstname == "" || this.registerModel.lastname == "" ||
+	            this.registerModel.mail == "" || this.registerModel.username == "") {
+	            alert("You must fill all inputs.");
+	            return;
+	        }
+	        this.profilService.update(this.registerModel)
+	            .subscribe(function (success) {
+	            var userResponse = success.json();
+	            _this.registerModel.username = userResponse.username;
+	            _this.registerModel.firstname = userResponse.firstname;
+	            _this.registerModel.lastname = userResponse.lastname;
+	            _this.registerModel.mail = userResponse.mail;
+	            alert("Your settings have been sucessfully updated.");
+	        }, function (error) {
+	            alert("You can't have the same email as an other user.");
+	        });
+	    };
+	    return ProfilComponent;
+	}());
+	ProfilComponent = __decorate([
+	    core_1.Component({
+	        selector: 'profil',
+	        template: __webpack_require__(711),
+	        providers: [profil_service_1.ProfilService, login_service_1.LoginService]
+	    }),
+	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, profil_service_1.ProfilService,
+	        login_service_1.LoginService])
+	], ProfilComponent);
+	exports.ProfilComponent = ProfilComponent;
+
+
+/***/ },
+/* 710 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+	    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	    return c > 3 && r && Object.defineProperty(target, key, r), r;
+	};
+	var __metadata = (this && this.__metadata) || function (k, v) {
+	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+	};
+	var core_1 = __webpack_require__(313);
+	var router_1 = __webpack_require__(340);
+	var auth_service_1 = __webpack_require__(339);
+	var http_service_1 = __webpack_require__(408);
+	var ProfilService = (function () {
+	    function ProfilService(httpService, auth, router) {
+	        this.httpService = httpService;
+	        this.auth = auth;
+	        this.router = router;
+	    }
+	    ProfilService.prototype.update = function (registerModel) {
+	        return this.httpService.doPatch(registerModel, 'https://api.eventail.me/users/self');
+	    };
+	    return ProfilService;
+	}());
+	ProfilService = __decorate([
+	    core_1.Injectable(),
+	    __metadata("design:paramtypes", [http_service_1.HTTPService,
+	        auth_service_1.AuthService,
+	        router_1.Router])
+	], ProfilService);
+	exports.ProfilService = ProfilService;
+
+
+/***/ },
+/* 711 */
+/***/ function(module, exports) {
+
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <h2>Udpate yourself!</h2>\n    <form>\n      <div class=\"form-group\">\n        <label for=\"name\">Username</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"firstname\">Firstname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.firstname\" name=\"firstname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"lastname\">Lastname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.lastname\" name=\"lastname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"mail\">Mail</label>\n        <input type=\"email\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.mail\" name=\"mail\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.password\" name=\"password\">\n      </div>\n      <button (click)=\"doUpdate()\" type=\"submit\" class=\"button big\">Save</button>\n    </form>\n  </div>\n</section>"
 
 /***/ }
 /******/ ]);
