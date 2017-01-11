@@ -1,4 +1,4 @@
-import {UserModel} from '../mapView/user.model'
+import {UserModel} from '../user/user.model'
 
 export class FriendshipRequestModel {
   constructor(

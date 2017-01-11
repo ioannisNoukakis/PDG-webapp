@@ -34,12 +34,17 @@ export class ProfilComponent{
      */
     public doUpdate()
     {
-        if(this.registerModel.password == "" || this.registerModel.firstname == "" || this.registerModel.lastname == "" || 
+        if( this.registerModel.firstname == "" || this.registerModel.lastname == "" || 
         this.registerModel.mail == "" || this.registerModel.username == ""){
-            alert("You must fill all inputs.");
+            alert("You must fill all inputs (password is optional.");
             return;
         }
-        this.profilService.update(this.registerModel)
+        let body = Object.assign({},this.registerModel);
+        if(this.registerModel.password == "")
+        {
+            delete body.password;
+        }
+        this.profilService.update(body)
         .subscribe (
         success => {
             var userResponse = success.json();

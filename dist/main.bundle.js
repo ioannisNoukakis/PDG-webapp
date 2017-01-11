@@ -49487,11 +49487,20 @@
 	var core_1 = __webpack_require__(313);
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
+	/**
+	 * Class for the main component of this app.
+	 */
 	var AppComponent = (function () {
+	    /**
+	     * constructor
+	     */
 	    function AppComponent(_auth, _router) {
 	        this._auth = _auth;
 	        this._router = _router;
 	    }
+	    /**
+	     * Logs out this user.
+	     */
 	    AppComponent.prototype.onLogout = function () {
 	        this._auth.logout();
 	        this._router.navigateByUrl('/login');
@@ -49526,7 +49535,14 @@
 	var router_1 = __webpack_require__(340);
 	var http_1 = __webpack_require__(370);
 	var http_2 = __webpack_require__(370);
+	/**
+	 * Authentification service. It's a placeholder for all the auth data. Theses data are available to
+	 * any class wishing to access them.
+	 */
 	var AuthService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function AuthService(_http, _router) {
 	        this._http = _http;
 	        this._router = _router;
@@ -49535,11 +49551,18 @@
 	        this.rank = parseInt(localStorage.getItem('EventailRank'));
 	        this.userDetails = JSON.parse(localStorage.getItem('EventailUserDetail'));
 	    }
+	    /**
+	    * Return the token of this user. If there are no connected users navigates to '/login'.
+	    */
 	    AuthService.prototype.getToken = function () {
-	        if (this._token == null)
+	        if (this._token == null || this._token == undefined)
 	            this._router.navigateByUrl('/login');
 	        return this._token;
 	    };
+	    /**
+	     * Checks if the user is connected and if his token is at a valid date.
+	     * If not tries to 'refresh' the token. If it failes navigates to '/login'.
+	     */
 	    AuthService.prototype.isConnected = function () {
 	        var _this = this;
 	        if (this._token == null)
@@ -49552,46 +49575,75 @@
 	        // Calculate the difference in milliseconds
 	        var difference_ms = date1_ms - date2_ms;
 	        if (difference_ms / one_day < 1) {
-	            var headers = new http_1.Headers();
-	            headers.append('Content-Type', 'application/json');
-	            headers.append('Accept', 'application/json');
-	            headers.append('Authorization', "Token " + this._token);
-	            var options = new http_1.RequestOptions({ headers: headers });
-	            this._http.post('https://api.eventail.me/auth/extend', "{}", options)
-	                .map(function (res) { return res.json(); })
-	                .subscribe(function (res) {
-	                _this._token.token = res.json().token;
-	                _this._token.expires = res.json().expires;
-	            });
+	            if (difference_ms / one_day >= 0) {
+	                var headers = new http_1.Headers();
+	                headers.append('Content-Type', 'application/json');
+	                headers.append('Accept', 'application/json');
+	                headers.append('Authorization', "Token " + this._token);
+	                var options = new http_1.RequestOptions({ headers: headers });
+	                this._http.post('https://api.eventail.me/auth/extend', "{}", options)
+	                    .map(function (res) { return res.json(); })
+	                    .subscribe(function (res) {
+	                    _this._token.token = res.json().token;
+	                    _this._token.expires = res.json().expires;
+	                });
+	            }
+	            else {
+	                this._router.navigateByUrl('/login');
+	            }
 	        }
 	        return true;
 	    };
+	    /**
+	     * Sets the userID.
+	     */
 	    AuthService.prototype.setUserID = function (userID) {
 	        localStorage.setItem('EventailUserID', "" + userID);
 	        this.userID = userID;
 	    };
+	    /**
+	    * Gets the userID.
+	    */
 	    AuthService.prototype.getUserId = function () {
 	        return this.userID;
 	    };
+	    /**
+	     * Sets the token.
+	     */
 	    AuthService.prototype.setToken = function (token) {
 	        console.log(token);
 	        localStorage.setItem('EventailToken', JSON.stringify(token));
 	        this._token = token;
 	    };
+	    /**
+	     * Logs out this user.
+	     */
 	    AuthService.prototype.logout = function () {
 	        localStorage.clear();
 	        this._token = null;
 	    };
+	    /**
+	     * Sets this user's rank.
+	     */
 	    AuthService.prototype.setRank = function (rank) {
 	        localStorage.setItem('EventailRank', "" + rank);
 	        this.rank = rank;
 	    };
+	    /**
+	     *Gets this user's rank.
+	     */
 	    AuthService.prototype.getRank = function () {
 	        return this.rank;
 	    };
+	    /**
+	     * Gets this user details.
+	     */
 	    AuthService.prototype.getUserDetails = function () {
 	        return this.userDetails;
 	    };
+	    /**
+	     * Sets this user details.
+	     */
 	    AuthService.prototype.setUserDetails = function (userDetails) {
 	        localStorage.setItem('EventailUserDetail', JSON.stringify(userDetails));
 	        this.userDetails = userDetails;
@@ -65564,7 +65616,13 @@
 	var login_model_1 = __webpack_require__(404);
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
+	/**
+	 * Class for the LoginComponent.
+	 */
 	var LoginComponent = (function () {
+	    /**
+	     * constructor
+	     */
 	    function LoginComponent(_loginSevice, _auth, _router) {
 	        this._loginSevice = _loginSevice;
 	        this._auth = _auth;
@@ -65574,6 +65632,9 @@
 	            this._router.navigateByUrl('/mapView');
 	        }
 	    }
+	    /**
+	     * Method called from the template. Calls the login Method from the login service.
+	     */
 	    LoginComponent.prototype.onSubmit = function () {
 	        this._loginSevice.requestToken(this.loginModel);
 	    };
@@ -65611,17 +65672,25 @@
 	__webpack_require__(403);
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
+	/**
+	 * Service for the login component. As the HTTP request differs from usual it has it own method with http from Angular2.
+	 */
 	var LoginService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function LoginService(_http, _auth, _router) {
 	        this._http = _http;
 	        this._auth = _auth;
 	        this._router = _router;
-	        // URL to web api
 	        this.apiURL = 'https://api.eventail.me/auth/token';
 	        this.headers = new http_2.Headers();
 	        this.headers.append('Content-Type', 'application/json');
 	        this.headers.append('Accept', 'application/json');
 	    }
+	    /**
+	     * Request a token and all informations to be placed in the AuthService.
+	     */
 	    LoginService.prototype.requestToken = function (loginModel) {
 	        var _this = this;
 	        if (!loginModel.username || !loginModel.password) {
@@ -65637,7 +65706,7 @@
 	            console.log("[LOGIN_SERVICE][I] Authentication Complete.");
 	            _this._router.navigateByUrl('/mapView');
 	        }, function (err) {
-	            _this.logError(err);
+	            console.log(err);
 	            alert(JSON.parse(err._body).message);
 	            loginModel.password = "";
 	            loginModel.username = "";
@@ -65650,9 +65719,6 @@
 	            this._auth.setRank(jwt.user.rank);
 	            this._auth.setUserDetails(jwt.user);
 	        }
-	    };
-	    LoginService.prototype.logError = function (error) {
-	        console.log(error);
 	    };
 	    return LoginService;
 	}());
@@ -65729,8 +65795,13 @@
 	var router_1 = __webpack_require__(340);
 	var mapView_service_1 = __webpack_require__(407);
 	var user_service_1 = __webpack_require__(697);
+	/**
+	 * class for the MapView component.
+	 */
 	var MapView = (function () {
-	    //TODO FAIRE UN POLLING des users
+	    /**
+	     * constructor
+	     */
 	    function MapView(_auth, _router, mapService, userService) {
 	        var _this = this;
 	        this._auth = _auth;
@@ -65750,6 +65821,9 @@
 	            _this.loadPersons();
 	        }, 5000);
 	    }
+	    /**
+	     * Load the elements to be displayed on the map.
+	     */
 	    MapView.prototype.loadElements = function () {
 	        var _this = this;
 	        this.markerEvent = [];
@@ -65768,6 +65842,9 @@
 	            enableHighAccuracy: true
 	        });
 	    };
+	    /**
+	     * Load the persons (the markers of persons) to be displayed on the map.
+	     */
 	    MapView.prototype.loadPersons = function () {
 	        var _this = this;
 	        this.markerPerson = [];
@@ -65782,6 +65859,9 @@
 	            });
 	        }, function (error) { return alert("Error: " + error); });
 	    };
+	    /**
+	     * Load the events to be displayed on the map.
+	     */
 	    MapView.prototype.loadMapElements = function () {
 	        var _this = this;
 	        this.radius = 3333 * (21 - this.zoom);
@@ -65808,6 +65888,10 @@
 	            }, function (error) { return alert("Error: " + error); });
 	        }
 	    };
+	    /**
+	     * Event fired form the template when a marker event has been clicked.
+	     * Loads all the points of interest of this event.
+	     */
 	    MapView.prototype.clickedMarkerEvent = function (label, index) {
 	        var _this = this;
 	        this.commandMakerEvent = this.markerEvent[index];
@@ -65839,6 +65923,9 @@
 	            });
 	        }, function (error) { return alert("Error: " + error); });
 	    };
+	    /**
+	     * Event fired form the template when a marker points of interest has been clicked.
+	     */
 	    MapView.prototype.clickedMarkerPOI = function (label, index) {
 	        this.commandMakerPOI = this.markerPOI[index];
 	    };
@@ -65874,10 +65961,16 @@
 	            this.commandMakerPOI = this.markerPOI[this.markerPOI.length - 1];
 	        }
 	    };
+	    /**
+	     * Event fired form the template when the google map center has changed.
+	     */
 	    MapView.prototype.centerMapChanged = function ($event) {
 	        this.lat = $event.lat;
 	        this.lng = $event.lng;
 	    };
+	    /**
+	    * Event fired form the template when the google map has cessed to move.
+	    */
 	    MapView.prototype.mapIdle = function () {
 	        this.loadMapElements();
 	        if (this.commandMakerEvent != null) {
@@ -65887,17 +65980,29 @@
 	            }
 	        }
 	    };
+	    /**
+	    * Event fired form the template when the google map zoom has changed.
+	    */
 	    MapView.prototype.zoomChanged = function ($event) {
 	        this.zoom = $event;
 	    };
+	    /**
+	    * Event fired form the template when a event marker was beeing draged and has been released.
+	    */
 	    MapView.prototype.eventMarkerDragEnd = function (m, $event) {
 	        m.location[0] = $event.coords.lat;
 	        m.location[1] = $event.coords.lng;
 	    };
+	    /**
+	    * Event fired form the template when a point of interest marker was beeing draged and has been released.
+	    */
 	    MapView.prototype.POIMarkerDragEnd = function (m, $event) {
 	        m.location[0] = $event.coords.lat;
 	        m.location[1] = $event.coords.lng;
 	    };
+	    /**
+	     * Delete in the API and in the template this event.
+	     */
 	    MapView.prototype.deleteMarkerEvent = function (m) {
 	        var _this = this;
 	        var index = this.markerEvent.indexOf(m);
@@ -65914,6 +66019,9 @@
 	            }
 	        }
 	    };
+	    /**
+	     * Delete in the API and in the template this point of interest.
+	     */
 	    MapView.prototype.deleteMarkerPOI = function (m) {
 	        var index = this.markerPOI.indexOf(m);
 	        if (index != -1) {
@@ -65924,6 +66032,10 @@
 	            }
 	        }
 	    };
+	    /**
+	     * Saves in the API and in the template this point of interest.
+	     * If this point of interest already existed in the API, updates it.
+	     */
 	    MapView.prototype.savePOI = function (m, doAlert) {
 	        if (this.commandMakerEvent.id == undefined) {
 	            alert("You must first save your event.");
@@ -65951,6 +66063,10 @@
 	            }, function (error) { return alert("Error: " + error); });
 	        }
 	    };
+	    /**
+	     * Saves in the API and in the template this event.
+	     * If this event already existed in the API, updates it.
+	     */
 	    MapView.prototype.saveEvent = function (m) {
 	        var _this = this;
 	        var tmp = Object.assign({}, m);
@@ -66006,39 +66122,69 @@
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
 	var MapViewService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function MapViewService(httpService, auth, router) {
 	        this.httpService = httpService;
 	        this.auth = auth;
 	        this.router = router;
 	    }
+	    /**
+	     * Get from the api a list of nearby events.
+	     */
 	    MapViewService.prototype.getEventNearby = function (lat, lon, radius) {
 	        return this.httpService.doGet('https://api.eventail.me/events/nearby?lat=' + lat + '&lon=' + lon + '&radius=' + radius)
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Saves in the API this event.
+	     */
 	    MapViewService.prototype.saveEvent = function (body) {
 	        return this.httpService.doPost(body, 'https://api.eventail.me/events')
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Updates in the API this event.
+	     */
 	    MapViewService.prototype.updateEvent = function (body, idEvent) {
 	        return this.httpService.doPatch(body, 'https://api.eventail.me/events/' + idEvent);
 	    };
+	    /**
+	     * Delete in the API this event.
+	     */
 	    MapViewService.prototype.deleteEvent = function (idEvent) {
 	        return this.httpService.doDelete('https://api.eventail.me/events/' + idEvent);
 	    };
+	    /**
+	     * Saves in the API this point of interest.
+	     */
 	    MapViewService.prototype.savePOI = function (body, idEvent) {
 	        return this.httpService.doPost(body, 'https://api.eventail.me/events/' + idEvent + '/poi')
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Updates in the API this point of interest.
+	     */
 	    MapViewService.prototype.updatePOI = function (body, idEvent, idPOI) {
 	        return this.httpService.doPatch(body, 'https://api.eventail.me/events/' + idEvent + '/poi/' + idPOI);
 	    };
+	    /**
+	     * Delete in the API this point of interest.
+	     */
 	    MapViewService.prototype.deletePOI = function (idEvent, idPOI) {
 	        return this.httpService.doDelete('https://api.eventail.me/events/' + idEvent + '/poi/' + idPOI);
 	    };
+	    /**
+	     * Gets in the API all the point of interest of this event.
+	     */
 	    MapViewService.prototype.getPOIs = function (idEvent) {
 	        return this.httpService.doGet('https://api.eventail.me/events/' + idEvent + '/poi')
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Gets in the API your friends.
+	     */
 	    MapViewService.prototype.getFriendsNearby = function (lat, lon, radius) {
 	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lon + '&radius=' + radius)
 	            .map(function (obj) { return (obj); });
@@ -66072,11 +66218,20 @@
 	var Rx_1 = __webpack_require__(409);
 	__webpack_require__(403);
 	var auth_service_1 = __webpack_require__(339);
+	/**
+	 * HTTP service for all the usualls calls to the Angualr2 HTTP Deamon.
+	 */
 	var HTTPService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function HTTPService(_http, auth) {
 	        this._http = _http;
 	        this.auth = auth;
 	    }
+	    /**
+	     * Does a post request with the specified payload, url and headers.
+	     */
 	    HTTPService.prototype.doPost = function (body, url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        headers.append('Content-Type', 'application/json');
@@ -66093,6 +66248,9 @@
 	            .map(function (res) { return res.json(); })
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
 	    };
+	    /**
+	     * Does a patch request with the specified payload, url and headers.
+	     */
 	    HTTPService.prototype.doPatch = function (body, url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        headers.append('Content-Type', 'application/json');
@@ -66108,6 +66266,9 @@
 	        return this._http.patch(url, bodyString, options)
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
 	    };
+	    /**
+	     * Does a get request with the specified url and headers.
+	     */
 	    HTTPService.prototype.doGet = function (url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        headers.append('Accept', 'application/json');
@@ -66122,6 +66283,9 @@
 	            .map(function (res) { return res.json(); })
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
 	    };
+	    /**
+	     * Does a get request with the specified url and headers.
+	     */
 	    HTTPService.prototype.doDelete = function (url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        headers.append('Authorization', "Token " + this.auth.getToken().token);
@@ -66134,6 +66298,9 @@
 	        return this._http.delete(url, options)
 	            .catch(function (error) { return Rx_1.Observable.throw(error.json().error || 'Server error'); });
 	    };
+	    /**
+	     * Does a get request with the specified payload, url and headers.
+	     */
 	    HTTPService.prototype.doPut = function (body, url, pHeaders) {
 	        var headers = new http_2.Headers();
 	        headers.append('Authorization', "Token " + this.auth.getToken().token);
@@ -80624,21 +80791,36 @@
 	var http_service_1 = __webpack_require__(408);
 	var http_1 = __webpack_require__(370);
 	var http_2 = __webpack_require__(370);
+	/**
+	 * Global service.
+	 */
 	var UserService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function UserService(httpService, auth, router, _http) {
 	        this.httpService = httpService;
 	        this.auth = auth;
 	        this.router = router;
 	        this._http = _http;
 	    }
+	    /**
+	     * Searches a user with this query string. Return a list of possible users.
+	     */
 	    UserService.prototype.searchUser = function (q) {
 	        return this.httpService.doGet('https://api.eventail.me/users/search?q=' + q)
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Return your friends nearby.
+	     */
 	    UserService.prototype.getUsersNearby = function (lat, lng, radius, all) {
 	        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat=' + lat + '&lon=' + lng + '&radius=' + radius + '&all=' + (this.auth.getRank() == 0))
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Get all registered user.
+	     */
 	    UserService.prototype.getUsers = function (pageNumber) {
 	        var headers = new http_1.Headers();
 	        headers.append('Accept', 'application/json');
@@ -80646,6 +80828,9 @@
 	        var options = new http_1.RequestOptions({ headers: headers });
 	        return this._http.get('https://api.eventail.me/users?count=5&page=' + pageNumber, options);
 	    };
+	    /**
+	     * Changes a user's rank.
+	     */
 	    UserService.prototype.changeUserRank = function (userID, rank) {
 	        return this.httpService.doPut(rank, 'https://api.eventail.me/users/' + userID + '/rank');
 	    };
@@ -80690,7 +80875,13 @@
 	var router_1 = __webpack_require__(340);
 	var user_service_1 = __webpack_require__(697);
 	var friend_service_1 = __webpack_require__(701);
+	/**
+	 * Class for the friend component.
+	 */
 	var FriendComponent = (function () {
+	    /**
+	     * constructor
+	     */
 	    function FriendComponent(_auth, _router, userService, friendService) {
 	        this._auth = _auth;
 	        this._router = _router;
@@ -80702,6 +80893,9 @@
 	        this.foundUsers = [];
 	        this.loadFriends();
 	    }
+	    /**
+	     * Retrives all the friends you have from the API. Puts them in the view.
+	     */
 	    FriendComponent.prototype.loadFriends = function () {
 	        var _this = this;
 	        this.friends = [];
@@ -80719,6 +80913,9 @@
 	            });
 	        }, function (error) { return alert("Error: " + error); });
 	    };
+	    /**
+	     * Check if the searched user is in the pendingFriends or friends array.
+	     */
 	    FriendComponent.prototype.searchInFriendsAndInPending = function (username) {
 	        this.friends.forEach(function (user) {
 	            if (username == user.username)
@@ -80730,6 +80927,9 @@
 	        });
 	        return false;
 	    };
+	    /**
+	     * Event fired from the template when the search text input is modified. Show a list of suggestion for this new value.
+	     */
 	    FriendComponent.prototype.onChange = function (newValue) {
 	        var _this = this;
 	        if (newValue.length > 0) {
@@ -80745,6 +80945,9 @@
 	        else
 	            this.foundUsers = [];
 	    };
+	    /**
+	     * Creates a pending friend request in the API.
+	     */
 	    FriendComponent.prototype.addFriend = function (u) {
 	        this.friendService.addFriend(u.id)
 	            .subscribe(function (success) { return function (error) {
@@ -80753,17 +80956,26 @@
 	        this.username = "";
 	        this.foundUsers = [];
 	    };
+	    /**
+	     * Destroy in the API a friendship between you two.
+	     */
 	    FriendComponent.prototype.deleteFriend = function (u, index) {
 	        this.friendService.deleteFriend(u.id)
 	            .subscribe(function (success) { return function (error) { return alert("You are no longer friend with " + u.username + "."); }; }, function (error) { return alert("Error: " + error); });
 	        this.friends.splice(index, 1);
 	    };
+	    /**
+	     * Confirm your frienship with this user in the API.
+	     */
 	    FriendComponent.prototype.confirmFriend = function (u, index) {
 	        this.friendService.confirmFriend(u.id)
 	            .subscribe(function (success) { return function (error) { return alert("You and " + u.username + " are now friends!"); }; }, function (error) { return alert("Error: " + error); });
 	        this.friends.push(u);
 	        this.pendingFriends.splice(index, 1);
 	    };
+	    /**
+	     * Declines a frienship request in the API.
+	     */
 	    FriendComponent.prototype.unconfirmFriend = function (u, index) {
 	        this.friendService.deleteFriendshipRequest(u.id)
 	            .subscribe(function (success) { return function (error) { return alert("You declined friendship request from " + u.username); }; }, function (error) { return alert("Error: " + error); });
@@ -80801,29 +81013,53 @@
 	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
+	/**
+	 * Service class for the friend component.
+	 */
 	var FriendService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function FriendService(httpService, auth, router) {
 	        this.httpService = httpService;
 	        this.auth = auth;
 	        this.router = router;
 	    }
+	    /**
+	     * Gets in the API an array of users that are yours friends.
+	     */
 	    FriendService.prototype.getFriends = function () {
 	        return this.httpService.doGet('https://api.eventail.me/users/self/friends')
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Gets in the API an array of users that wants to be yours friends.
+	     */
 	    FriendService.prototype.getPendingFriendshipRequests = function () {
 	        return this.httpService.doGet('https://api.eventail.me/users/self/friends/requests')
 	            .map(function (obj) { return (obj); });
 	    };
+	    /**
+	     * Create a friendship request in the API.
+	     */
 	    FriendService.prototype.addFriend = function (userID) {
 	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/requests/' + userID);
 	    };
+	    /**
+	     * Accept in the API a friendship request from this user.
+	     */
 	    FriendService.prototype.confirmFriend = function (userID) {
 	        return this.httpService.doPut({}, 'https://api.eventail.me/users/self/friends/' + userID);
 	    };
+	    /**
+	     * Decline in the API a friendship request from this user.
+	     */
 	    FriendService.prototype.deleteFriendshipRequest = function (userID) {
 	        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/requests/' + userID);
 	    };
+	    /**
+	     * Destroy in the API a friendship with this user.
+	     */
 	    FriendService.prototype.deleteFriend = function (friendID) {
 	        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/' + friendID);
 	    };
@@ -80865,7 +81101,13 @@
 	var register_service_1 = __webpack_require__(705);
 	var login_service_1 = __webpack_require__(401);
 	var login_model_1 = __webpack_require__(404);
+	/**
+	 * Class for the register component.
+	 */
 	var RegisterComponent = (function () {
+	    /**
+	     * constructor
+	     */
 	    function RegisterComponent(_auth, _router, registerService, loginService) {
 	        this._auth = _auth;
 	        this._router = _router;
@@ -80873,6 +81115,9 @@
 	        this.loginService = loginService;
 	        this.registerModel = new register_model_1.RegisterModel("", "", "", "", "");
 	    }
+	    /**
+	     * Register in the API this user.
+	     */
 	    RegisterComponent.prototype.doRegister = function () {
 	        var _this = this;
 	        if (this.cpassword != this.registerModel.password) {
@@ -80936,12 +81181,21 @@
 	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
+	/**
+	 * Service for the register component.
+	 */
 	var RegisterService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function RegisterService(httpService, auth, router) {
 	        this.httpService = httpService;
 	        this.auth = auth;
 	        this.router = router;
 	    }
+	    /**
+	     * Register in the API this user.
+	     */
 	    RegisterService.prototype.register = function (registerModel) {
 	        return this.httpService.doPost(registerModel, 'https://api.eventail.me/auth/register')
 	            .map(function (obj) { return (obj); });
@@ -80981,11 +81235,18 @@
 	var auth_service_1 = __webpack_require__(339);
 	var router_1 = __webpack_require__(340);
 	var user_service_1 = __webpack_require__(697);
+	/**
+	 * class for the admin component.
+	 */
 	var AdminComponent = (function () {
+	    /**
+	     * constructor
+	     */
 	    function AdminComponent(auth, router, userService) {
 	        this.auth = auth;
 	        this.router = router;
 	        this.userService = userService;
+	        //list of users
 	        this.users = [];
 	        this.numberOfPages = 1;
 	        this.numberOfUsers = 1;
@@ -80996,6 +81257,9 @@
 	            this.router.navigateByUrl('/mapView');
 	        this.getPartOfUsers(1);
 	    }
+	    /**
+	     * Retrives from the API a page (a partial list) of users.
+	     */
 	    AdminComponent.prototype.getPartOfUsers = function (pageNumber) {
 	        var _this = this;
 	        this.userService.getUsers(pageNumber)
@@ -81006,10 +81270,16 @@
 	            _this.numberOfUsers = parseInt(headers.get('x-paginate-items'));
 	        });
 	    };
+	    /**
+	     * Saves the user into the API.
+	     */
 	    AdminComponent.prototype.saveUser = function (userModel) {
 	        this.userService.changeUserRank(userModel.id, userModel.rank)
 	            .subscribe(function (success) { }, function (error) { return alert("Error: " + error); });
 	    };
+	    /**
+	     * Event fired from the template when the user has selected an other page.
+	     */
 	    AdminComponent.prototype.changePage = function ($event) {
 	        if (this.lastPage != this.currentPage) {
 	            if (this.currentPage > this.numberOfPages)
@@ -81055,24 +81325,35 @@
 	var router_1 = __webpack_require__(340);
 	var register_model_1 = __webpack_require__(704);
 	var profil_service_1 = __webpack_require__(710);
-	var login_service_1 = __webpack_require__(401);
+	/**
+	 * Class for the Profil component.
+	 */
 	var ProfilComponent = (function () {
-	    function ProfilComponent(_auth, _router, profilService, loginService) {
+	    /**
+	     * constructor
+	     */
+	    function ProfilComponent(_auth, _router, profilService) {
 	        this._auth = _auth;
 	        this._router = _router;
 	        this.profilService = profilService;
-	        this.loginService = loginService;
 	        this.registerModel = new register_model_1.RegisterModel("", "", "", "", "");
 	        this.registerModel = new register_model_1.RegisterModel(this._auth.getUserDetails().username, this._auth.getUserDetails().firstname, this._auth.getUserDetails().lastname, this._auth.getUserDetails().mail, "");
 	    }
+	    /**
+	     * Updates this user profile in the API and updates in AuthService theses informations.
+	     */
 	    ProfilComponent.prototype.doUpdate = function () {
 	        var _this = this;
-	        if (this.registerModel.password == "" || this.registerModel.firstname == "" || this.registerModel.lastname == "" ||
+	        if (this.registerModel.firstname == "" || this.registerModel.lastname == "" ||
 	            this.registerModel.mail == "" || this.registerModel.username == "") {
-	            alert("You must fill all inputs.");
+	            alert("You must fill all inputs (password is optional.");
 	            return;
 	        }
-	        this.profilService.update(this.registerModel)
+	        var body = Object.assign({}, this.registerModel);
+	        if (this.registerModel.password == "") {
+	            delete body.password;
+	        }
+	        this.profilService.update(body)
 	            .subscribe(function (success) {
 	            var userResponse = success.json();
 	            _this.registerModel.username = userResponse.username;
@@ -81090,10 +81371,9 @@
 	    core_1.Component({
 	        selector: 'profil',
 	        template: __webpack_require__(711),
-	        providers: [profil_service_1.ProfilService, login_service_1.LoginService]
+	        providers: [profil_service_1.ProfilService]
 	    }),
-	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, profil_service_1.ProfilService,
-	        login_service_1.LoginService])
+	    __metadata("design:paramtypes", [auth_service_1.AuthService, router_1.Router, profil_service_1.ProfilService])
 	], ProfilComponent);
 	exports.ProfilComponent = ProfilComponent;
 
@@ -81116,12 +81396,21 @@
 	var router_1 = __webpack_require__(340);
 	var auth_service_1 = __webpack_require__(339);
 	var http_service_1 = __webpack_require__(408);
+	/**
+	 * Service for the Profil component.
+	 */
 	var ProfilService = (function () {
+	    /**
+	     * constructor
+	     */
 	    function ProfilService(httpService, auth, router) {
 	        this.httpService = httpService;
 	        this.auth = auth;
 	        this.router = router;
 	    }
+	    /**
+	     * Updates in the API this user.
+	     */
 	    ProfilService.prototype.update = function (registerModel) {
 	        return this.httpService.doPatch(registerModel, 'https://api.eventail.me/users/self');
 	    };
@@ -81140,7 +81429,7 @@
 /* 711 */
 /***/ function(module, exports) {
 
-	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <h2>Udpate yourself!</h2>\n    <form>\n      <div class=\"form-group\">\n        <label for=\"name\">Username</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"firstname\">Firstname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.firstname\" name=\"firstname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"lastname\">Lastname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.lastname\" name=\"lastname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"mail\">Mail</label>\n        <input type=\"email\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.mail\" name=\"mail\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.password\" name=\"password\">\n      </div>\n      <button (click)=\"doUpdate()\" type=\"submit\" class=\"button big\">Save</button>\n    </form>\n  </div>\n</section>"
+	module.exports = "<!-- Banner -->\n<section id=\"banner\">\n  <div class=\"content\">\n    <h2>Update yourself!</h2>\n    <form>\n      <div class=\"form-group\">\n        <label for=\"name\">Username</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.username\" name=\"username\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"firstname\">Firstname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.firstname\" name=\"firstname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"lastname\">Lastname</label>\n        <input type=\"text\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.lastname\" name=\"lastname\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"mail\">Mail</label>\n        <input type=\"email\" class=\"form-control\" id=\"name\" \n              required\n              [(ngModel)]=\"registerModel.mail\" name=\"mail\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password (leave blank if you don't want to change it).</label>\n        <input type=\"password\" class=\"form-control\" id=\"name\" \n              [(ngModel)]=\"registerModel.password\" name=\"password\">\n      </div>\n      <button (click)=\"doUpdate()\" type=\"submit\" class=\"button big\">Save</button>\n    </form>\n  </div>\n</section>"
 
 /***/ }
 /******/ ]);
