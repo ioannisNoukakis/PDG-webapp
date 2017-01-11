@@ -10,18 +10,26 @@ import {AuthService} from '../auth/auth.service'
 import {Router} from '@angular/router'
 import { UserModel } from '../user/user.model'
 
+/**
+ * Service for the login component. As the HTTP request differs from usual it has it own method with http from Angular2.
+ */
 @Injectable()
 export class LoginService {
-    // URL to web api
     private apiURL = 'https://api.eventail.me/auth/token';
     private headers: Headers;
 
+    /**
+     * constructor
+     */
     constructor(private _http: Http, private _auth: AuthService, private _router: Router) { 
         this.headers = new Headers();
         this.headers.append('Content-Type', 'application/json');
         this.headers.append('Accept', 'application/json');
     }
 
+    /**
+     * Request a token and all informations to be placed in the AuthService.
+     */
     public requestToken(loginModel: LoginModel){
         if(!loginModel.username || !loginModel.password)
         {
@@ -42,7 +50,7 @@ export class LoginService {
                  },
                 err => 
                 {
-                    this.logError(err);
+                    console.log(err);
                     alert(JSON.parse(err._body).message);
                     loginModel.password = "";
                     loginModel.username = "";
@@ -57,10 +65,5 @@ export class LoginService {
             this._auth.setRank(jwt.user.rank);
             this._auth.setUserDetails(jwt.user);
         }
-    }
-
-    public logError(error)
-    {
-        console.log(error);
     }
 }

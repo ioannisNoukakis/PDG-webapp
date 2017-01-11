@@ -2,27 +2,34 @@ import { Component }   from '@angular/core'
 import { AuthService } from '../auth/auth.service'
 import { Router }      from '@angular/router'
 import { Observable }  from 'rxjs/Observable';
-import { UserModel }   from '../mapView/user.model'
+import { UserModel }   from '../user/user.model'
 import { RegisterModel } from './register.model'
 import { RegisterService } from './register.service'
 import {LoginService} from '../login/login.service'
 import {LoginModel} from '../login/login.model'
 
-
+/**
+ * Class for the register component.
+ */
 @Component({
     selector: 'register',
     templateUrl: './register.component.html',
     providers: [RegisterService, LoginService]
 })
-
 export class RegisterComponent{
     private registerModel: RegisterModel = new RegisterModel("", "", "", "", "");
     private cpassword: string;
 
+    /**
+     * constructor
+     */
     constructor(private _auth: AuthService, private _router: Router, private registerService:RegisterService,
                 private loginService : LoginService){
     }
 
+    /**
+     * Register in the API this user.
+     */
     public doRegister()
     {
         if(this.cpassword != this.registerModel.password)

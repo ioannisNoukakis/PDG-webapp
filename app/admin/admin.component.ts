@@ -3,14 +3,18 @@ import { AuthService } from '../auth/auth.service'
 import { Router }      from '@angular/router'
 import { Observable }  from 'rxjs/Observable';
 import { UserService } from '../user/user.service'
-import { UserModel }   from '../mapView/user.model'
+import { UserModel }   from '../user/user.model'
 
 
+/**
+ * class for the admin component.
+ */
 @Component({
     selector: 'admin',
     templateUrl: './admin.component.html', 
 })
 export class AdminComponent{
+    //list of users
     private users : UserModel[] = [];
     private numberOfPages: number = 1;
     private numberOfUsers: number = 1;
@@ -20,6 +24,9 @@ export class AdminComponent{
 
     public roles:string[] = ['Admin', 'Normal User', 'Restricted User', 'Banned User'];
     
+    /**
+     * constructor
+     */
     constructor(private auth: AuthService, private router: Router, private userService: UserService)
     {
         if(this.auth.getRank() != 0)
@@ -27,6 +34,9 @@ export class AdminComponent{
         this.getPartOfUsers(1);
     }
 
+    /**
+     * Retrives from the API a page (a partial list) of users.
+     */
     private getPartOfUsers(pageNumber: number)
     {
         this.userService.getUsers(pageNumber)
@@ -40,6 +50,9 @@ export class AdminComponent{
         );
     }
 
+    /**
+     * Saves the user into the API.
+     */
     public saveUser(userModel : UserModel)
     {
         this.userService.changeUserRank(userModel.id, userModel.rank)
@@ -49,6 +62,9 @@ export class AdminComponent{
         );
     }
 
+    /**
+     * Event fired from the template when the user has selected an other page.
+     */
     public changePage($event)
     {
         if(this.lastPage != this.currentPage)

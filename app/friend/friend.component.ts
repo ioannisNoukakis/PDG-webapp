@@ -4,16 +4,18 @@ import { Router }      from '@angular/router'
 import { FriendModel } from './friend.model'
 import { Observable }  from 'rxjs/Observable';
 import { UserService } from '../user/user.service'
-import { UserModel }   from '../mapView/user.model'
+import { UserModel }   from '../user/user.model'
 import { FriendService } from './friend.service'
 import {FriendshipRequestModel} from './friendRequest.model';
 
+/**
+ * Class for the friend component.
+ */
 @Component({
     selector: 'friend',
     templateUrl: './friend.component.html',
     providers: [FriendService]
 })
-
 export class FriendComponent{
 
     private username :String = "";
@@ -21,11 +23,17 @@ export class FriendComponent{
     private pendingFriends : FriendshipRequestModel[] = [];
     private foundUsers: UserModel[] = [];
 
+    /**
+     * constructor
+     */
     constructor(private _auth: AuthService, private _router: Router, private userService: UserService,
                 private friendService: FriendService){
         this.loadFriends();
     }
 
+    /**
+     * Retrives all the friends you have from the API. Puts them in the view.
+     */
     private loadFriends()
     {
         this.friends = [];
@@ -54,6 +62,9 @@ export class FriendComponent{
         );
     }
 
+    /**
+     * Check if the searched user is in the pendingFriends or friends array.
+     */
     private searchInFriendsAndInPending(username:string):boolean
     {
         this.friends.forEach((user) =>{
@@ -68,6 +79,9 @@ export class FriendComponent{
         return false;
     }
 
+    /**
+     * Event fired from the template when the search text input is modified. Show a list of suggestion for this new value.
+     */
     onChange(newValue) {
         if(newValue.length > 0)
         {
@@ -89,6 +103,9 @@ export class FriendComponent{
             this.foundUsers = [];
     }
 
+    /**
+     * Creates a pending friend request in the API.
+     */
     addFriend(u: UserModel)
     {
         this.friendService.addFriend(u.id)
@@ -102,6 +119,9 @@ export class FriendComponent{
         this.foundUsers = [];
     }
 
+    /**
+     * Destroy in the API a friendship between you two.
+     */
     deleteFriend(u: UserModel, index: number)
     {
         this.friendService.deleteFriend(u.id)
@@ -112,6 +132,9 @@ export class FriendComponent{
         this.friends.splice(index, 1);
     }
 
+    /**
+     * Confirm your frienship with this user in the API.
+     */
     confirmFriend(u: UserModel, index: number)
     {
         this.friendService.confirmFriend(u.id)
@@ -123,6 +146,9 @@ export class FriendComponent{
         this.pendingFriends.splice(index, 1);
     }
 
+    /**
+     * Declines a frienship request in the API.
+     */
     unconfirmFriend(u: UserModel, index: number)
     {
         this.friendService.deleteFriendshipRequest(u.id)

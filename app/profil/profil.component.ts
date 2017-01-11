@@ -4,22 +4,24 @@ import { Router }      from '@angular/router'
 import { Observable }  from 'rxjs/Observable';
 import { RegisterModel } from '../register/register.model'
 import { ProfilService } from './profil.service'
-import {LoginService} from '../login/login.service'
 import {LoginModel} from '../login/login.model'
 
 
+/**
+ * Class for the Profil component.
+ */
 @Component({
     selector: 'profil',
     templateUrl: './profil.component.html',
-    providers: [ProfilService, LoginService]
+    providers: [ProfilService]
 })
-
 export class ProfilComponent{
     private registerModel: RegisterModel = new RegisterModel("", "", "", "", "");
 
-
-    constructor(private _auth: AuthService, private _router: Router, private profilService:ProfilService,
-                private loginService : LoginService){
+    /**
+     * constructor
+     */
+    constructor(private _auth: AuthService, private _router: Router, private profilService:ProfilService){
         this.registerModel = new RegisterModel(this._auth.getUserDetails().username,
                             this._auth.getUserDetails().firstname,
                             this._auth.getUserDetails().lastname,
@@ -27,6 +29,9 @@ export class ProfilComponent{
                             "");
     }
 
+    /**
+     * Updates this user profile in the API and updates in AuthService theses informations.
+     */
     public doUpdate()
     {
         if(this.registerModel.password == "" || this.registerModel.firstname == "" || this.registerModel.lastname == "" || 

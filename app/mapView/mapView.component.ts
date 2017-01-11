@@ -5,6 +5,9 @@ import { MarkerManager } from 'angular2-google-maps/core'
 import { MapViewService } from './mapView.service';
 import { UserService }   from '../user/user.service'
 
+/**
+ * class for the MapView component.
+ */
 @Component({
   selector: 'map-view',
   templateUrl: './mapView.component.html',
@@ -29,7 +32,9 @@ export class MapView {
 
   private zoom: number = 15;
 
-//TODO FAIRE UN POLLING des users
+  /**
+   * constructor
+   */
   constructor(private _auth: AuthService, private _router: Router, private mapService :MapViewService, private userService:UserService){
     this.loadElements();
     this.radius = 2000;
@@ -38,6 +43,9 @@ export class MapView {
     }, 5000);
   }
 
+  /**
+   * Load the elements to be displayed on the map.
+   */
   private loadElements()
   {
     this.markerEvent = [];
@@ -58,6 +66,9 @@ export class MapView {
     );
   }
 
+  /**
+   * Load the persons (the markers of persons) to be displayed on the map.
+   */
   private loadPersons()
   {
     this.markerPerson = [];
@@ -79,6 +90,9 @@ export class MapView {
           );
   }
 
+  /**
+   * Load the events to be displayed on the map.
+   */
   private loadMapElements()
   {
         this.radius = 3333*(21-this.zoom);
@@ -113,6 +127,10 @@ export class MapView {
         }
   }
 
+  /**
+   * Event fired form the template when a marker event has been clicked.
+   * Loads all the points of interest of this event.
+   */
   clickedMarkerEvent(label: string, index: number) {
     this.commandMakerEvent = this.markerEvent[index];
     if(this.commandMakerEvent.id == undefined)
@@ -159,6 +177,9 @@ export class MapView {
       );
   }
 
+  /**
+   * Event fired form the template when a marker points of interest has been clicked.
+   */
    clickedMarkerPOI(label: string, index: number) {
       this.commandMakerPOI = this.markerPOI[index];
   }
@@ -198,11 +219,17 @@ export class MapView {
     }
   }
 
+  /**
+   * Event fired form the template when the google map center has changed.
+   */
   centerMapChanged($event){
     this.lat = $event.lat;
     this.lng = $event.lng;
   }
 
+   /**
+   * Event fired form the template when the google map has cessed to move.
+   */
   mapIdle()
   {
     this.loadMapElements();
@@ -216,21 +243,33 @@ export class MapView {
     }
   }
 
+   /**
+   * Event fired form the template when the google map zoom has changed.
+   */
   zoomChanged($event)
   {
     this.zoom = $event;
   }
   
+   /**
+   * Event fired form the template when a event marker was beeing draged and has been released.
+   */
   eventMarkerDragEnd(m: MarkerEvent, $event: MouseEvent) {
       m.location[0] = $event.coords.lat;
       m.location[1] = $event.coords.lng;
   }
 
+   /**
+   * Event fired form the template when a point of interest marker was beeing draged and has been released.
+   */
   POIMarkerDragEnd(m: MarkerPOI, $event: MouseEvent) {
       m.location[0] = $event.coords.lat;
       m.location[1] = $event.coords.lng;
   }
 
+  /**
+   * Delete in the API and in the template this event.
+   */
   deleteMarkerEvent(m: MarkerEvent)
   {
     var index = this.markerEvent.indexOf(m);
@@ -254,6 +293,9 @@ export class MapView {
     }
   }
 
+  /**
+   * Delete in the API and in the template this point of interest.
+   */
   deleteMarkerPOI(m: MarkerPOI)
   {
     var index = this.markerPOI.indexOf(m);
@@ -271,6 +313,10 @@ export class MapView {
     }
   }
 
+  /**
+   * Saves in the API and in the template this point of interest.
+   * If this point of interest already existed in the API, updates it.
+   */
   savePOI(m: MarkerPOI, doAlert: boolean)
   {
     if(this.commandMakerEvent.id == undefined)
@@ -310,6 +356,10 @@ export class MapView {
     }
   }
 
+  /**
+   * Saves in the API and in the template this event.
+   * If this event already existed in the API, updates it.
+   */
   saveEvent(m: MarkerEvent)
   {
     let tmp = Object.assign({}, m);
