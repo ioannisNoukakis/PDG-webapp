@@ -49521,13 +49521,17 @@
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
 	var core_1 = __webpack_require__(313);
+	var router_1 = __webpack_require__(340);
 	var AuthService = (function () {
-	    function AuthService() {
+	    function AuthService(_router) {
+	        this._router = _router;
 	        this._token = JSON.parse(localStorage.getItem('EventailToken'));
 	        this.userID = parseInt(localStorage.getItem('EventailUserID'));
 	        this.rank = parseInt(localStorage.getItem('EventailRank'));
 	    }
 	    AuthService.prototype.getToken = function () {
+	        if (this._token == null)
+	            this._router.navigateByUrl('/login');
 	        return this._token;
 	    };
 	    AuthService.prototype.isConnected = function () {
@@ -49562,7 +49566,7 @@
 	}());
 	AuthService = __decorate([
 	    core_1.Injectable(),
-	    __metadata("design:paramtypes", [])
+	    __metadata("design:paramtypes", [router_1.Router])
 	], AuthService);
 	exports.AuthService = AuthService;
 
@@ -65689,7 +65693,7 @@
 	var mapView_service_1 = __webpack_require__(407);
 	var user_service_1 = __webpack_require__(698);
 	var MapView = (function () {
-	    //TODO FAIRE UN POLLING
+	    //TODO FAIRE UN POLLING des users
 	    function MapView(_auth, _router, mapService, userService) {
 	        this._auth = _auth;
 	        this._router = _router;
@@ -65712,10 +65716,9 @@
 	        this.markerPerson = [];
 	        //localisation
 	        navigator.geolocation.getCurrentPosition(function (position) {
+	            console.log(position);
 	            _this.lat = position.coords.latitude;
 	            _this.lng = position.coords.longitude;
-	            if (_this.lat == undefined)
-	                return;
 	            _this.markerPerson.push({
 	                id: 0,
 	                title: "You",
@@ -65737,35 +65740,37 @@
 	        var _this = this;
 	        this.radius = 3333 * (21 - this.zoom);
 	        this.markerEvent = [];
-	        this.mapService.getEventNearby(this.lat, this.lng, this.radius)
-	            .subscribe(function (success) {
-	            success.forEach(function (element) {
-	                _this.markerEvent.push({
-	                    id: element.id,
-	                    owner: element.owner,
-	                    title: element.title,
-	                    desc: element.desc,
-	                    begin: new Date(element.begin).toISOString().substring(0, 10),
-	                    end: new Date(element.end).toISOString().substring(0, 10),
-	                    hbegin: new Date(element.begin).toISOString().substring(11, 16),
-	                    hend: new Date(element.end).toISOString().substring(11, 16),
-	                    spontaneous: element.spontaneous,
-	                    location: element.location,
-	                    radius: element.radius,
-	                    draggable: _this._auth.getUserId() == element.owner
+	        if (this.lat != undefined) {
+	            this.mapService.getEventNearby(this.lat, this.lng, this.radius)
+	                .subscribe(function (success) {
+	                success.forEach(function (element) {
+	                    _this.markerEvent.push({
+	                        id: element.id,
+	                        owner: element.owner,
+	                        title: element.title,
+	                        desc: element.desc,
+	                        begin: new Date(element.begin).toISOString().substring(0, 10),
+	                        end: new Date(element.end).toISOString().substring(0, 10),
+	                        hbegin: new Date(element.begin).toISOString().substring(11, 16),
+	                        hend: new Date(element.end).toISOString().substring(11, 16),
+	                        spontaneous: element.spontaneous,
+	                        location: element.location,
+	                        radius: element.radius,
+	                        draggable: _this._auth.getUserId() == element.owner
+	                    });
 	                });
-	            });
-	        }, function (error) { return alert("Error: " + error); });
-	        this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
-	            .subscribe(function (success) {
-	            success.forEach(function (user) {
-	                _this.markerPerson.push({
-	                    id: user.id,
-	                    title: user.username,
-	                    location: user.location
+	            }, function (error) { return alert("Error: " + error); });
+	            this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
+	                .subscribe(function (success) {
+	                success.forEach(function (user) {
+	                    _this.markerPerson.push({
+	                        id: user.id,
+	                        title: user.username,
+	                        location: user.location
+	                    });
 	                });
-	            });
-	        }, function (error) { return alert("Error: " + error); });
+	            }, function (error) { return alert("Error: " + error); });
+	        }
 	    };
 	    MapView.prototype.clickedMarkerEvent = function (label, index) {
 	        var _this = this;

@@ -78,12 +78,11 @@
                <input #time type='time' [(ngModel)]='this.commandMakerEvent.hbegin' required><br>
                This event ends:   <input #textbox type='date' [(ngModel)]='this.commandMakerEvent.end' required> 
                <input #time type='time' [(ngModel)]='this.commandMakerEvent.hend' required><br>
-               Spontaneous <input #textbox type='checkbox' [(ngModel)]='this.commandMakerEvent.spontaneous' required> <br> 
-      <button *ngIf="this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
+      <button *ngIf="this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner || this._auth.getRank() == 0"
        (click)="saveEvent(this.commandMakerEvent)" type="submit" class="button big">SAVE</button>
-      <button *ngIf="this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner"
+      <button *ngIf="this._auth.getRank() < 2 && this.commandMakerEvent.id == undefined || this._auth.getUserId() == this.commandMakerEvent.owner || this._auth.getRank() == 0"
        (click)="deleteMarkerEvent(this.commandMakerEvent)" type="submit" class="button danger">DELETE</button>
-      <button *ngIf="this._auth.getRank() < 2 && this._auth.getUserId() == this.commandMakerEvent.owner"
+      <button *ngIf="this._auth.getRank() < 2 && this._auth.getUserId() == this.commandMakerEvent.owner || this._auth.getRank() == 0"
        (click)="this.editingPointsOfInterest = true" type="submit" class="button big">SWITCH TO POINTS OF INTEREST</button>
     </article>
 

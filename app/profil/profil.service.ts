@@ -5,20 +5,18 @@ import { HTTPService } from '../http/http.service';
 import { Observable }  from 'rxjs/Rx';
 import { HeaderModel } from '../http/header.model';
 import { Response }    from '@angular/http';
-import { UserModel }   from '../mapView/user.model';
-import { RegisterModel } from './register.model'
+import { RegisterModel } from '../register/register.model'
 
 @Injectable()
-export class RegisterService {
+export class ProfilService {
     public constructor(private httpService:HTTPService, 
                        private auth: AuthService, 
                        private router: Router)
     {
     }
 
-    public register(registerModel: RegisterModel):Observable<UserModel>
+    public update(registerModel: RegisterModel):Observable<Object>
     {
-         return this.httpService.doPost(registerModel,'https://api.eventail.me/auth/register')
-        .map((obj: Object) => <UserModel>(obj));
+         return this.httpService.doPatch(registerModel,'https://api.eventail.me/users/self');
     }
 }

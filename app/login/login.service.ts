@@ -8,6 +8,7 @@ import {LoginModel} from './login.model'
 import 'rxjs/add/operator/map'
 import {AuthService} from '../auth/auth.service'
 import {Router} from '@angular/router'
+import { UserModel } from '../user/user.model'
 
 @Injectable()
 export class LoginService {
@@ -51,9 +52,10 @@ export class LoginService {
 
     saveJwt(jwt) {
         if(jwt) {
-            this._auth.setToken(new Token(jwt.token, jwt.string, false));
+            this._auth.setToken(new Token(jwt.token, jwt.expires, false));
             this._auth.setUserID(jwt.user.id);
             this._auth.setRank(jwt.user.rank);
+            this._auth.setUserDetails(jwt.user);
         }
     }
 

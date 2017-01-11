@@ -17,6 +17,7 @@ import { MapView }           from './mapView/mapView.component';
 import { FriendComponent }   from './friend/friend.component';
 import { RegisterComponent } from './register/register.component';
 import { AdminComponent }    from './admin/admin.component'
+import { ProfilComponent }   from './profil/profil.component'
 
 @NgModule({
   imports: [
@@ -36,7 +37,8 @@ import { AdminComponent }    from './admin/admin.component'
     MapView,
     FriendComponent,
     RegisterComponent,
-    AdminComponent
+    AdminComponent,
+    ProfilComponent
   ],
   providers:[ AuthService, HTTPService, UserService],
   bootstrap: [ AppComponent ]

@@ -19,57 +19,33 @@ export class FriendService {
 
     public getFriends(): Observable<UserModel[]>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doGet('https://api.eventail.me/users/self/friends', additionnalsHeaders)
+        return this.httpService.doGet('https://api.eventail.me/users/self/friends')
         .map((obj: Object) => <UserModel[]>(obj));
     }
 
     public getPendingFriendshipRequests(): Observable<FriendshipRequestModel[]>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doGet('https://api.eventail.me/users/self/friends/requests', additionnalsHeaders)
+         return this.httpService.doGet('https://api.eventail.me/users/self/friends/requests')
         .map((obj: Object) => <FriendshipRequestModel[]>(obj));
     }
 
     public addFriend(userID: number): Observable<Response>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doPut({},'https://api.eventail.me/users/self/friends/requests/'+userID, additionnalsHeaders);
+        return this.httpService.doPut({},'https://api.eventail.me/users/self/friends/requests/'+userID);
     }
 
     public confirmFriend(userID: number): Observable<Response>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doPut({},'https://api.eventail.me/users/self/friends/'+userID, additionnalsHeaders);
+        return this.httpService.doPut({},'https://api.eventail.me/users/self/friends/'+userID);
     }
 
     public deleteFriendshipRequest(userID: number): Observable<Response>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/requests/'+userID, additionnalsHeaders);
+        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/requests/'+userID);
     }
 
     public deleteFriend(friendID: number): Observable<Response>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/'+friendID, additionnalsHeaders);
+        return this.httpService.doDelete('https://api.eventail.me/users/self/friends/'+friendID);
     }
 }

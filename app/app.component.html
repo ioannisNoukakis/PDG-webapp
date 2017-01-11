@@ -23,6 +23,11 @@
                 <button *ngIf="this._auth.getRank() == 0 && this._router.url != '/admin'"
                     (click)="this._router.navigateByUrl('/admin')" class="button ref" type="submit">User Administration</button>
 
+                <button *ngIf="this._router.url === '/profil'"
+                    (click)="this._router.navigateByUrl('/profil')" class="button active" type="submit">Me</button>
+                <button *ngIf="this._router.url != '/profil'"
+                    (click)="this._router.navigateByUrl('/profil')" class="button ref" type="submit">Me</button>
+
                 <button (click)="onLogout()" type="button" class="button ref">Logout</button>
             </header>
             <header *ngIf="!this._auth.isConnected()" id="header">   

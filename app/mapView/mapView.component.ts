@@ -33,6 +33,9 @@ export class MapView {
   constructor(private _auth: AuthService, private _router: Router, private mapService :MapViewService, private userService:UserService){
     this.loadElements();
     this.radius = 2000;
+    setInterval(e=> {
+      this.loadPersons();
+    }, 5000);
   }
 
   private loadElements()
@@ -42,19 +45,8 @@ export class MapView {
     this.markerPerson = [];
      //localisation
     navigator.geolocation.getCurrentPosition((position) => {
-      console.log(position);
       this.lat = position.coords.latitude;
       this.lng = position.coords.longitude;
-
-      this.markerPerson.push({
-        id: 0,
-        title: "You",
-        location: 
-          [
-            this.lat,
-            this.lng
-          ]
-      });
       this.loadMapElements();
     }, () => {
         alert('Please use HTML5 enabled browser');
@@ -64,6 +56,27 @@ export class MapView {
             enableHighAccuracy: true
         }
     );
+  }
+
+  private loadPersons()
+  {
+    this.markerPerson = [];
+    this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
+          .subscribe(
+            success =>{
+              success.forEach((user) =>
+              {
+                this.markerPerson.push(
+                  {
+                    id: user.id,
+                    title: user.username,
+                    location: user.location
+                  }
+                );
+              });
+            },
+            error => alert("Error: " + error)
+          );
   }
 
   private loadMapElements()
@@ -91,23 +104,6 @@ export class MapView {
                     location:element.location,
                     radius: element.radius,
                     draggable: this._auth.getUserId() == element.owner
-                  }
-                );
-              });
-            },
-            error => alert("Error: " + error)
-          );
-
-          this.userService.getUsersNearby(this.lat, this.lng, this.radius, false)
-          .subscribe(
-            success =>{
-              success.forEach((user) =>
-              {
-                this.markerPerson.push(
-                  {
-                    id: user.id,
-                    title: user.username,
-                    location: user.location
                   }
                 );
               });
@@ -210,6 +206,14 @@ export class MapView {
   mapIdle()
   {
     this.loadMapElements();
+    if(this.commandMakerEvent != null)
+    {
+      if(this.commandMakerEvent.id == undefined)
+      {
+        this.markerEvent.push(this.commandMakerEvent);
+        return;
+      }
+    }
   }
 
   zoomChanged($event)
@@ -238,6 +242,7 @@ export class MapView {
       });
       this.markerPOI = [];
       this.markerEvent.splice(index, 1);
+      this.commandMakerEvent = null;
       if(m.id != undefined)
       {
         this.mapService.deleteEvent(m.id)

@@ -19,21 +19,13 @@ export class UserService {
 
     public searchUser(q: string): Observable<UserModel[]>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doGet('https://api.eventail.me/users/search?q=' + q, additionnalsHeaders)
+        return this.httpService.doGet('https://api.eventail.me/users/search?q=' + q)
         .map((obj: Object) => <UserModel[]>(obj));
     }
 
     public getUsersNearby(lat: number, lng: number, radius: number, all: boolean): Observable<UserModel[]>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat='+lat+'&lon='+lng+'&radius='+radius+'&all='+(this.auth.getRank() == 0), additionnalsHeaders)
+        return this.httpService.doGet('https://api.eventail.me/users/nearby?lat='+lat+'&lon='+lng+'&radius='+radius+'&all='+(this.auth.getRank() == 0))
         .map((obj: Object) => <UserModel[]>(obj));
     }
 
@@ -50,10 +42,6 @@ export class UserService {
 
     public changeUserRank(userID: number, rank: number): Observable<Response>
     {
-        var additionnalsHeaders : HeaderModel[] = [
-            new HeaderModel('Authorization', "Token " + this.auth.getToken().token)
-        ];
-
-        return this.httpService.doPut(rank, 'https://api.eventail.me/users/'+userID+'/rank', additionnalsHeaders);
+        return this.httpService.doPut(rank, 'https://api.eventail.me/users/'+userID+'/rank');
     }
 }

@@ -11,21 +11,25 @@ import {HeaderModel} from './header.model'
 @Injectable()
 export class HTTPService {
 
-    constructor(private _http: Http) { 
+    constructor(private _http: Http, private auth: AuthService) { 
     }
 
-    public doPost(body: Object, url: string, pHeaders: HeaderModel[]): Observable<Object[]>{
+    public doPost(body: Object, url: string, pHeaders?: HeaderModel[]): Observable<Object[]>{
  
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
         headers.append('Accept', 'application/json');
+        headers.append('Authorization', "Token " + this.auth.getToken().token);
 
-        pHeaders.forEach(
-            function(header)
-            {
-                headers.append(header.key, header.value);
-            }
-        );
+        if(pHeaders != undefined)
+        {
+            pHeaders.forEach(
+                function(header)
+                {
+                    headers.append(header.key, header.value);
+                }
+            );
+        }
 
         let bodyString = JSON.stringify(body);
         let options = new RequestOptions({ headers: headers });
@@ -35,18 +39,22 @@ export class HTTPService {
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 
-    public doPatch(body: Object, url: string, pHeaders: HeaderModel[]): Observable<Response>
+    public doPatch(body: Object, url: string, pHeaders?: HeaderModel[]): Observable<Response>
     {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
         headers.append('Accept', 'application/json');
+        headers.append('Authorization', "Token " + this.auth.getToken().token);
 
-        pHeaders.forEach(
-            function(header)
-            {
-                headers.append(header.key, header.value);
-            }
-        );
+        if(pHeaders != undefined)
+        {
+            pHeaders.forEach(
+                function(header)
+                {
+                    headers.append(header.key, header.value);
+                }
+            );
+        }
 
         let bodyString = JSON.stringify(body);
         let options = new RequestOptions({ headers: headers });
@@ -55,17 +63,21 @@ export class HTTPService {
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 
-    public doGet(url: string, pHeaders: HeaderModel[]): Observable<Object[]>{
+    public doGet(url: string, pHeaders?: HeaderModel[]): Observable<Object[]>{
  
         let headers = new Headers();
         headers.append('Accept', 'application/json');
+        headers.append('Authorization', "Token " + this.auth.getToken().token);
 
-        pHeaders.forEach(
-            function(header)
-            {
-                headers.append(header.key, header.value);
-            }
-        );
+        if(pHeaders != undefined)
+        {
+            pHeaders.forEach(
+                function(header)
+                {
+                    headers.append(header.key, header.value);
+                }
+            );
+        }
         let options = new RequestOptions({ headers: headers });
 
         return this._http.get(url, options)
@@ -73,16 +85,20 @@ export class HTTPService {
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 
-    public doDelete(url: string, pHeaders: HeaderModel[]): Observable<Response>
+    public doDelete(url: string, pHeaders?: HeaderModel[]): Observable<Response>
     {
         let headers = new Headers();
+        headers.append('Authorization', "Token " + this.auth.getToken().token);
 
-        pHeaders.forEach(
-            function(header)
-            {
-                headers.append(header.key, header.value);
-            }
-        );
+        if(pHeaders != undefined)
+        {
+            pHeaders.forEach(
+                function(header)
+                {
+                    headers.append(header.key, header.value);
+                }
+            );
+        }
 
         let options = new RequestOptions({ headers: headers });
 
@@ -90,17 +106,20 @@ export class HTTPService {
             .catch((error:any) => Observable.throw(error.json().error || 'Server error'));
     }
 
-    public doPut(body:Object,url: string, pHeaders: HeaderModel[]): Observable<Response>
+    public doPut(body:Object,url: string, pHeaders?: HeaderModel[]): Observable<Response>
     {
         let headers = new Headers();
+        headers.append('Authorization', "Token " + this.auth.getToken().token);
 
-        pHeaders.forEach(
-            function(header)
-            {
-                headers.append(header.key, header.value);
-            }
-        );
-
+        if(pHeaders != undefined)
+        {
+            pHeaders.forEach(
+                function(header)
+                {
+                    headers.append(header.key, header.value);
+                }
+            );
+        }
         let options = new RequestOptions({ headers: headers });
 
         return this._http.put(url,body, options)
